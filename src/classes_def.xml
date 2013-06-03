@@ -12,5 +12,9 @@
   <class name="std::vector<RegionDiscriminantInfo>"/>
   <class name="L1RecoMatch"/>
   <class name="std::map<std::string, float>"/> 
+  <class name="CTPOutput"/>
+  <class name="std::vector<CTPOutput>"/>
+  <class name="std::vector<std::vector<CTPOutput>>"/>
+  <class name="edm::Wrapper<std::vector<std::vector<CTPOutput>> >"/>
 </selection>
 </lcgdict>

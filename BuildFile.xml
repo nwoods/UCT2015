@@ -6,6 +6,11 @@
 <use name="root"/>
 <use name="rootrflx"/>
 <use name="FWCore/Utilities"/>
+<use name="DataFormats/HcalDigi"/>
+<use name="DataFormats/EcalDigi"/>
+<use name="DataFormats/HcalDetId"/>
+<use name="DataFormats/EcalDetId"/>
+<use name="DataFormats/Common"/>
 <export>
   <lib   name="1"/>
 </export>

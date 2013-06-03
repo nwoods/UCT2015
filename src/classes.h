@@ -12,6 +12,7 @@
 #include "L1Trigger/UCT2015/interface/L1RecoMatch.h"
 #include "L1Trigger/UCT2015/interface/UCTCandidate.h"
 #include "L1Trigger/UCT2015/src/L1GObject.h"
+#include "L1Trigger/UCT2015/interface/CTPCard.h"
 
 namespace {
 
@@ -31,4 +32,8 @@ namespace {
 
   std::map<std::string, float> dummyMap;
 
+  CTPOutput dummyCTPOutput;
+  std::vector<CTPOutput> dummyCTPOutputVector;
+  std::vector<std::vector<CTPOutput> > dummyCTPOutputVectorVector;
+  edm::Wrapper<std::vector<std::vector<CTPOutput> > > dummyCTPOutputVectorVectorWrapper;
 }
