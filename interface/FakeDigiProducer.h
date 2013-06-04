@@ -31,6 +31,13 @@
 
 #include "TTree.h"
 
+struct CTPOutput
+{
+  int ieta;
+  unsigned iphi;
+  unsigned et;
+};
+
 using namespace std;
 using namespace edm;
 
@@ -119,10 +126,11 @@ class FakeDigiProducer : public edm::EDProducer
 /*       return output; */
 /*     } */
 
-  EcalTrigPrimDigiCollection makeEcalCollectionFromFile(ifstream& f);
+  EcalTrigPrimDigiCollection makeEcalCollectionFromFile(string fileName);
   EcalTrigPrimDigiCollection makeEcalCollection();
-  HcalTrigPrimDigiCollection makeHcalCollectionFromFile(ifstream& f);
+  HcalTrigPrimDigiCollection makeHcalCollectionFromFile(string fileName);
   HcalTrigPrimDigiCollection makeHcalCollection();
+  vector<CTPOutput> getGoodFileEntries(string fileName);
 };
 
 
