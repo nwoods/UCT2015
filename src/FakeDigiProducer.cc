@@ -49,14 +49,15 @@ void FakeDigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
     hcalOut(new HcalTrigPrimDigiCollection);
 
   if(event_ < ecalFileNames.size())
-    *(ecalOut) = makeEcalCollectionFromFile(ecalFileNames.at(event_));
+    *(ecalOut) = makeEcalCollection();
+  //    *(ecalOut) = makeEcalCollectionFromFile(ecalFileNames.at(event_));
   else
     *(ecalOut) = makeEcalCollection();
 
-  if(event_ < hcalFileNames.size())
-    *(hcalOut) = makeHcalCollectionFromFile(hcalFileNames.at(event_));
-  else
-    *(hcalOut) = makeHcalCollection();
+//   if(event_ < hcalFileNames.size())
+//     *(hcalOut) = makeHcalCollectionFromFile(hcalFileNames.at(event_));
+//   else
+//     *(hcalOut) = makeHcalCollection();
   
   iEvent.put(ecalOut, "fakeEcalDigis");
   iEvent.put(hcalOut, "fakeHcalDigis");
@@ -67,7 +68,7 @@ void FakeDigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
 EcalTrigPrimDigiCollection 
 FakeDigiProducer::makeEcalCollectionFromFile(string fileName)
 {
-  EcalTrigPrimDigiCollection output = EcalTrigPrimDigiCollection(numDigis);
+  EcalTrigPrimDigiCollection output = EcalTrigPrimDigiCollection();
 
   vector<CTPOutput> goodEntries = getGoodFileEntries(fileName);
 
@@ -82,7 +83,7 @@ FakeDigiProducer::makeEcalCollectionFromFile(string fileName)
 	     nextGoodEntry == goodEntries.size())
 	    {
 	      // Put in "blank" entry
-	      uint16_t id = 0;
+	      uint32_t id = 0;
 	      id |= (eta > 0 ? (0x8000) : 0); // iEta sign
 	      id |= (eta > 0 ? eta<<7 : (-1*eta)<<7); // iEta value
 	      id |= phi; // iPhi value
@@ -94,7 +95,7 @@ FakeDigiProducer::makeEcalCollectionFromFile(string fileName)
 	  else
 	    {
 	      // Put in real entry
-	      uint16_t id = 0;
+	      uint32_t id = 0;
 	      id |= (eta > 0 ? (0x8000) : 0); // iEta sign
 	      id |= (eta > 0 ? eta<<7 : (-1*eta)<<7); // iEta value
 	      id |= phi; // iPhi value
@@ -154,14 +155,21 @@ FakeDigiProducer::makeEcalCollectionFromFile(string fileName)
 EcalTrigPrimDigiCollection 
 FakeDigiProducer::makeEcalCollection() 
 {
-  EcalTrigPrimDigiCollection output = EcalTrigPrimDigiCollection(numDigis);
+//   cout << "Making collection..." << endl
+//        << "Initializing collection" << endl;
+
+  EcalTrigPrimDigiCollection output = EcalTrigPrimDigiCollection();
+
+//   cout << "Starting loop" << endl
+//        << "(Eta , Phi , output.size()) = " << endl;
   
   for(int iEta = -32; iEta <= 32; ++iEta)
     {
       if(iEta == 0) continue;
       for(unsigned iPhi = 1; iPhi <= 72; ++iPhi)
 	{
-	  uint16_t id = 0;
+	  //	  cout << iEta << " , " << iPhi << " , " << output.size() << endl;
+	  uint32_t id = 0;
 	  id |= (iEta > 0 ? (0x8000) : 0); // iEta sign
 	  id |= (iEta > 0 ? iEta<<7 : (-1*iEta)<<7); // iEta value
 	  id |= iPhi; // iPhi value
@@ -171,6 +179,8 @@ FakeDigiProducer::makeEcalCollection()
 	  output.push_back(digi);
 	}
     }
+
+  //  cout << "Done making collection" << endl;
   
   return output;
 }
@@ -178,7 +188,7 @@ FakeDigiProducer::makeEcalCollection()
 HcalTrigPrimDigiCollection 
 FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
 {
-  HcalTrigPrimDigiCollection output = HcalTrigPrimDigiCollection(numDigis);
+  HcalTrigPrimDigiCollection output = HcalTrigPrimDigiCollection();
 
   vector<CTPOutput> goodEntries = getGoodFileEntries(fileName);
 
@@ -193,7 +203,7 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
 	     nextGoodEntry == goodEntries.size())
 	    {
 	      // Put in "blank" entry
-	      uint16_t id = 0;
+	      uint32_t id = 0;
 	      id |= (eta > 0 ? (0x8000) : 0); // iEta sign
 	      id |= (eta > 0 ? eta<<7 : (-1*eta)<<7); // iEta value
 	      id |= phi; // iPhi value
@@ -205,7 +215,7 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
 	  else
 	    {
 	      // Put in real entry
-	      uint16_t id = 0;
+	      uint32_t id = 0;
 	      id |= (eta > 0 ? (0x8000) : 0); // iEta sign
 	      id |= (eta > 0 ? eta<<7 : (-1*eta)<<7); // iEta value
 	      id |= phi; // iPhi value
@@ -265,14 +275,14 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
 HcalTrigPrimDigiCollection 
 FakeDigiProducer::makeHcalCollection() 
 {
-  HcalTrigPrimDigiCollection output = HcalTrigPrimDigiCollection(numDigis);
+  HcalTrigPrimDigiCollection output = HcalTrigPrimDigiCollection();
   
   for(int iEta = -32; iEta <= 32; ++iEta)
     {
       if(iEta == 0) continue;
       for(unsigned iPhi = 1; iPhi <= 72; ++iPhi)
 	{
-	  uint16_t id = 0;
+	  uint32_t id = 0;
 	  id |= (iEta > 0 ? (0x8000) : 0); // iEta sign
 	  id |= (iEta > 0 ? iEta<<7 : (-1*iEta)<<7); // iEta value
 	  id |= iPhi; // iPhi value
@@ -297,6 +307,7 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
   vector<CTPOutput> output = vector<CTPOutput>();
   int lastEta = -32;
   unsigned lastPhi = 1;
+  int nloops = 0;
   while(true)
     {
       int iEta;
@@ -304,14 +315,27 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
       unsigned et;
       
       f >> iEta;
-      if(f.eof() || iEta < lastEta || iEta > 32 || iEta == 0)
-	throw cms::Exception("BadFile") << "File does not exist or is "
-					<< "improperly formatted" << endl
-					<< "Make sure that your file has three"
-					<< " columns (eta, phi, et) in "
-					<< "ascending order in eta, and within"
-					<< " each eta, in ascending order in "
-					<< "phi" << endl;
+      if(f.eof())
+	throw cms::Exception("BadFile") << fileName 
+					<< " Eof after eta, loop " << nloops
+					<< endl;
+      if(iEta < lastEta)
+	throw cms::Exception("BadFile") << fileName 
+					<< " Etas out of order, loop " 
+					<< nloops
+					<< endl;
+      if(iEta == 0 || iEta > 32)
+	throw cms::Exception("BadFile") << fileName
+					<< " Invalid eta, loop " << nloops
+					<< endl;
+//       if(f.eof() || iEta < lastEta || iEta > 32 || iEta == 0)
+// 	throw cms::Exception("BadFile") << "File does not exist or is "
+// 					<< "improperly formatted" << endl
+// 					<< "Make sure that your file has three"
+// 					<< " columns (eta, phi, et) in "
+// 					<< "ascending order in eta, and within"
+// 					<< " each eta, in ascending order in "
+// 					<< "phi" << endl;
       
       if(iEta > lastEta)
 	{
@@ -320,14 +344,29 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
 	}
 
       f >> iPhi;
-      if(f.eof() || iPhi < lastPhi || iPhi > 72)
-	throw cms::Exception("BadFile") << "File does not exist or is "
-					<< "improperly formatted" << endl
-					<< "Make sure that your file has three"
-					<< " columns (eta, phi, et) in "
-					<< "ascending order in eta, and within"
-					<< " each eta, in ascending order in "
-					<< "phi" << endl;
+      if(f.eof())
+	throw cms::Exception("BadFile") << fileName
+					<< " EOF after phi, loop " 
+					<< nloops
+					<< endl;
+      if(iPhi <= lastPhi)
+	throw cms::Exception("BadFile") << fileName
+					<< " Phis out of order, loop "
+					<< nloops
+					<< endl;
+      if(iPhi > 72)
+	throw cms::Exception("BadFile") << fileName
+					<< " invalid phi, loop "
+					<< nloops
+					<< endl;
+//       if(f.eof() || iPhi <= lastPhi || iPhi > 72)
+// 	throw cms::Exception("BadFile") << "File does not exist or is "
+// 					<< "improperly formatted" << endl
+// 					<< "Make sure that your file has three"
+// 					<< " columns (eta, phi, et) in "
+// 					<< "ascending order in eta, and within"
+// 					<< " each eta, in ascending order in "
+// 					<< "phi" << endl;
       lastPhi = iPhi;
 
       f >> et;
@@ -343,6 +382,7 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
 
       if(f.eof())
 	break;
+      ++nloops;
     }
 
   f.close();

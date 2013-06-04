@@ -55,7 +55,11 @@ process.TFileService = cms.Service(
 process.Layer1UCTProducer = cms.EDProducer(
     "Layer1UCTProducer",
     hcalDigiSrc = cms.InputTag("hcalDigis"),
-    ecalDigis = cms.VInputTag(cms.InputTag("ecalDigis:EcalTriggerPrimitives")),
+    ecalDigis = cms.InputTag("ecalDigis:EcalTriggerPrimitives"),
+    RCTCableParams = cms.PSet(
+    iEtaBounds = cms.vint32(-25,-17,-9,-1,8,16,24,32),
+    iPhiBounds = cms.vuint32(8,16,24,32,40,48,56,64,72),
+    )
     )
 
 ## process.uctDigiStep = cms.Sequence(
