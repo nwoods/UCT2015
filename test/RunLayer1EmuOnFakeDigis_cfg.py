@@ -56,10 +56,14 @@ process.FakeDigiProducer = cms.EDProducer(
     "FakeDigiProducer",
     ecalFileNames = cms.vstring("./fakeDigis/fakeEcals0.txt",
                                 "./fakeDigis/fakeEcals1.txt",
-                                "./fakeDigis/fakeEcals2.txt"),
+                                "./fakeDigis/fakeEcals2.txt",
+                                "./fakeDigis/fakeEcals3.txt",
+                                "./fakeDigis/fakeEcals4.txt"),
     hcalFileNames = cms.vstring("./fakeDigis/fakeHcals0.txt",
                                 "./fakeDigis/fakeHcals1.txt",
-                                "./fakeDigis/fakeHcals2.txt"),
+                                "./fakeDigis/fakeHcals2.txt",
+                                "./fakeDigis/fakeHcals3.txt",
+                                "./fakeDigis/fakeHcals4.txt"),
     )
 
 process.Layer1UCTProducer = cms.EDProducer(

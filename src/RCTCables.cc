@@ -12,7 +12,7 @@ RCTCables::RCTCables(const ParameterSet& config) :
        || iEtaBounds.at(i) == 0)
       throw cms::Exception("BadInput")
 	<< "It looks like your eta boundaries are invalid" << std::endl;
-
+  
   for(unsigned i = 0; i < nPhiRegions; ++i)
     if(iPhiBounds.at(i) > 72
        || iPhiBounds.at(i) == 0)
