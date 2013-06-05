@@ -13,6 +13,12 @@
 #include "L1Trigger/UCT2015/interface/UCTCandidate.h"
 #include "L1Trigger/UCT2015/src/L1GObject.h"
 #include "L1Trigger/UCT2015/interface/CTPCard.h"
+#include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
+#include "DataFormats/EcalDigi/interface/EcalDigiCollections.h"
+#include "DataFormats/EcalDigi/interface/EcalTriggerPrimitiveDigi.h"
+#include "DataFormats/HcalDigi/interface/HcalTriggerPrimitiveDigi.h"
+#include "DataFormats/Common/interface/SortedCollection.h"
+
 
 namespace {
 
@@ -35,5 +41,15 @@ namespace {
   CTPOutput dummyCTPOutput;
   std::vector<CTPOutput> dummyCTPOutputVector;
   std::vector<std::vector<CTPOutput> > dummyCTPOutputVectorVector;
-  edm::Wrapper<std::vector<std::vector<CTPOutput> > > dummyCTPOutputVectorVectorWrapper;
+  edm::Wrapper<std::vector<std::vector<CTPOutput> > > 
+    dummyCTPOutputVectorVectorWrapper;
+
+  EcalTrigPrimDigiCollection dummyEcalDigiCollection;
+  HcalTrigPrimDigiCollection dummyHcalDigiCollection;
+
+  std::vector<EcalTrigPrimDigiCollection> dummyEcalDigiCollectionVector;
+  std::vector<HcalTrigPrimDigiCollection> dummyHcalDigiCollectionVector;
+
+  edm::Wrapper<EcalTrigPrimDigiCollection> dummyEcalDigiCollectionWrapper;
+  edm::Wrapper<HcalTrigPrimDigiCollection> dummyHcalDigiCollectionWrapper;
 }

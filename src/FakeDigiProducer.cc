@@ -18,17 +18,17 @@ FakeDigiProducer::FakeDigiProducer(const edm::ParameterSet& params) :
 	     ecalFileNames.size() :
 	     hcalFileNames.size())
 {
-  produces<EcalTrigPrimDigiCollection>("fakeEcalDigis")
+  produces<EcalTrigPrimDigiCollection>("fakeEcal")
     .setBranchAlias("fakeEcalDigis");
-  produces<HcalTrigPrimDigiCollection>("fakeHcalDigis")
+  produces<HcalTrigPrimDigiCollection>("fakeHcal")
     .setBranchAlias("fakeHcalDigis");
 
-  edm::Service<TFileService> fs;
+//   edm::Service<TFileService> fs;
 
-  tree = fs->make<TTree>("Ntuple","Ntuple");
-  tree->Branch("run", &run_, "run/i");
-  tree->Branch("lumi", &lumi_, "lumi/i");
-  tree->Branch("evt", &event_, "evt/l");
+//   tree = fs->make<TTree>("Ntuple","Ntuple");
+//   tree->Branch("run", &run_, "run/i");
+//   tree->Branch("lumi", &lumi_, "lumi/i");
+//   tree->Branch("evt", &event_, "evt/l");
 }
 
 
@@ -48,21 +48,20 @@ void FakeDigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
   std::auto_ptr<HcalTrigPrimDigiCollection> 
     hcalOut(new HcalTrigPrimDigiCollection);
 
-  if(event_ < ecalFileNames.size())
-    *(ecalOut) = makeEcalCollection();
-  //    *(ecalOut) = makeEcalCollectionFromFile(ecalFileNames.at(event_));
+  if(event_-1 < ecalFileNames.size())
+    *(ecalOut) = makeEcalCollectionFromFile(ecalFileNames.at(event_-1));
   else
     *(ecalOut) = makeEcalCollection();
 
-//   if(event_ < hcalFileNames.size())
-//     *(hcalOut) = makeHcalCollectionFromFile(hcalFileNames.at(event_));
-//   else
-//     *(hcalOut) = makeHcalCollection();
+  if(event_-1 < hcalFileNames.size())
+    *(hcalOut) = makeHcalCollectionFromFile(hcalFileNames.at(event_-1));
+  else
+    *(hcalOut) = makeHcalCollection();
   
   iEvent.put(ecalOut, "fakeEcalDigis");
   iEvent.put(hcalOut, "fakeHcalDigis");
 
-  tree->Fill();
+  //  tree->Fill();
 }
 
 EcalTrigPrimDigiCollection 
@@ -306,7 +305,7 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
 
   vector<CTPOutput> output = vector<CTPOutput>();
   int lastEta = -32;
-  unsigned lastPhi = 1;
+  unsigned lastPhi = 0;
   int nloops = 0;
   while(true)
     {
@@ -314,11 +313,9 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
       unsigned iPhi;
       unsigned et;
       
-      f >> iEta;
-      if(f.eof())
-	throw cms::Exception("BadFile") << fileName 
-					<< " Eof after eta, loop " << nloops
-					<< endl;
+      if(!(f >> iEta))
+	break;
+
       if(iEta < lastEta)
 	throw cms::Exception("BadFile") << fileName 
 					<< " Etas out of order, loop " 
@@ -328,14 +325,6 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
 	throw cms::Exception("BadFile") << fileName
 					<< " Invalid eta, loop " << nloops
 					<< endl;
-//       if(f.eof() || iEta < lastEta || iEta > 32 || iEta == 0)
-// 	throw cms::Exception("BadFile") << "File does not exist or is "
-// 					<< "improperly formatted" << endl
-// 					<< "Make sure that your file has three"
-// 					<< " columns (eta, phi, et) in "
-// 					<< "ascending order in eta, and within"
-// 					<< " each eta, in ascending order in "
-// 					<< "phi" << endl;
       
       if(iEta > lastEta)
 	{
@@ -343,12 +332,12 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
 	  lastEta = iEta;
 	}
 
-      f >> iPhi;
-      if(f.eof())
+      if(!(f >> iPhi))
 	throw cms::Exception("BadFile") << fileName
-					<< " EOF after phi, loop " 
+					<< " broke reading phi, loop " 
 					<< nloops
 					<< endl;
+
       if(iPhi <= lastPhi)
 	throw cms::Exception("BadFile") << fileName
 					<< " Phis out of order, loop "
@@ -359,17 +348,13 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
 					<< " invalid phi, loop "
 					<< nloops
 					<< endl;
-//       if(f.eof() || iPhi <= lastPhi || iPhi > 72)
-// 	throw cms::Exception("BadFile") << "File does not exist or is "
-// 					<< "improperly formatted" << endl
-// 					<< "Make sure that your file has three"
-// 					<< " columns (eta, phi, et) in "
-// 					<< "ascending order in eta, and within"
-// 					<< " each eta, in ascending order in "
-// 					<< "phi" << endl;
       lastPhi = iPhi;
 
-      f >> et;
+      if(!(f >> et))
+	throw cms::Exception("BadFile") << fileName 
+					<< " broke reading et, loop " 
+					<< nloops
+					<< endl;
 
       if(et > 0)
 	{
@@ -380,8 +365,6 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
 	  output.push_back(out);
 	}
 
-      if(f.eof())
-	break;
       ++nloops;
     }
 

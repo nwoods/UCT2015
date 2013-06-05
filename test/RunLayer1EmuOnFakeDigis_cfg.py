@@ -28,15 +28,15 @@ options.parseArguments()
 process = cms.Process("Layer1Emulator")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = 'GR_H_V28::All'
+## process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
+## process.GlobalTag.globaltag = 'GR_H_V28::All'
 
-process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
-process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
+## process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
+## process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 
 process.source = cms.Source("EmptySource")
 
@@ -46,7 +46,8 @@ process.source = cms.Source("EmptySource")
 ##     )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('myOutputFile.root')
+    fileName = cms.untracked.string('myOutputFile.root'),
+    outputCommands = cms.untracked.vstring("keep *")
     )
 
 process.TFileService = cms.Service(
@@ -56,13 +57,11 @@ process.TFileService = cms.Service(
 
 process.FakeDigiProducer = cms.EDProducer(
     "FakeDigiProducer",
-    ecalFileNames = cms.vstring("./fakeDigis/fakeEcals0.txt",
-                                "./fakeDigis/fakeEcals1.txt",
+    ecalFileNames = cms.vstring("./fakeDigis/fakeEcals1.txt",
                                 "./fakeDigis/fakeEcals2.txt",
                                 "./fakeDigis/fakeEcals3.txt",
                                 "./fakeDigis/fakeEcals4.txt"),
-    hcalFileNames = cms.vstring("./fakeDigis/fakeHcals0.txt",
-                                "./fakeDigis/fakeHcals1.txt",
+    hcalFileNames = cms.vstring("./fakeDigis/fakeHcals1.txt",
                                 "./fakeDigis/fakeHcals2.txt",
                                 "./fakeDigis/fakeHcals3.txt",
                                 "./fakeDigis/fakeHcals4.txt"),
@@ -83,3 +82,5 @@ process.Layer1UCTProducer = cms.EDProducer(
 process.path = cms.Path(process.FakeDigiProducer
 #                        * process.Layer1UCTProducer
                         )
+
+#process.end = cms.EndPath(process.out)

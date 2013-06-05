@@ -26,10 +26,10 @@
 #include "DataFormats/HcalDigi/interface/HcalTriggerPrimitiveSample.h"
 #include "DataFormats/EcalDetId/interface/EcalTrigTowerDetId.h"
 #include "DataFormats/HcalDetId/interface/HcalTrigTowerDetId.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h" 
+//#include "FWCore/ServiceRegistry/interface/Service.h"
+//#include "CommonTools/UtilAlgos/interface/TFileService.h" 
 
-#include "TTree.h"
+//#include "TTree.h"
 
 struct CTPOutput
 {
@@ -61,10 +61,10 @@ class FakeDigiProducer : public edm::EDProducer
   unsigned event_;
   
   // User data members
-  const unsigned numDigis;
-  TTree* tree;
+  //  TTree* tree;
   const vector<string> ecalFileNames;
   const vector<string> hcalFileNames;
+  const unsigned numDigis;
 
   // User function members
 /*   template<typename Digi, typename DigiSample, typename TowerDetId> */

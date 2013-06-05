@@ -16,5 +16,11 @@
   <class name="std::vector<CTPOutput>"/>
   <class name="std::vector<std::vector<CTPOutput>>"/>
   <class name="edm::Wrapper<std::vector<std::vector<CTPOutput>> >"/>
+  <class name="EcalTrigPrimDigiCollection"/>
+  <class name="HcalTrigPrimDigiCollection"/>
+  <class name="std::vector<EcalTrigPrimDigiCollection>"/>
+  <class name="std::vector<HcalTrigPrimDigiCollection>"/>
+  <class name="edm::Wrapper<EcalTrigPrimDigiCollection>"/>
+  <class name="edm::Wrapper<HcalTrigPrimDigiCollection>"/>
 </selection>
 </lcgdict>
