@@ -18,9 +18,11 @@ FakeDigiProducer::FakeDigiProducer(const edm::ParameterSet& params) :
 	     ecalFileNames.size() :
 	     hcalFileNames.size())
 {
-  produces<EcalTrigPrimDigiCollection>("fakeEcal")
+  produces<SortedCollection<EcalTriggerPrimitiveDigi,
+    StrictWeakOrdering<EcalTriggerPrimitiveDigi> > >("fakeEcal")
     .setBranchAlias("fakeEcalDigis");
-  produces<HcalTrigPrimDigiCollection>("fakeHcal")
+  produces<SortedCollection<HcalTriggerPrimitiveDigi,
+    StrictWeakOrdering<HcalTriggerPrimitiveDigi> > >("fakeHcal")
     .setBranchAlias("fakeHcalDigis");
 
 //   edm::Service<TFileService> fs;
@@ -43,9 +45,11 @@ void FakeDigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
   lumi_ = iEvent.id().luminosityBlock();
   event_ = iEvent.id().event();
 
-  std::auto_ptr<EcalTrigPrimDigiCollection> 
+  std::auto_ptr<SortedCollection<EcalTriggerPrimitiveDigi,
+    StrictWeakOrdering<EcalTriggerPrimitiveDigi> > > 
     ecalOut(new EcalTrigPrimDigiCollection);
-  std::auto_ptr<HcalTrigPrimDigiCollection> 
+  std::auto_ptr<SortedCollection<HcalTriggerPrimitiveDigi,
+    StrictWeakOrdering<HcalTriggerPrimitiveDigi> > > 
     hcalOut(new HcalTrigPrimDigiCollection);
 
   if(event_-1 < ecalFileNames.size())

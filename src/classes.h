@@ -44,12 +44,26 @@ namespace {
   edm::Wrapper<std::vector<std::vector<CTPOutput> > > 
     dummyCTPOutputVectorVectorWrapper;
 
-  EcalTrigPrimDigiCollection dummyEcalDigiCollection;
-  HcalTrigPrimDigiCollection dummyHcalDigiCollection;
+  EcalTriggerPrimitiveDigi dummyEcalDigi;
+  HcalTriggerPrimitiveDigi dummyHcalDigi;
 
-  std::vector<EcalTrigPrimDigiCollection> dummyEcalDigiCollectionVector;
-  std::vector<HcalTrigPrimDigiCollection> dummyHcalDigiCollectionVector;
+  edm::SortedCollection<EcalTriggerPrimitiveDigi,
+    edm::StrictWeakOrdering<EcalTriggerPrimitiveDigi> > 
+    dummyEcalDigiCollection;
+  edm::SortedCollection<HcalTriggerPrimitiveDigi,
+    edm::StrictWeakOrdering<HcalTriggerPrimitiveDigi> > 
+    dummyHcalDigiCollection;
 
-  edm::Wrapper<EcalTrigPrimDigiCollection> dummyEcalDigiCollectionWrapper;
-  edm::Wrapper<HcalTrigPrimDigiCollection> dummyHcalDigiCollectionWrapper;
+  std::vector<edm::SortedCollection<EcalTriggerPrimitiveDigi,edm::StrictWeakOrdering<EcalTriggerPrimitiveDigi> > > 
+    dummyEcalDigiCollectionVector;
+  std::vector<edm::SortedCollection<HcalTriggerPrimitiveDigi,
+    edm::StrictWeakOrdering<HcalTriggerPrimitiveDigi> > >
+    dummyHcalDigiCollectionVector;
+
+  edm::Wrapper<edm::SortedCollection<EcalTriggerPrimitiveDigi,
+    edm::StrictWeakOrdering<EcalTriggerPrimitiveDigi> > >
+    dummyEcalDigiCollectionWrapper;
+  edm::Wrapper<edm::SortedCollection<HcalTriggerPrimitiveDigi,
+    edm::StrictWeakOrdering<HcalTriggerPrimitiveDigi> > >
+    dummyHcalDigiCollectionWrapper;
 }
