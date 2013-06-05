@@ -21,7 +21,7 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 # Set defaults:
-#options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
+options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
 options.outputFile = "fakeDataTestOut.root"
 options.parseArguments()
 
@@ -83,4 +83,4 @@ process.path = cms.Path(process.FakeDigiProducer
 #                        * process.Layer1UCTProducer
                         )
 
-#process.end = cms.EndPath(process.out)
+process.end = cms.EndPath(process.out)

@@ -43,27 +43,4 @@ namespace {
   std::vector<std::vector<CTPOutput> > dummyCTPOutputVectorVector;
   edm::Wrapper<std::vector<std::vector<CTPOutput> > > 
     dummyCTPOutputVectorVectorWrapper;
-
-  EcalTriggerPrimitiveDigi dummyEcalDigi;
-  HcalTriggerPrimitiveDigi dummyHcalDigi;
-
-  edm::SortedCollection<EcalTriggerPrimitiveDigi,
-    edm::StrictWeakOrdering<EcalTriggerPrimitiveDigi> > 
-    dummyEcalDigiCollection;
-  edm::SortedCollection<HcalTriggerPrimitiveDigi,
-    edm::StrictWeakOrdering<HcalTriggerPrimitiveDigi> > 
-    dummyHcalDigiCollection;
-
-  std::vector<edm::SortedCollection<EcalTriggerPrimitiveDigi,edm::StrictWeakOrdering<EcalTriggerPrimitiveDigi> > > 
-    dummyEcalDigiCollectionVector;
-  std::vector<edm::SortedCollection<HcalTriggerPrimitiveDigi,
-    edm::StrictWeakOrdering<HcalTriggerPrimitiveDigi> > >
-    dummyHcalDigiCollectionVector;
-
-  edm::Wrapper<edm::SortedCollection<EcalTriggerPrimitiveDigi,
-    edm::StrictWeakOrdering<EcalTriggerPrimitiveDigi> > >
-    dummyEcalDigiCollectionWrapper;
-  edm::Wrapper<edm::SortedCollection<HcalTriggerPrimitiveDigi,
-    edm::StrictWeakOrdering<HcalTriggerPrimitiveDigi> > >
-    dummyHcalDigiCollectionWrapper;
 }

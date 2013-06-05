@@ -66,9 +66,11 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
   iEvent.getByLabel(ecalDigis, ecalTpgs);
 
   if(!hcalTpgs.isValid())
-      std::cerr<< "Hcal collection handle invalid" << std::endl;
+    throw cms::Exception("BadInput")
+      << "Hcal collection handle invalid" << std::endl;
   if(!ecalTpgs.isValid())
-      std::cerr<< "Ecal collection handle invalid" << std::endl;
+    throw cms::Exception("BadInput")
+      << "Ecal collection handle invalid" << std::endl;
   if(!(hcalTpgs.isValid() || ecalTpgs.isValid()))
     return;
 
