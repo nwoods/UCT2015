@@ -24,8 +24,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h" 
 
-#include "TTree.h"
-#include "TH1D.h"
+/* #include "TTree.h" */
+/* #include "TH1D.h" */
 
 #include "CTPCard.h"
 #include "RCTCables.h"
@@ -50,8 +50,8 @@ class Layer1UCTProducer : public edm::EDProducer
   edm::InputTag ecalDigis;
   edm::ParameterSet cableParams;
 
-  TTree* tree;
-  TH1D* etHisto;
+/*   TTree* tree; */
+/*   TH1D* etHisto; */
   unsigned run_;
   unsigned lumi_;
   unsigned event_;

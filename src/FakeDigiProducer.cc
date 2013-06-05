@@ -15,8 +15,8 @@ FakeDigiProducer::FakeDigiProducer(const edm::ParameterSet& params) :
   ecalFileNames(params.getParameter<vector<string>>("ecalFileNames")),
   hcalFileNames(params.getParameter<vector<string>>("hcalFileNames")),
   numDigis(ecalFileNames.size() > hcalFileNames.size() ? 
-	     ecalFileNames.size() :
-	     hcalFileNames.size())
+	   ecalFileNames.size() :
+	   hcalFileNames.size())
 {
   produces<EcalTrigPrimDigiCollection>("fakeEcalDigis");
 
@@ -36,7 +36,8 @@ FakeDigiProducer::~FakeDigiProducer()
 }
 
 
-void FakeDigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+void FakeDigiProducer::produce(edm::Event& iEvent, 
+			       const edm::EventSetup& iSetup)
 {
   run_ = iEvent.id().run();
   lumi_ = iEvent.id().luminosityBlock();
@@ -76,17 +77,19 @@ FakeDigiProducer::makeEcalCollectionFromFile(string fileName)
       if(eta == 0) continue;
       for(unsigned phi = 1; phi <= 72; ++phi)
 	{
-	  if(eta < goodEntries.at(nextGoodEntry).ieta ||
-	     phi < goodEntries.at(nextGoodEntry).iphi ||
-	     nextGoodEntry == goodEntries.size())
+	  if((nextGoodEntry == goodEntries.size()?
+	      true : // if we've done all the file digis, the rest are blank
+	      (eta < goodEntries.at(nextGoodEntry).ieta ||
+	       phi < goodEntries.at(nextGoodEntry).iphi)))
 	    {
 	      // Put in "blank" entry
 	      uint32_t id = 0;
-	      id |= (eta > 0 ? (0x8000) : 0); // iEta sign
+	      id |= (eta > 0 ? (0x8000) : 0); // iEta sign DIFFERENT FROM HCAL
 	      id |= (eta > 0 ? eta<<7 : (-1*eta)<<7); // iEta value
 	      id |= phi; // iPhi value
 	      EcalTrigTowerDetId tow = EcalTrigTowerDetId(id);
 	      EcalTriggerPrimitiveDigi digi = EcalTriggerPrimitiveDigi(tow);
+	      digi.setSize(1);
 	      digi.setSample(0,EcalTriggerPrimitiveSample(0));
 	      output.push_back(digi);
 	    }
@@ -99,87 +102,39 @@ FakeDigiProducer::makeEcalCollectionFromFile(string fileName)
 	      id |= phi; // iPhi value
 	      EcalTrigTowerDetId tow = EcalTrigTowerDetId(id);
 	      EcalTriggerPrimitiveDigi digi = EcalTriggerPrimitiveDigi(tow);
-	      digi.setSample(0, EcalTriggerPrimitiveSample(goodEntries
-							   .at(nextGoodEntry++)
-							   .et%0x100));
+	      digi.setSize(1);
+	      digi.setSample(0, EcalTriggerPrimitiveSample((goodEntries.
+							    at(nextGoodEntry++)
+							    .et)%0x100));
 	      output.push_back(digi);
 	    }
 	}
     }
   return output;
-
 }
-// {
-//   if(!f.is_open())
-//     throw cms::Exception("BadFile") << "File failed to open" << endl;
-  
-//   EcalTrigPrimDigiCollection output = EcalTrigPrimDigiCollection(numDigis);
-  
-//   unsigned nDigisPlaced = 0;
-  
-//   while(true)
-//     {
-//       int iEta;
-//       unsigned iPhi;
-//       unsigned et;
-//       f >> iEta;
-//       if(f.eof())
-// 	throw cms::Exception("BadFile") 
-// 	  << "Input file must have 3 columns" << endl;
-//       f >> iPhi;
-//       if(f.eof())
-// 	throw cms::Exception("BadFile") 
-// 	  << "Input file must have 3 columns" << endl;
-// 	  f >> et;
-// 	  uint16_t id = 0;
-// 	  id |= (iEta > 0 ? (0x8000) : 0); // iEta sign
-// 	  id |= (iEta > 0 ? iEta<<7 : (-1*iEta)<<7); // iEta value
-// 	  id |= iPhi; // iPhi value
-// 	  EcalTrigTowerDetId tow = EcalTrigTowerDetId(id);
-// 	  EcalTriggerPrimitiveDigi digi = EcalTriggerPrimitiveDigi(tow);
-// 	  digi.setSample(0,EcalTriggerPrimitiveSample(et%0x100));
-// 	  output.push_back(digi);
-	  
-// 	  if(f.eof() || ++nDigisPlaced == numDigis)
-// 	    break;
-//     }
-//   if(nDigisPlaced != numDigis)
-//     cout << "WARNING The number of digis placed in the collection"
-// 	 << " is wrong." << endl;
-  
-//   return output;
-// }
 
 EcalTrigPrimDigiCollection 
 FakeDigiProducer::makeEcalCollection() 
 {
-//   cout << "Making collection..." << endl
-//        << "Initializing collection" << endl;
-
   EcalTrigPrimDigiCollection output = EcalTrigPrimDigiCollection();
-
-//   cout << "Starting loop" << endl
-//        << "(Eta , Phi , output.size()) = " << endl;
   
   for(int iEta = -32; iEta <= 32; ++iEta)
     {
       if(iEta == 0) continue;
       for(unsigned iPhi = 1; iPhi <= 72; ++iPhi)
 	{
-	  //	  cout << iEta << " , " << iPhi << " , " << output.size() << endl;
 	  uint32_t id = 0;
 	  id |= (iEta > 0 ? (0x8000) : 0); // iEta sign
 	  id |= (iEta > 0 ? iEta<<7 : (-1*iEta)<<7); // iEta value
 	  id |= iPhi; // iPhi value
 	  EcalTrigTowerDetId tow = EcalTrigTowerDetId(id);
 	  EcalTriggerPrimitiveDigi digi = EcalTriggerPrimitiveDigi(tow);
+	  digi.setSize(1);
 	  digi.setSample(0,EcalTriggerPrimitiveSample(0));
 	  output.push_back(digi);
 	}
     }
 
-  //  cout << "Done making collection" << endl;
-  
   return output;
 }
 
@@ -196,17 +151,19 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
       if(eta == 0) continue;
       for(unsigned phi = 1; phi <= 72; ++phi)
 	{
-	  if(eta < goodEntries.at(nextGoodEntry).ieta ||
-	     phi < goodEntries.at(nextGoodEntry).iphi ||
-	     nextGoodEntry == goodEntries.size())
+	  if((nextGoodEntry == goodEntries.size()?
+	      true : // if we've done all the file digis, the rest are blank
+	      (eta < goodEntries.at(nextGoodEntry).ieta ||
+	       phi < goodEntries.at(nextGoodEntry).iphi)))
 	    {
 	      // Put in "blank" entry
 	      uint32_t id = 0;
-	      id |= (eta > 0 ? (0x8000) : 0); // iEta sign
+	      id |= (eta > 0 ? (0x2000) : 0); // iEta sign DIFFERENT FROM ECAL
 	      id |= (eta > 0 ? eta<<7 : (-1*eta)<<7); // iEta value
 	      id |= phi; // iPhi value
 	      HcalTrigTowerDetId tow = HcalTrigTowerDetId(id);
 	      HcalTriggerPrimitiveDigi digi = HcalTriggerPrimitiveDigi(tow);
+	      digi.setSize(1);
 	      digi.setSample(0,HcalTriggerPrimitiveSample(0));
 	      output.push_back(digi);
 	    }
@@ -214,14 +171,15 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
 	    {
 	      // Put in real entry
 	      uint32_t id = 0;
-	      id |= (eta > 0 ? (0x8000) : 0); // iEta sign
+	      id |= (eta > 0 ? (0x2000) : 0); // iEta sign
 	      id |= (eta > 0 ? eta<<7 : (-1*eta)<<7); // iEta value
 	      id |= phi; // iPhi value
 	      HcalTrigTowerDetId tow = HcalTrigTowerDetId(id);
 	      HcalTriggerPrimitiveDigi digi = HcalTriggerPrimitiveDigi(tow);
-	      digi.setSample(0, HcalTriggerPrimitiveSample(goodEntries
-							   .at(nextGoodEntry++)
-							   .et%0x100));
+	      digi.setSize(1);
+	      digi.setSample(0, HcalTriggerPrimitiveSample((goodEntries.
+							    at(nextGoodEntry++)
+							    .et)%0x100));
 	      output.push_back(digi);
 	    }
 	}
@@ -229,46 +187,6 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
   return output;
 
 }
-// {
-//   if(!f.is_open())
-//     throw cms::Exception("BadFile") << "File failed to open" << endl;
-  
-//   HcalTrigPrimDigiCollection output = HcalTrigPrimDigiCollection(numDigis);
-  
-//   unsigned nDigisPlaced = 0;
-
-//   while(true)
-//     {
-//       int iEta;
-//       unsigned iPhi;
-//       unsigned et;
-//       f >> iEta;
-//       if(f.eof())
-// 	throw cms::Exception("BadFile") 
-// 	  << "Input file must have 3 columns" << endl;
-//       f >> iPhi;
-//       if(f.eof())
-// 	    throw cms::Exception("BadFile") 
-// 	      << "Input file must have 3 columns" << endl;
-//       f >> et;
-//       uint16_t id = 0;
-//       id |= (iEta > 0 ? (0x8000) : 0); // iEta sign
-//       id |= (iEta > 0 ? iEta<<7 : (-1*iEta)<<7); // iEta value
-//       id |= iPhi; // iPhi value
-//       HcalTrigTowerDetId tow = HcalTrigTowerDetId(id);
-//       HcalTriggerPrimitiveDigi digi = HcalTriggerPrimitiveDigi(tow);
-//       digi.setSample(0,HcalTriggerPrimitiveSample(et%0x100));
-//       output.push_back(digi);
-      
-//       if(f.eof() || ++nDigisPlaced == numDigis)
-// 	break;
-//     }
-//   if(nDigisPlaced != numDigis)
-//     cout << "WARNING The number of digis placed in the collection"
-// 	 << " is wrong." << endl;
-  
-//   return output;
-// }
 
 HcalTrigPrimDigiCollection 
 FakeDigiProducer::makeHcalCollection() 
@@ -281,7 +199,7 @@ FakeDigiProducer::makeHcalCollection()
       for(unsigned iPhi = 1; iPhi <= 72; ++iPhi)
 	{
 	  uint32_t id = 0;
-	  id |= (iEta > 0 ? (0x8000) : 0); // iEta sign
+	  id |= (iEta > 0 ? (0x2000) : 0); // iEta sign
 	  id |= (iEta > 0 ? iEta<<7 : (-1*iEta)<<7); // iEta value
 	  id |= iPhi; // iPhi value
 	  HcalTrigTowerDetId tow = HcalTrigTowerDetId(id);
@@ -298,11 +216,12 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
 {
   ifstream f;
   f.open(fileName.c_str());
-  if((!f.is_open()) || f.eof())
+  if(!f.is_open())
     throw cms::Exception("BadFile") << "File does not exist, is empty, or "
 				    <<"cannot be opened" << endl;
 
   vector<CTPOutput> output = vector<CTPOutput>();
+
   int lastEta = -32;
   unsigned lastPhi = 0;
   int nloops = 0;
@@ -357,6 +276,13 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
 
       if(et > 0)
 	{
+	  if(et >= 0x100) // saturated (et is 8 bit)
+	    {
+	      cout << "Saturated: changing " << et << " to " << 0xFF << endl;
+	      et = 0xFF;
+	    }
+
+	 
 	  CTPOutput out;
 	  out.ieta = iEta;
 	  out.iphi = iPhi;

@@ -29,17 +29,15 @@ Layer1UCTProducer::Layer1UCTProducer(const edm::ParameterSet& params) :
   // Do we actually need ecal and hcal to be different in initialization? 
   cableParams(params.getParameter<ParameterSet>("RCTCableParams"))
 {
-  produces<vector<vector<CTPOutput>>>("CTPOutEcal")
-    .setBranchAlias("CTPOutEcal");
-  produces<vector<vector<CTPOutput>>>("CTPOutHcal")
-    .setBranchAlias("CTPOutHcal");
+  produces<vector<vector<CTPOutput>>>("CTPOutEcal");
+  produces<vector<vector<CTPOutput>>>("CTPOutHcal");
 
-  edm::Service<TFileService> fs;
+//   edm::Service<TFileService> fs;
 
-  tree = fs->make<TTree>("Ntuple","Ntuple");
-  tree->Branch("run", &run_, "run/i");
-  tree->Branch("lumi", &lumi_, "lumi/i");
-  tree->Branch("evt", &event_, "evt/l");
+//   tree = fs->make<TTree>("Ntuple","Ntuple");
+//   tree->Branch("run", &run_, "run/i");
+//   tree->Branch("lumi", &lumi_, "lumi/i");
+//   tree->Branch("evt", &event_, "evt/l");
 
 //   etHisto = fs->make<TH1D>("etHisto", "Uncalibrated Total Calo Et", 
 // 			   100, 0., 1500.);
@@ -100,7 +98,7 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
 
   //  etHisto->Fill(Et);
 
-  tree->Fill();
+  //  tree->Fill();
 }
 
 //define this as a plug-in

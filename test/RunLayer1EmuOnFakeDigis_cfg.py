@@ -46,8 +46,11 @@ process.source = cms.Source("EmptySource")
 ##     )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('myOutputFile.root'),
-    outputCommands = cms.untracked.vstring("keep *")
+    fileName = cms.untracked.string(options.outputFile),
+    outputCommands = cms.untracked.vstring("keep *"),
+    SelectEvents = cms.untracked.PSet(
+        SelectEvents = cms.vstring('path')
+        )
     )
 
 process.TFileService = cms.Service(
@@ -69,8 +72,8 @@ process.FakeDigiProducer = cms.EDProducer(
 
 process.Layer1UCTProducer = cms.EDProducer(
     "Layer1UCTProducer",
-    hcalDigiSrc = cms.InputTag("fakeHcalDigis"),
-    ecalDigis = cms.InputTag("fakeEcalDigis"),
+    hcalDigiSrc = cms.InputTag("FakeDigiProducer","fakeHcalDigis"),
+    ecalDigis = cms.InputTag("FakeDigiProducer","fakeEcalDigis"),
     RCTCableParams = cms.PSet(
     iEtaBounds = cms.vint32(-25,-17,-9,-1,8,16,24,32),
     iPhiBounds = cms.vuint32(8,16,24,32,40,48,56,64,72),
@@ -80,7 +83,7 @@ process.Layer1UCTProducer = cms.EDProducer(
 #process.load("L1Trigger.UCT2015.emulation_cfi")
 
 process.path = cms.Path(process.FakeDigiProducer
-#                        * process.Layer1UCTProducer
+                        * process.Layer1UCTProducer
                         )
 
 process.end = cms.EndPath(process.out)

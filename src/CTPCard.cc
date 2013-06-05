@@ -24,11 +24,13 @@ double CTPCard::sumEt(const HcalTrigPrimDigiCollection& hcalIn,
 }
 
 vector<CTPOutput> CTPCard::topNCands(unsigned n, 
-				     const EcalTrigPrimDigiCollection& 
-				     digis)
+				     const EcalTrigPrimDigiCollection& digis)
 {
   if(n==0)
-    return vector<CTPOutput>();
+    {
+      cout << "WARNING: returning top 0 Ecal cands" << endl;
+      return vector<CTPOutput>();
+    }
 
   vector<unsigned> topCands = vector<unsigned>(n,0);
   vector<unsigned> topCandsEt = vector<unsigned>(n,0);
@@ -36,18 +38,22 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
   for(unsigned i = 0; i < digis.size(); ++i)
     {
       unsigned candEt = digis[i].compressedEt();
+
       if(candEt <= topCandsEt.back())
 	continue;
       topCands.back() = i;
       topCandsEt.back() = candEt;
       int temp = n - 1;
-      while(topCandsEt.at(temp) > topCandsEt.at(temp-1) && temp - 1 >= 0)
+
+      while(topCandsEt.at(temp) > topCandsEt.at(temp-1))
 	{
 	  topCands.at(temp) = topCands.at(temp-1);
 	  topCands.at(temp-1) = i;
 	  topCandsEt.at(temp) = topCandsEt.at(temp-1);
 	  topCandsEt.at(temp-1) = candEt;
-	  --temp;
+
+	  if(--temp == 0)
+	    break;
 	}
     }
   
@@ -68,6 +74,7 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
 	}
       out.push_back(cand);
     }
+
   return out;
 }
 
@@ -76,7 +83,10 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
 				     digis)
 {
   if(n==0)
-    return vector<CTPOutput>();
+    {
+      cout << "WARNING: returning top 0 Hcal cands" << endl;
+      return vector<CTPOutput>();
+    }
 
   vector<unsigned> topCands = vector<unsigned>(n,0);
   vector<unsigned> topCandsEt = vector<unsigned>(n,0);
@@ -89,13 +99,15 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
       topCands.back() = i;
       topCandsEt.back() = candEt;
       int temp = n - 1;
-      while(topCandsEt.at(temp) > topCandsEt.at(temp-1) && temp - 1 >= 0)
+      while(topCandsEt.at(temp) > topCandsEt.at(temp-1))
 	{
 	  topCands.at(temp) = topCands.at(temp-1);
 	  topCands.at(temp-1) = i;
 	  topCandsEt.at(temp) = topCandsEt.at(temp-1);
 	  topCandsEt.at(temp-1) = candEt;
-	  --temp;
+
+	  if(--temp == 0)
+	    break;
 	}
     }
   vector<CTPOutput> out = vector<CTPOutput>(n);

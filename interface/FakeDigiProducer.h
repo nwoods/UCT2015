@@ -31,12 +31,7 @@
 
 //#include "TTree.h"
 
-struct CTPOutput
-{
-  int ieta;
-  unsigned iphi;
-  unsigned et;
-};
+#include "L1Trigger/UCT2015/interface/CTPCard.h"
 
 using namespace std;
 using namespace edm;
