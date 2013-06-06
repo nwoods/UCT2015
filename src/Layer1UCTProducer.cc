@@ -9,7 +9,7 @@ class Layer1UCTProducer Layer1UCTProducer.cc $CMSSW_BASE/src/L1Trigger/UCT2015/s
  Authors:  N. Woods, E. Friis, S. Dasu, T. Sarangi (UW Madison)
 */
 
-#define DEBUG
+//#define DEBUG
 
 #include "../interface/Layer1UCTProducer.h"
 #include <vector>
@@ -27,7 +27,8 @@ Layer1UCTProducer::Layer1UCTProducer(const edm::ParameterSet& params) :
   hcalDigiSrc(params.getParameter<InputTag>("hcalDigiSrc")),
   ecalDigis(params.getParameter<InputTag>("ecalDigis")),
   // Do we actually need ecal and hcal to be different in initialization? 
-  cableParams(params.getParameter<ParameterSet>("RCTCableParams"))
+  cableParams(params.getParameter<ParameterSet>("RCTCableParams")),
+  doDebug(params.getParameter<bool>("doDebug"))
 {
   produces<vector<vector<CTPOutput>>>("CTPOutEcal");
   produces<vector<vector<CTPOutput>>>("CTPOutHcal");
@@ -95,6 +96,37 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
   
   iEvent.put(ecalOut, "CTPOutEcal");
   iEvent.put(hcalOut, "CTPOutHcal");
+
+  if(doDebug)
+    {
+      cout << "Which gave final Ecal outputs:" << endl
+	   << "(iEta,iPhi,et)" << endl;
+      for(unsigned iCard = 0; iCard < ecalOut->size(); ++iCard)
+	{
+	  cout << "Card " << iCard << ":" << endl;
+	  for(unsigned iDigi = 0; iDigi < ecalOut->at(iDigi).size(); ++iDigi)
+	    {
+	      cout << iDigi << ": (" << ecalOut->at(iCard).at(iDigi).ieta 
+		   << "," << ecalOut->at(iCard).at(iDigi).iphi << ","
+		   << ecalOut->at(iCard).at(iDigi).et << ")" << endl;
+	    }
+	}
+      cout << endl;
+
+      cout << "And final Hcal outputs:" << endl
+	   << "(iEta,iPhi,et)" << endl;
+      for(unsigned iCard = 0; iCard < hcalOut->size(); ++iCard)
+	{
+	  cout << "Card " << iCard << ":" << endl;
+	  for(unsigned iDigi = 0; iDigi < hcalOut->at(iDigi).size(); ++iDigi)
+	    {
+	      cout << iDigi << ": (" << hcalOut->at(iCard).at(iDigi).ieta 
+		   << "," << hcalOut->at(iCard).at(iDigi).iphi << ","
+		   << hcalOut->at(iCard).at(iDigi).et << ")" << endl;
+	    }
+	}
+      cout << endl;
+    }
 
   //  etHisto->Fill(Et);
 

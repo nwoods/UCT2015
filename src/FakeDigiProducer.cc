@@ -16,7 +16,8 @@ FakeDigiProducer::FakeDigiProducer(const edm::ParameterSet& params) :
   hcalFileNames(params.getParameter<vector<string>>("hcalFileNames")),
   numDigis(ecalFileNames.size() > hcalFileNames.size() ? 
 	   ecalFileNames.size() :
-	   hcalFileNames.size())
+	   hcalFileNames.size()),
+  doDebug(params.getParameter<bool>("doDebug"))
 {
   produces<EcalTrigPrimDigiCollection>("fakeEcalDigis");
 
@@ -71,6 +72,29 @@ FakeDigiProducer::makeEcalCollectionFromFile(string fileName)
 
   vector<CTPOutput> goodEntries = getGoodFileEntries(fileName);
 
+  if(doDebug)
+    {
+      cout << "-------------------- Ecal Digis for event " << event_
+	   << " --------------------" << endl;
+
+      cout << "\nInput file was: \n" << endl;
+      ifstream g;
+      string line;
+      g.open(fileName.c_str());
+      if(g.is_open())
+	{
+	  while(getline(g,line))
+	    cout << line << endl;
+	  cout << endl << endl;
+	}
+      else
+	cout << "FILE FAILED TO READ" << endl << endl;
+      
+      cout << "Which became digi collection" << endl
+	   << "#:    (iEta,iPhi,et):";
+    }
+
+
   unsigned nextGoodEntry = 0;
   for(int eta = -32; eta <= 32; ++eta)
     {
@@ -103,13 +127,24 @@ FakeDigiProducer::makeEcalCollectionFromFile(string fileName)
 	      EcalTrigTowerDetId tow = EcalTrigTowerDetId(id);
 	      EcalTriggerPrimitiveDigi digi = EcalTriggerPrimitiveDigi(tow);
 	      digi.setSize(1);
-	      digi.setSample(0, EcalTriggerPrimitiveSample((goodEntries.
-							    at(nextGoodEntry++)
-							    .et)%0x100));
+	      uint16_t theSample = goodEntries.at(nextGoodEntry++).et;
+	      digi.setSample(0, EcalTriggerPrimitiveSample(theSample));
 	      output.push_back(digi);
 	    }
 	}
     }
+
+  if(doDebug)
+    {
+      for(unsigned q = 0; q < output.size(); ++q)
+	{
+	  cout << q << ":    (" << output[q].id().ieta() << ","
+	       << output[q].id().iphi() << ","
+	       << output[q].compressedEt() << ")" << endl;
+	}
+      cout << endl;
+    }
+	  
   return output;
 }
 
@@ -145,6 +180,13 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
 
   vector<CTPOutput> goodEntries = getGoodFileEntries(fileName);
 
+  if(doDebug)
+    {
+      cout << "-------------------- Hcal Digis for event " << event_
+	   << " --------------------" << endl
+	   << "#:    (iEta,iPhi,et):";
+    }
+
   unsigned nextGoodEntry = 0;
   for(int eta = -32; eta <= 32; ++eta)
     {
@@ -177,13 +219,23 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
 	      HcalTrigTowerDetId tow = HcalTrigTowerDetId(id);
 	      HcalTriggerPrimitiveDigi digi = HcalTriggerPrimitiveDigi(tow);
 	      digi.setSize(1);
-	      digi.setSample(0, HcalTriggerPrimitiveSample((goodEntries.
-							    at(nextGoodEntry++)
-							    .et)%0x100));
+	      uint16_t theSample = goodEntries.at(nextGoodEntry++).et;
+	      digi.setSample(0, HcalTriggerPrimitiveSample(theSample));
 	      output.push_back(digi);
 	    }
 	}
     }
+
+  if(doDebug)
+    {
+      for(unsigned q = 0; q < output.size(); ++q)
+	{
+	  cout << q << ":    (" << output[q].id().ieta() << ","
+	       << output[q].id().iphi() << ","
+	       << output[q].SOI_compressedEt() << ")" << endl;
+	}
+    }
+
   return output;
 
 }
@@ -294,6 +346,7 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
     }
 
   f.close();
+
   return output;
 }
 

@@ -60,66 +60,7 @@ class FakeDigiProducer : public edm::EDProducer
   const vector<string> ecalFileNames;
   const vector<string> hcalFileNames;
   const unsigned numDigis;
-
-  // User function members
-/*   template<typename Digi, typename DigiSample, typename TowerDetId> */
-/*     SortedCollection<Digi>& makeCollectionFromFile(fstream& f) */
-/*     { */
-/*       if(!f.is_open()) */
-/* 	throw cms::Exception("BadFile") << "File failed to open" << endl; */
-
-/*       SortedCollection<Digi> output = SortedCollection<Digi>(numDigis); */
-
-/*       unsigned nDigisPlaced = 0; */
-
-/*       while(true) */
-/* 	{ */
-/* 	  int iEta; */
-/* 	  unsigned iPhi; */
-/* 	  unsigned et; */
-/* 	  f >> iEta; */
-/* 	  if(f.eof()) */
-/* 	    throw cms::Exception("BadFile")  */
-/* 	      << "Input file must have 3 columns" << endl; */
-/* 	  f >> iPhi; */
-/* 	  if(f.eof()) */
-/* 	    throw cms::Exception("BadFile")  */
-/* 	      << "Input file must have 3 columns" << endl; */
-/* 	  f >> et; */
-/* 	  TowerDetId tow = TowerDetId(iEta,iPhi); */
-/* 	  Digi digi = Digi(tow); */
-/* 	  digi.setSample(0,DigiSample(et%0x100)); */
-/* 	  output.push_back(digi); */
-
-/* 	  if(f.eof() || ++nDigisPlaced == numDigis) */
-/* 	    break; */
-/* 	} */
-/*       if(nDigisPlaced != numDigis) */
-/* 	cout << "WARNING The number of digis placed in the collection" */
-/* 	     << " is wrong." << endl; */
-
-/*       return output; */
-/*     } */
-
-/*   template<typename Digi, typename DigiSample, typename TowerDetId> */
-/*     SortedCollection<Digi>& makeCollectionFromFile()  */
-/*     { */
-/*       SortedCollection<Digi> output = SortedCollection<Digi>(numDigis); */
-
-/*       for(int iEta = -32; iEta <= 32; ++iEta) */
-/* 	{ */
-/* 	  if(iEta == 0) continue; */
-/* 	  for(unsigned iPhi = 1; iPhi <= 72; ++iPhi) */
-/* 	    { */
-/* 	      TowerDetId tow = TowerDetId(iEta,iPhi); */
-/* 	      Digi digi = Digi(tow); */
-/* 	      digi.setSample(0,DigiSample(0)); */
-/* 	      output.push_back(digi); */
-/* 	    } */
-/* 	} */
-    
-/*       return output; */
-/*     } */
+  const bool doDebug;
 
   EcalTrigPrimDigiCollection makeEcalCollectionFromFile(string fileName);
   EcalTrigPrimDigiCollection makeEcalCollection();

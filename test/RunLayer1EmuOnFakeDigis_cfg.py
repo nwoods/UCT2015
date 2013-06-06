@@ -23,6 +23,7 @@ options = VarParsing ('analysis')
 # Set defaults:
 options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
 options.outputFile = "fakeDataTestOut.root"
+#options.debug = True ## causing crash?
 options.parseArguments()
 
 process = cms.Process("Layer1Emulator")
@@ -68,6 +69,7 @@ process.FakeDigiProducer = cms.EDProducer(
                                 "./fakeDigis/fakeHcals2.txt",
                                 "./fakeDigis/fakeHcals3.txt",
                                 "./fakeDigis/fakeHcals4.txt"),
+    doDebug = cms.bool(True),#options.debug),
     )
 
 process.Layer1UCTProducer = cms.EDProducer(
@@ -78,6 +80,7 @@ process.Layer1UCTProducer = cms.EDProducer(
     iEtaBounds = cms.vint32(-25,-17,-9,-1,8,16,24,32),
     iPhiBounds = cms.vuint32(8,16,24,32,40,48,56,64,72),
     ),
+    doDebug = cms.bool(True),#options.debug),
     )
 
 #process.load("L1Trigger.UCT2015.emulation_cfi")

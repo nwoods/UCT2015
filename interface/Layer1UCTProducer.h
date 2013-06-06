@@ -46,9 +46,10 @@ class Layer1UCTProducer : public edm::EDProducer
   virtual void produce(edm::Event& iEvent, const edm::EventSetup& iSetup);
   
   // User members
-  edm::InputTag hcalDigiSrc;
-  edm::InputTag ecalDigis;
-  edm::ParameterSet cableParams;
+  const edm::InputTag hcalDigiSrc;
+  const edm::InputTag ecalDigis;
+  const edm::ParameterSet cableParams;
+  const bool doDebug;
 
 /*   TTree* tree; */
 /*   TH1D* etHisto; */
