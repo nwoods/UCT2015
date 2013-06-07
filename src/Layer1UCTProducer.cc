@@ -93,9 +93,6 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
       hcalOut->push_back(cards.at(i).
 			 topNCands(3,cables.selectDigis(i,*hcalTpgs)));
     }
-  
-  iEvent.put(ecalOut, "CTPOutEcal");
-  iEvent.put(hcalOut, "CTPOutHcal");
 
   if(doDebug)
     {
@@ -127,6 +124,10 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
 	}
       cout << endl;
     }
+  
+  iEvent.put(ecalOut, "CTPOutEcal");
+  iEvent.put(hcalOut, "CTPOutHcal");
+
 
   //  etHisto->Fill(Et);
 

@@ -26,7 +26,7 @@ options.outputFile = "fakeDataTestOut.root"
 #options.debug = True ## causing crash?
 options.parseArguments()
 
-process = cms.Process("Layer1Emulator")
+process = cms.Process("Layer1EmulatorOnFakeData")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
@@ -37,7 +37,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 ## process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
 ## process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5) )
 
 process.source = cms.Source("EmptySource")
 

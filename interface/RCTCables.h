@@ -40,8 +40,8 @@ using namespace edm;
 
 struct detRegions
 {
-  unsigned ieta;
-  unsigned iphi;
+  unsigned etaReg;
+  unsigned phiReg;
 };
 
 class RCTCables
@@ -63,15 +63,16 @@ class RCTCables
       for(unsigned i = 0; i < digisIn.size(); ++i)
 	{
 	  // If the digi is in this region, return it
-	  if((digisIn[i].id().ieta() < iEtaBounds.at(regions.ieta)
-	      && (regions.ieta == 0 ? 
+	  if((digisIn[i].id().ieta() <= iEtaBounds.at(regions.etaReg)
+	      && (regions.etaReg == 0 ? 
 		  true : 
-		  digisIn[i].id().ieta() > iEtaBounds.at(regions.ieta-1)))
-	     && (unsigned(digisIn[i].id().iphi()) < iPhiBounds.at(regions.iphi)
-		 && (regions.iphi == 0 ? 
+		  digisIn[i].id().ieta() > iEtaBounds.at(regions.etaReg-1)))
+	     && (unsigned(digisIn[i].id().iphi()) <= 
+		 iPhiBounds.at(regions.phiReg)
+		 && (regions.phiReg == 0 ? 
 		     true : 
 		     (unsigned(digisIn[i].id().iphi()) 
-		      > iPhiBounds.at(regions.iphi-1)))))
+		      > iPhiBounds.at(regions.phiReg-1)))))
 	    output.push_back(digisIn[i]);
 	}
       return output;
@@ -88,12 +89,12 @@ class RCTCables
   const unsigned nEtaRegions;
   const unsigned nPhiRegions;
 
-  // Returns array[etaRegion, phiRegion]
+  // Returns doublet [etaRegion, phiRegion]
   inline detRegions recoverRegions(unsigned ind) const
     {
       detRegions output;
-      output.iphi = ind % nPhiRegions; // Phi region
-      output.ieta = (ind - output.iphi) / nPhiRegions; // Eta region
+      output.phiReg = ind % nPhiRegions; // Phi region
+      output.etaReg = (ind - output.phiReg) / nPhiRegions; // Eta region
       return output;
     }
 

@@ -72,7 +72,7 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
 	  cand.ieta = digis[topCands.at(i)].id().ieta();
 	  cand.iphi = digis[topCands.at(i)].id().iphi();
 	}
-      out.push_back(cand);
+      out.at(i) = cand;
     }
 
   return out;
@@ -125,7 +125,7 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
 	  cand.ieta = digis[topCands.at(i)].id().ieta();
 	  cand.iphi = digis[topCands.at(i)].id().iphi();
 	}
-      out.push_back(cand);
+      out.at(i) = cand;
     }
   return out;
 }

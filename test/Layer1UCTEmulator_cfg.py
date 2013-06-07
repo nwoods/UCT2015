@@ -23,6 +23,7 @@ options = VarParsing ('analysis')
 # Set defaults:
 options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
 options.outputFile = "caloTriggerEmulatorOut.root"
+options.maxEvents = 200
 options.parseArguments()
 
 process = cms.Process("Layer1Emulator")
@@ -36,21 +37,29 @@ process.GlobalTag.globaltag = 'GR_H_V28::All'
 process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
 process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet(
+    input = cms.untracked.int32(options.maxEvents),
+    )
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(options.inputFiles)
     )
 
-process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('myOutputFile.root')
+process.out = cms.OutputModule(
+    "PoolOutputModule",
+    fileName = cms.untracked.string(options.outputFile),
+    outputCommands = cms.untracked.vstring("drop *",
+                                           "keep CTPOutput*_*_*_*"),
+    SelectEvents = cms.untracked.PSet(
+        SelectEvents = cms.vstring('path'),
+        ),
     )
 
-process.TFileService = cms.Service(
-    "TFileService",
-    fileName = cms.string(options.outputFile)
-    )
+## process.TFileService = cms.Service(
+##     "TFileService",
+##     fileName = cms.string('testingOutput.root'),#options.outputFile),
+##     )
 
 process.Layer1UCTProducer = cms.EDProducer(
     "Layer1UCTProducer",
@@ -59,7 +68,8 @@ process.Layer1UCTProducer = cms.EDProducer(
     RCTCableParams = cms.PSet(
     iEtaBounds = cms.vint32(-25,-17,-9,-1,8,16,24,32),
     iPhiBounds = cms.vuint32(8,16,24,32,40,48,56,64,72),
-    )
+    ),
+    doDebug = cms.bool(False)
     )
 
 ## process.uctDigiStep = cms.Sequence(
@@ -76,3 +86,5 @@ process.load("L1Trigger.UCT2015.emulation_cfi")
 process.path = cms.Path(process.uctDigiStep
                         * process.Layer1UCTProducer
                         )
+
+process.end = cms.EndPath(process.out)

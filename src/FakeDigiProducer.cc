@@ -52,13 +52,35 @@ void FakeDigiProducer::produce(edm::Event& iEvent,
   if(event_-1 < ecalFileNames.size())
     *(ecalOut) = makeEcalCollectionFromFile(ecalFileNames.at(event_-1));
   else
-    *(ecalOut) = makeEcalCollection();
+    {
+      if(doDebug)
+	cout << endl 
+	     << "***********************************"
+	     << "*******************************" << endl 
+	     << "***** Done with Ecal digis. "
+	     << "Further Ecal output is all zeros *****" << endl
+	     << "***********************************"
+	     << "*******************************" << endl << endl;
+
+      *(ecalOut) = makeEcalCollection();
+    }
 
   if(event_-1 < hcalFileNames.size())
     *(hcalOut) = makeHcalCollectionFromFile(hcalFileNames.at(event_-1));
   else
-    *(hcalOut) = makeHcalCollection();
-  
+    {
+      if(doDebug)
+	cout << endl 
+	     << "***********************************"
+	     << "*******************************" << endl 
+	     << "***** Done with Hcal digis. "
+	     << "Further Hcal output is all zeros *****" << endl
+ 	     << "***********************************"
+	     << "*******************************" << endl << endl;
+
+      *(hcalOut) = makeHcalCollection();
+    }  
+
   iEvent.put(ecalOut, "fakeEcalDigis");
   iEvent.put(hcalOut, "fakeHcalDigis");
 
@@ -91,7 +113,7 @@ FakeDigiProducer::makeEcalCollectionFromFile(string fileName)
 	cout << "FILE FAILED TO READ" << endl << endl;
       
       cout << "Which became digi collection" << endl
-	   << "#:    (iEta,iPhi,et):";
+	   << "#:    (iEta,iPhi,et):" << endl;
     }
 
 
@@ -185,6 +207,22 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
       cout << "-------------------- Hcal Digis for event " << event_
 	   << " --------------------" << endl
 	   << "#:    (iEta,iPhi,et):";
+
+      cout << "\nInput file was: \n" << endl;
+      ifstream g;
+      string line;
+      g.open(fileName.c_str());
+      if(g.is_open())
+	{
+	  while(getline(g,line))
+	    cout << line << endl;
+	  cout << endl << endl;
+	}
+      else
+	cout << "FILE FAILED TO READ" << endl << endl;
+      
+      cout << "Which became digi collection" << endl
+	   << "#:    (iEta,iPhi,et):" << endl;
     }
 
   unsigned nextGoodEntry = 0;
@@ -234,6 +272,7 @@ FakeDigiProducer::makeHcalCollectionFromFile(string fileName)
 	       << output[q].id().iphi() << ","
 	       << output[q].SOI_compressedEt() << ")" << endl;
 	}
+      cout << endl;
     }
 
   return output;
