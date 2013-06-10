@@ -34,9 +34,12 @@ using std::vector;
 #include "DataFormats/HcalDigi/interface/HcalTriggerPrimitiveSample.h"
 #include "DataFormats/Common/interface/SortedCollection.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "L1Trigger/UCT2015/interface/CTPCard.h"
 
 using namespace std;
 using namespace edm;
+
+class CTPCard; // Forward declaration to make these things work
 
 struct detRegions
 {
@@ -51,34 +54,15 @@ class RCTCables
   ~RCTCables();
   unsigned getCTPIndex(int iEta, unsigned iPhi) const;
 
-  template<typename digi>
-    SortedCollection<digi> 
-    selectDigis(unsigned CTPIndex,
-		const SortedCollection<digi>& 
-		digisIn) const
-    {
-      SortedCollection<digi> output = SortedCollection<digi>();
-      detRegions regions = RCTCables::recoverRegions(CTPIndex);
-      
-      for(unsigned i = 0; i < digisIn.size(); ++i)
-	{
-	  // If the digi is in this region, return it
-	  if((digisIn[i].id().ieta() <= iEtaBounds.at(regions.etaReg)
-	      && (regions.etaReg == 0 ? 
-		  true : 
-		  digisIn[i].id().ieta() > iEtaBounds.at(regions.etaReg-1)))
-	     && (unsigned(digisIn[i].id().iphi()) <= 
-		 iPhiBounds.at(regions.phiReg)
-		 && (regions.phiReg == 0 ? 
-		     true : 
-		     (unsigned(digisIn[i].id().iphi()) 
-		      > iPhiBounds.at(regions.phiReg-1)))))
-	    output.push_back(digisIn[i]);
-	}
-      return output;
-    }
+  EcalTrigPrimDigiCollection selectDigis(unsigned CTPIndex,
+					 const EcalTrigPrimDigiCollection&
+					 digisIn) const;
+  HcalTrigPrimDigiCollection selectDigis(unsigned CTPIndex,
+					 const HcalTrigPrimDigiCollection&
+					 digisIn) const;
 
   inline unsigned getNCards() const {return nEtaRegions * nPhiRegions;}
+  const CTPCard& getCard(unsigned ind) const {return *(cards.at(ind));}
 
  private:
   // Bounds are the MAXIMUM index handled by a given card:
@@ -88,6 +72,8 @@ class RCTCables
   vector<unsigned> iPhiBounds;
   const unsigned nEtaRegions;
   const unsigned nPhiRegions;
+  vector<CTPCard*> cards;
+  const double ecalLSB_;
 
   // Returns doublet [etaRegion, phiRegion]
   inline detRegions recoverRegions(unsigned ind) const

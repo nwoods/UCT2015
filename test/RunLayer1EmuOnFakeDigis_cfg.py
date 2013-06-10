@@ -79,6 +79,7 @@ process.Layer1UCTProducer = cms.EDProducer(
     RCTCableParams = cms.PSet(
     iEtaBounds = cms.vint32(-25,-17,-9,-1,8,16,24,32),
     iPhiBounds = cms.vuint32(8,16,24,32,40,48,56,64,72),
+    ecalLSB = cms.double(0.5),
     ),
     doDebug = cms.bool(True),#options.debug),
     )

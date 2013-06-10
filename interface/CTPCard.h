@@ -28,6 +28,10 @@
 #include "DataFormats/EcalDigi/interface/EcalTriggerPrimitiveDigi.h"
 #include "DataFormats/HcalDigi/interface/HcalTriggerPrimitiveDigi.h"
 #include "DataFormats/EcalDigi/interface/EcalTriggerPrimitiveSample.h"
+#include "L1Trigger/UCT2015/interface/RCTCables.h"
+
+class RCTCables; //Forward declaration
+
 using namespace std;
 using namespace edm;
 using std::vector;
@@ -37,26 +41,37 @@ struct CTPOutput
   unsigned et;
   int ieta;
   unsigned iphi;
-  bool isHcal; // if false, is ecal
+  //  bool isHcal; // if false, is ecal
 };
 
 class CTPCard
 {
  public:
-  explicit CTPCard(double ecalLSB);
+  explicit CTPCard(double ecalLSB, const RCTCables* cables,
+		   int iEtaMin, int iEtaMax, 
+		   unsigned iPhiMin, unsigned iPhiMax);
   ~CTPCard();
   double sumEt
     (const HcalTrigPrimDigiCollection& hcal, 
      const EcalTrigPrimDigiCollection& ecal);
   // outputs top n digis sorted highest to lowest et
   vector<CTPOutput> topNCands(unsigned n, 
-			      const EcalTrigPrimDigiCollection& digis);
+			      const EcalTrigPrimDigiCollection& digis) const;
   vector<CTPOutput> topNCands(unsigned n, 
-			      const HcalTrigPrimDigiCollection& digis);
-
+			      const HcalTrigPrimDigiCollection& digis) const;
+/*   vector<CTPOutput> eTowerClusters(unsigned eClusterSeed, */
+/* 				   const EcalTrigPrimDigiCollection& digis) */
 
  private:
   const double ecalLSB;
+  const int iEtaMin;
+  const int iEtaMax;
+  const unsigned iPhiMin;
+  const unsigned iPhiMax;
+  const unsigned nTowEta;
+  const unsigned nTowPhi;
+
+  const RCTCables* cables;
 };
 
 

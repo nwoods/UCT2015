@@ -1,6 +1,17 @@
 #include "L1Trigger/UCT2015/interface/CTPCard.h"
 
-CTPCard::CTPCard(double ecalLSB) : ecalLSB(ecalLSB) {}
+CTPCard::CTPCard(double ecalLSB, const RCTCables* cables,
+		 int iEtaMin, int iEtaMax,
+		 unsigned iPhiMin, unsigned iPhiMax) 
+  : ecalLSB(ecalLSB),
+    iEtaMin(iEtaMin),
+    iEtaMax(iEtaMax),
+    iPhiMin(iPhiMin),
+    iPhiMax(iPhiMax),
+    nTowEta((iEtaMin*iEtaMax < 0 ? iEtaMax-iEtaMin-1 : iEtaMax-iEtaMin)),
+    nTowPhi(iPhiMax-iPhiMin),
+    cables(cables)
+{}
 
 CTPCard::~CTPCard() {}
 
@@ -24,7 +35,8 @@ double CTPCard::sumEt(const HcalTrigPrimDigiCollection& hcalIn,
 }
 
 vector<CTPOutput> CTPCard::topNCands(unsigned n, 
-				     const EcalTrigPrimDigiCollection& digis)
+				     const EcalTrigPrimDigiCollection& 
+				     digis) const
 {
   if(n==0)
     {
@@ -80,7 +92,7 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
 
 vector<CTPOutput> CTPCard::topNCands(unsigned n, 
 				     const HcalTrigPrimDigiCollection& 
-				     digis)
+				     digis) const
 {
   if(n==0)
     {
@@ -130,3 +142,9 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
   return out;
 }
 
+// vector<CTPOutput> CTPCard::ETowerClusters(unsigned eClusterSeed, 
+// 					  const EcalTrigPrimDigiCollection&
+// 					  digis)
+// {
+  
+// }
