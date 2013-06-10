@@ -11,45 +11,55 @@ CTPCard::CTPCard(double ecalLSB, const RCTCables* cables,
     nTowEta((iEtaMin*iEtaMax < 0 ? iEtaMax-iEtaMin-1 : iEtaMax-iEtaMin)),
     nTowPhi(iPhiMax-iPhiMin),
     cables(cables)
-{}
+{
+  ecalDigis = EcalTrigPrimDigiCollection();
+  hcalDigis = HcalTrigPrimDigiCollection();
+}
 
 CTPCard::~CTPCard() {}
 
-double CTPCard::sumEt(const HcalTrigPrimDigiCollection& hcalIn, 
-		      const EcalTrigPrimDigiCollection& ecalIn)
+double CTPCard::sumEt() const
 {  
+  if(ecalDigis.size() == 0)
+    throw cms::Exception("EmptyCollection") << "Ecal digis never initialized"
+					   << endl;
+  if(hcalDigis.size() == 0)
+    throw cms::Exception("EmptyCollection") << "Hcal digis never initialized"
+					   << endl;
+
   double Et = 0;
-  for(unsigned i = 0; i < hcalIn.size(); i++)
+  for(unsigned i = 0; i < hcalDigis.size(); i++)
     {
-      HcalTriggerPrimitiveDigi hcal = hcalIn[i];
+      HcalTriggerPrimitiveDigi hcal = hcalDigis[i];
 
       Et += double(hcal.SOI_compressedEt());
     }
-  for(unsigned i = 0; i < ecalIn.size(); i++)
+  for(unsigned i = 0; i < ecalDigis.size(); i++)
     {
-      EcalTriggerPrimitiveDigi ecal = ecalIn[i];
+      EcalTriggerPrimitiveDigi ecal = ecalDigis[i];
       Et += double(ecal.compressedEt()) * ecalLSB;
     }
 
   return Et;
 }
 
-vector<CTPOutput> CTPCard::topNCands(unsigned n, 
-				     const EcalTrigPrimDigiCollection& 
-				     digis) const
+vector<CTPOutput> CTPCard::topNEcalCands(unsigned n) const
 {
   if(n==0)
     {
       cout << "WARNING: returning top 0 Ecal cands" << endl;
       return vector<CTPOutput>();
     }
+  if(ecalDigis.size() == 0)
+    throw cms::Exception("EmptyCollection") << "Ecal digis never initialized"
+					   << endl;
 
   vector<unsigned> topCands = vector<unsigned>(n,0);
   vector<unsigned> topCandsEt = vector<unsigned>(n,0);
 
-  for(unsigned i = 0; i < digis.size(); ++i)
+  for(unsigned i = 0; i < ecalDigis.size(); ++i)
     {
-      unsigned candEt = digis[i].compressedEt();
+      unsigned candEt = ecalDigis[i].compressedEt();
 
       if(candEt <= topCandsEt.back())
 	continue;
@@ -81,8 +91,8 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
 	}
       else
 	{
-	  cand.ieta = digis[topCands.at(i)].id().ieta();
-	  cand.iphi = digis[topCands.at(i)].id().iphi();
+	  cand.ieta = ecalDigis[topCands.at(i)].id().ieta();
+	  cand.iphi = ecalDigis[topCands.at(i)].id().iphi();
 	}
       out.at(i) = cand;
     }
@@ -90,27 +100,30 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
   return out;
 }
 
-vector<CTPOutput> CTPCard::topNCands(unsigned n, 
-				     const HcalTrigPrimDigiCollection& 
-				     digis) const
+vector<CTPOutput> CTPCard::topNHcalCands(unsigned n) const
 {
   if(n==0)
     {
       cout << "WARNING: returning top 0 Hcal cands" << endl;
       return vector<CTPOutput>();
     }
+  if(hcalDigis.size() == 0)
+    throw cms::Exception("EmptyCollection") << "Hcal digis never initialized"
+					   << endl;
 
   vector<unsigned> topCands = vector<unsigned>(n,0);
   vector<unsigned> topCandsEt = vector<unsigned>(n,0);
 
-  for(unsigned i = 0; i < digis.size(); ++i)
+  for(unsigned i = 0; i < hcalDigis.size(); ++i)
     {
-      unsigned candEt = digis[i].SOI_compressedEt();
+      unsigned candEt = hcalDigis[i].SOI_compressedEt();
+
       if(candEt <= topCandsEt.back())
 	continue;
       topCands.back() = i;
       topCandsEt.back() = candEt;
       int temp = n - 1;
+
       while(topCandsEt.at(temp) > topCandsEt.at(temp-1))
 	{
 	  topCands.at(temp) = topCands.at(temp-1);
@@ -122,6 +135,7 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
 	    break;
 	}
     }
+  
   vector<CTPOutput> out = vector<CTPOutput>(n);
   for(unsigned i = 0; i < n; ++i)
     {
@@ -134,11 +148,12 @@ vector<CTPOutput> CTPCard::topNCands(unsigned n,
 	}
       else
 	{
-	  cand.ieta = digis[topCands.at(i)].id().ieta();
-	  cand.iphi = digis[topCands.at(i)].id().iphi();
+	  cand.ieta = hcalDigis[topCands.at(i)].id().ieta();
+	  cand.iphi = hcalDigis[topCands.at(i)].id().iphi();
 	}
       out.at(i) = cand;
     }
+
   return out;
 }
 

@@ -41,11 +41,20 @@ using namespace edm;
 
 class CTPCard; // Forward declaration to make these things work
 
+struct CTPOutput 
+{
+  unsigned et;
+  int ieta;
+  unsigned iphi;
+};  
+
 struct detRegions
 {
   unsigned etaReg;
   unsigned phiReg;
 };
+
+enum direction_t {NORTH, NEAST, EAST, SEAST, SOUTH, SWEST, WEST, NWEST};
 
 class RCTCables
 {
@@ -54,15 +63,20 @@ class RCTCables
   ~RCTCables();
   unsigned getCTPIndex(int iEta, unsigned iPhi) const;
 
-  EcalTrigPrimDigiCollection selectDigis(unsigned CTPIndex,
-					 const EcalTrigPrimDigiCollection&
-					 digisIn) const;
-  HcalTrigPrimDigiCollection selectDigis(unsigned CTPIndex,
-					 const HcalTrigPrimDigiCollection&
-					 digisIn) const;
+  void setEcalDigis(const EcalTrigPrimDigiCollection& digisIn);
+  void setHcalDigis(const HcalTrigPrimDigiCollection& digisIn);
+
+  double globalEtSum() const;
 
   inline unsigned getNCards() const {return nEtaRegions * nPhiRegions;}
   const CTPCard& getCard(unsigned ind) const {return *(cards.at(ind));}
+  
+/*   friend const CTPCard& CTPCard::getAdjacentCard(direction_t dir) const; */
+
+  // get top n digis from each card
+  vector<vector<CTPOutput> > topNEcalCands(int n) const;
+  vector<vector<CTPOutput> > topNHcalCands(int n) const;
+
 
  private:
   // Bounds are the MAXIMUM index handled by a given card:
@@ -76,6 +90,7 @@ class RCTCables
   const double ecalLSB_;
 
   // Returns doublet [etaRegion, phiRegion]
+  // Refers to internal organization, not region in actual detector
   inline detRegions recoverRegions(unsigned ind) const
     {
       detRegions output;

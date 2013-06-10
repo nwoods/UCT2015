@@ -84,18 +84,18 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
   std::auto_ptr<vector<vector<CTPOutput>>> 
     hcalOut(new vector<vector<CTPOutput>>);
 
-  for(unsigned i = 0; i < cables.getNCards(); ++i)
-    {
-      const EcalTrigPrimDigiCollection curEcalDigis = 
-	cables.selectDigis(i,*ecalTpgs);
-      ecalOut->push_back(cables.getCard(i).
-			 topNCands(3,curEcalDigis));
+  cables.setEcalDigis(*ecalTpgs);
+  
+  *(ecalOut) = cables.topNEcalCands(3);
+  
+  cables.setHcalDigis(*hcalTpgs);
+  
+  *(hcalOut) = cables.topNHcalCands(3);
 
-      const HcalTrigPrimDigiCollection curHcalDigis = 
-	cables.selectDigis(i,*hcalTpgs);
-      hcalOut->push_back(cables.getCard(i).
-			 topNCands(3,curHcalDigis));
-    }
+  if(doDebug)
+    cout << endl << "Total Et in these Digis = ";
+    cout << cables.globalEtSum() 
+	 << endl << endl;
 
   if(doDebug)
     {

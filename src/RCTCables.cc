@@ -62,53 +62,61 @@ unsigned RCTCables::getCTPIndex(int iEta, unsigned iPhi) const
   return etaReg * nPhiRegions + phiReg;
 }
 
-EcalTrigPrimDigiCollection RCTCables::selectDigis(unsigned CTPIndex,
-				       const EcalTrigPrimDigiCollection& 
-				       digisIn) const
+void RCTCables::setEcalDigis(const EcalTrigPrimDigiCollection& digisIn)
 {
-  EcalTrigPrimDigiCollection output = EcalTrigPrimDigiCollection ();
-  detRegions regions = RCTCables::recoverRegions(CTPIndex);
+  vector <EcalTrigPrimDigiCollection> digiSets = 
+    vector<EcalTrigPrimDigiCollection>(getNCards());
   
   for(unsigned i = 0; i < digisIn.size(); ++i)
     {
-      // If the digi is in this region, return it
-      if((digisIn[i].id().ieta() <= iEtaBounds.at(regions.etaReg)
-	  && (regions.etaReg == 0 ? 
-	      true : 
-	      digisIn[i].id().ieta() > iEtaBounds.at(regions.etaReg-1)))
-	 && (unsigned(digisIn[i].id().iphi()) <= 
-	     iPhiBounds.at(regions.phiReg)
-	     && (regions.phiReg == 0 ? 
-		 true : 
-		 (unsigned(digisIn[i].id().iphi()) 
-		  > iPhiBounds.at(regions.phiReg-1)))))
-	output.push_back(digisIn[i]);
+      digiSets.at(getCTPIndex(digisIn[i].id().ieta(),digisIn[i].id().iphi()))
+	.push_back(digisIn[i]);
     }
-  return output;
+
+  for(unsigned j = 0; j < digiSets.size(); ++j)
+    cards.at(j)->setEcalDigis(digiSets.at(j));
 }
 
-HcalTrigPrimDigiCollection RCTCables::selectDigis(unsigned CTPIndex,
-				       const HcalTrigPrimDigiCollection& 
-				       digisIn) const
+void RCTCables::setHcalDigis(const HcalTrigPrimDigiCollection& digisIn)
 {
-  HcalTrigPrimDigiCollection output = HcalTrigPrimDigiCollection ();
-  detRegions regions = RCTCables::recoverRegions(CTPIndex);
+  vector <HcalTrigPrimDigiCollection> digiSets = 
+    vector<HcalTrigPrimDigiCollection>(getNCards());
   
   for(unsigned i = 0; i < digisIn.size(); ++i)
     {
-      // If the digi is in this region, return it
-      if((digisIn[i].id().ieta() <= iEtaBounds.at(regions.etaReg)
-	  && (regions.etaReg == 0 ? 
-	      true : 
-	      digisIn[i].id().ieta() > iEtaBounds.at(regions.etaReg-1)))
-	 && (unsigned(digisIn[i].id().iphi()) <= 
-	     iPhiBounds.at(regions.phiReg)
-	     && (regions.phiReg == 0 ? 
-		 true : 
-		 (unsigned(digisIn[i].id().iphi()) 
-		  > iPhiBounds.at(regions.phiReg-1)))))
-	output.push_back(digisIn[i]);
+      digiSets.at(getCTPIndex(digisIn[i].id().ieta(),digisIn[i].id().iphi()))
+	.push_back(digisIn[i]);
     }
+
+  for(unsigned j = 0; j < digiSets.size(); ++j)
+    cards.at(j)->setHcalDigis(digiSets.at(j));
+}
+
+vector<vector<CTPOutput>> RCTCables::topNEcalCands(int n) const
+{
+  vector<vector<CTPOutput>> output = vector<vector<CTPOutput>>();
+
+  for(unsigned i = 0; i < cards.size(); ++i)
+    output.push_back(cards.at(i)->topNEcalCands(n));
+
   return output;
 }
 
+vector<vector<CTPOutput>> RCTCables::topNHcalCands(int n) const
+{
+  vector<vector<CTPOutput>> output = vector<vector<CTPOutput>>();
+
+  for(unsigned i = 0; i < cards.size(); ++i)
+    output.push_back(cards.at(i)->topNHcalCands(n));
+
+  return output;
+}
+
+double RCTCables::globalEtSum() const
+{
+  double et = 0;
+  for(unsigned i = 0; i < cards.size(); ++i)
+      et += cards.at(i)->sumEt();
+
+  return et;
+}

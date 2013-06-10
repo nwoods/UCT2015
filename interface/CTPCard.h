@@ -36,13 +36,17 @@ using namespace std;
 using namespace edm;
 using std::vector;
 
-struct CTPOutput 
-{
-  unsigned et;
-  int ieta;
-  unsigned iphi;
-  //  bool isHcal; // if false, is ecal
-};
+#ifndef RCTCABLES_h // make sure we don't define these twice
+enum direction_t {NORTH, NEAST, EAST, SEAST, SOUTH, SWEST, WEST, NWEST};
+#endif // ifndef RCTCABLES_h
+
+struct CTPOutput;
+/* { */
+/*   unsigned et; */
+/*   int ieta; */
+/*   unsigned iphi; */
+/* }; */
+
 
 class CTPCard
 {
@@ -51,16 +55,20 @@ class CTPCard
 		   int iEtaMin, int iEtaMax, 
 		   unsigned iPhiMin, unsigned iPhiMax);
   ~CTPCard();
-  double sumEt
-    (const HcalTrigPrimDigiCollection& hcal, 
-     const EcalTrigPrimDigiCollection& ecal);
+  double sumEt() const;
   // outputs top n digis sorted highest to lowest et
-  vector<CTPOutput> topNCands(unsigned n, 
-			      const EcalTrigPrimDigiCollection& digis) const;
-  vector<CTPOutput> topNCands(unsigned n, 
-			      const HcalTrigPrimDigiCollection& digis) const;
+  vector<CTPOutput> topNEcalCands(unsigned n) const;
+  vector<CTPOutput> topNHcalCands(unsigned n) const;
+
+/*   friend unsigned CTPCard::getNeighborTowerEt(int iEta, unsigned iPhi) const; */
+/*   friend unsigned CTPCard::getNeighborRegionEt(int iEta, unsigned iPhi) const; */
+
+  void setEcalDigis(EcalTrigPrimDigiCollection digis) {ecalDigis = digis;}
+  void setHcalDigis(HcalTrigPrimDigiCollection digis) {hcalDigis = digis;}
+
 /*   vector<CTPOutput> eTowerClusters(unsigned eClusterSeed, */
-/* 				   const EcalTrigPrimDigiCollection& digis) */
+/* 				   const EcalTrigPrimDigiCollection&  */
+/* 				   digis) const; */
 
  private:
   const double ecalLSB;
@@ -72,6 +80,14 @@ class CTPCard
   const unsigned nTowPhi;
 
   const RCTCables* cables;
+
+  EcalTrigPrimDigiCollection ecalDigis;
+  HcalTrigPrimDigiCollection hcalDigis;
+
+/*   unsigned getNeighborTowerEt(int iEta, unsigned iPhi) const; */
+/*   unsigned getNeighborRegionEt(int iEta, unsigned iPhi) const; */
+/*   const CTPCard& getAdjacentCard(direction_t dir) const; */
+
 };
 
 
