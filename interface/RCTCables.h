@@ -39,65 +39,68 @@ using std::vector;
 using namespace std;
 using namespace edm;
 
-class CTPCard; // Forward declaration to make these things work
-
+#ifndef CTPOUTPUT // Probably already defined in CTPCard.h
 struct CTPOutput 
 {
   unsigned et;
   int ieta;
   unsigned iphi;
+#define CTPOUTPUT // So we don't define this struct again
 };  
-
-struct detRegions
-{
-  unsigned etaReg;
-  unsigned phiReg;
-};
-
-enum direction_t {NORTH, NEAST, EAST, SEAST, SOUTH, SWEST, WEST, NWEST};
+#endif // ifndef CTPOUTPUT
 
 class RCTCables
 {
  public:
   explicit RCTCables(const ParameterSet& config);
   ~RCTCables();
-  unsigned getCTPIndex(int iEta, unsigned iPhi) const;
 
+  //// Determines which cards should take a given digi. 
+  // 0th entry is index of cards that owns digi, other entries are any cards
+  // that have a copy of the digi as padding.
+  vector<unsigned> getCTPIndex(int iEta, unsigned iPhi) const;
+
+  // Must use both of these (correctly) before most CTP Card methods will
+  // work
   void setEcalDigis(const EcalTrigPrimDigiCollection& digisIn);
   void setHcalDigis(const HcalTrigPrimDigiCollection& digisIn);
 
+  // Total Et sum (ecal+hcal)
   double globalEtSum() const;
 
-  inline unsigned getNCards() const {return nEtaRegions * nPhiRegions;}
+  inline unsigned getNCards() const {return nCardsEta * nCardsPhi;}
   const CTPCard& getCard(unsigned ind) const {return *(cards.at(ind));}
   
-/*   friend const CTPCard& CTPCard::getAdjacentCard(direction_t dir) const; */
-
-  // get top n digis from each card
+  // Get top n digis from each card
   vector<vector<CTPOutput> > topNEcalCands(int n) const;
   vector<vector<CTPOutput> > topNHcalCands(int n) const;
 
+  // Report centers and total energies of 3x3 tower E clusters
+  vector<vector<CTPOutput> > eTowerClusters(const unsigned eClusterSeed) const;
 
  private:
   // Bounds are the MAXIMUM index handled by a given card:
   // if iEtaBound[0] == 4, then tower 4 is handled by card 0, 5 is not.
   // Does not check for towers that span multiple indices.
   vector<int> iEtaBounds;
+  const unsigned nCardsEta;
   vector<unsigned> iPhiBounds;
-  const unsigned nEtaRegions;
-  const unsigned nPhiRegions;
+  const unsigned nCardsPhi;
   vector<CTPCard*> cards;
   const double ecalLSB_;
 
-  // Returns doublet [etaRegion, phiRegion]
-  // Refers to internal organization, not region in actual detector
-  inline detRegions recoverRegions(unsigned ind) const
-    {
-      detRegions output;
-      output.phiReg = ind % nPhiRegions; // Phi region
-      output.etaReg = (ind - output.phiReg) / nPhiRegions; // Eta region
-      return output;
-    }
+  /**** Actually, let's not do this. Let's let the cards sort the digis.****/
+  //// SortedCollections put themselves into a stupid order when placed in an 
+  // event. These sort by eta index, and within each eta sort by phi index.
+  // (These only work on SortedCollections sorted automatically. Used on  
+  // collections arranged in any other order this will give garbage). 
+  //   EcalTrigPrimDigiCollection 
+  //     resortCollection(const EcalTrigPrimDigiCollection& digis) const;
+  //   HcalTrigPrimDigiCollection 
+  //     resortCollection(const HcalTrigPrimDigiCollection& digis) const;
 
+  // Helper to find a given digi in the incoming whole collection
+  // (assumes digis are ordered as the Sorted collection does automatically).
+  unsigned getDigiIndex(int iEta,unsigned iPhi) const;
 };
 #endif /*end of include guard: RCTCables */

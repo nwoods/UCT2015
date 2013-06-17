@@ -66,8 +66,8 @@ process.Layer1UCTProducer = cms.EDProducer(
     hcalDigiSrc = cms.InputTag("hcalDigis"),
     ecalDigis = cms.InputTag("ecalDigis:EcalTriggerPrimitives"),
     RCTCableParams = cms.PSet(
-    iEtaBounds = cms.vint32(-25,-17,-9,-1,8,16,24,32),
-    iPhiBounds = cms.vuint32(8,16,24,32,40,48,56,64,72),
+    iEtaBounds = cms.vint32(-27,-21,-15,-9,-3,2,8,14,20,26,32),
+    iPhiBounds = cms.vuint32(4,10,16,22,28,34,40,46,52,58,64,70),
     ecalLSB = cms.double(0.5),
     ),
     doDebug = cms.bool(False)

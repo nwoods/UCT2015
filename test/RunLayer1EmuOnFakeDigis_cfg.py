@@ -37,7 +37,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 ## process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
 ## process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(7) )
 
 process.source = cms.Source("EmptySource")
 
@@ -61,15 +61,18 @@ process.TFileService = cms.Service(
 
 process.FakeDigiProducer = cms.EDProducer(
     "FakeDigiProducer",
-    ecalFileNames = cms.vstring("./fakeDigis/fakeEcals1.txt",
-                                "./fakeDigis/fakeEcals2.txt",
-                                "./fakeDigis/fakeEcals3.txt",
-                                "./fakeDigis/fakeEcals4.txt"),
+    ecalFileNames = cms.vstring("./fakeDigis/eCluster0.txt",
+                                "./fakeDigis/eCluster1.txt",
+                                "./fakeDigis/eCluster2.txt",
+                                "./fakeDigis/eCluster3.txt",
+                                "./fakeDigis/eCluster4.txt",
+                                "./fakeDigis/eCluster5.txt",
+                                "./fakeDigis/eCluster6.txt",),
     hcalFileNames = cms.vstring("./fakeDigis/fakeHcals1.txt",
                                 "./fakeDigis/fakeHcals2.txt",
                                 "./fakeDigis/fakeHcals3.txt",
                                 "./fakeDigis/fakeHcals4.txt"),
-    doDebug = cms.bool(True),#options.debug),
+    doDebug = cms.bool(False),#options.debug),
     )
 
 process.Layer1UCTProducer = cms.EDProducer(
@@ -78,7 +81,9 @@ process.Layer1UCTProducer = cms.EDProducer(
     ecalDigis = cms.InputTag("FakeDigiProducer","fakeEcalDigis"),
     RCTCableParams = cms.PSet(
     iEtaBounds = cms.vint32(-25,-17,-9,-1,8,16,24,32),
+    #(-27,32,-21,-15,-9,2,-3,8,14,20,26),
     iPhiBounds = cms.vuint32(8,16,24,32,40,48,56,64,72),
+    #(4,10,16,22,28,34,40,46,52,58,64,70),
     ecalLSB = cms.double(0.5),
     ),
     doDebug = cms.bool(True),#options.debug),

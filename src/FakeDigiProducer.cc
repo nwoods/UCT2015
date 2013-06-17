@@ -1,12 +1,5 @@
 #include "../interface/FakeDigiProducer.h"
 
-#include <vector>
-using std::vector;
-using namespace std;
-using namespace edm;
-#include <iostream>
-
-
 
 
 // constructors and destructor
@@ -308,8 +301,9 @@ vector<CTPOutput> FakeDigiProducer::getGoodFileEntries(string fileName)
   ifstream f;
   f.open(fileName.c_str());
   if(!f.is_open())
-    throw cms::Exception("BadFile") << "File does not exist, is empty, or "
-				    <<"cannot be opened" << endl;
+    throw cms::Exception("BadFile") << "File " << fileName 
+				    << " does not exist, is empty, or "
+				    << "cannot be opened" << endl;
 
   vector<CTPOutput> output = vector<CTPOutput>();
 

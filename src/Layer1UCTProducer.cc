@@ -9,7 +9,6 @@ class Layer1UCTProducer Layer1UCTProducer.cc $CMSSW_BASE/src/L1Trigger/UCT2015/s
  Authors:  N. Woods, E. Friis, S. Dasu, T. Sarangi (UW Madison)
 */
 
-//#define DEBUG
 
 #include "../interface/Layer1UCTProducer.h"
 #include <vector>
@@ -30,27 +29,14 @@ Layer1UCTProducer::Layer1UCTProducer(const edm::ParameterSet& params) :
   cableParams(params.getParameter<ParameterSet>("RCTCableParams")),
   doDebug(params.getParameter<bool>("doDebug"))
 {
+  produces<vector<vector<CTPOutput>>>("CTPEClusters");
   produces<vector<vector<CTPOutput>>>("CTPOutEcal");
   produces<vector<vector<CTPOutput>>>("CTPOutHcal");
-
-//   edm::Service<TFileService> fs;
-
-//   tree = fs->make<TTree>("Ntuple","Ntuple");
-//   tree->Branch("run", &run_, "run/i");
-//   tree->Branch("lumi", &lumi_, "lumi/i");
-//   tree->Branch("evt", &event_, "evt/l");
-
-//   etHisto = fs->make<TH1D>("etHisto", "Uncalibrated Total Calo Et", 
-// 			   100, 0., 1500.);
 }
 
 
 Layer1UCTProducer::~Layer1UCTProducer()
 {
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
-
 }
 
 
@@ -80,22 +66,29 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
   RCTCables cables = RCTCables(cableParams);
 
   std::auto_ptr<vector<vector<CTPOutput>>> 
+    eClusterOut (new vector<vector<CTPOutput>>);
+  std::auto_ptr<vector<vector<CTPOutput>>> 
     ecalOut(new vector<vector<CTPOutput>>);
   std::auto_ptr<vector<vector<CTPOutput>>> 
     hcalOut(new vector<vector<CTPOutput>>);
 
   cables.setEcalDigis(*ecalTpgs);
   
-  *(ecalOut) = cables.topNEcalCands(3);
-  
   cables.setHcalDigis(*hcalTpgs);
+  
+  *(ecalOut) = cables.topNEcalCands(3);
   
   *(hcalOut) = cables.topNHcalCands(3);
 
+  *(eClusterOut) = cables.eTowerClusters(5);
+
+
   if(doDebug)
-    cout << endl << "Total Et in these Digis = ";
-    cout << cables.globalEtSum() 
-	 << endl << endl;
+    {
+      cout << endl << "Total Et in these Digis = ";
+      cout << cables.globalEtSum() 
+	   << endl << endl;
+    }
 
   if(doDebug)
     {
@@ -103,38 +96,52 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
 	   << "(iEta,iPhi,et)" << endl;
       for(unsigned iCard = 0; iCard < ecalOut->size(); ++iCard)
 	{
-	  cout << "Card " << iCard << ":" << endl;
-	  for(unsigned iDigi = 0; iDigi < ecalOut->at(iDigi).size(); ++iDigi)
+	  if(ecalOut->at(iCard).at(0).et != 0)
 	    {
-	      cout << iDigi << ": (" << ecalOut->at(iCard).at(iDigi).ieta 
-		   << "," << ecalOut->at(iCard).at(iDigi).iphi << ","
-		   << ecalOut->at(iCard).at(iDigi).et << ")" << endl;
+	      cout << "Card " << iCard << ":" << endl;
+	      for(unsigned iDigi = 0; 
+		  iDigi < ecalOut->at(iDigi).size(); 
+		  ++iDigi)
+		{
+		  cout << iDigi << ": (" << ecalOut->at(iCard).at(iDigi).ieta 
+		       << "," << ecalOut->at(iCard).at(iDigi).iphi << ","
+		       << ecalOut->at(iCard).at(iDigi).et << ")" << endl;
+		}
 	    }
 	}
       cout << endl;
 
-      cout << "And final Hcal outputs:" << endl
-	   << "(iEta,iPhi,et)" << endl;
-      for(unsigned iCard = 0; iCard < hcalOut->size(); ++iCard)
+//       cout << "And final Hcal outputs:" << endl
+// 	   << "(iEta,iPhi,et)" << endl;
+//       for(unsigned iCard = 0; iCard < hcalOut->size(); ++iCard)
+// 	{
+// 	  cout << "Card " << iCard << ":" << endl;
+// 	  for(unsigned iDigi = 0; iDigi < hcalOut->at(iDigi).size(); ++iDigi)
+// 	    {
+// 	      cout << iDigi << ": (" << hcalOut->at(iCard).at(iDigi).ieta 
+// 		   << "," << hcalOut->at(iCard).at(iDigi).iphi << ","
+// 		   << hcalOut->at(iCard).at(iDigi).et << ")" << endl;
+// 	    }
+// 	}
+//       cout << endl;
+
+      cout << "And E Tower Clusters" << endl << "(iEta,iPhi,et)" << endl;
+      for(unsigned q = 0; q < eClusterOut->size(); ++q)
 	{
-	  cout << "Card " << iCard << ":" << endl;
-	  for(unsigned iDigi = 0; iDigi < hcalOut->at(iDigi).size(); ++iDigi)
+	  cout << "Card " << q << ":" << endl;
+	  for(unsigned p = 0; p < eClusterOut->at(q).size(); ++p)
 	    {
-	      cout << iDigi << ": (" << hcalOut->at(iCard).at(iDigi).ieta 
-		   << "," << hcalOut->at(iCard).at(iDigi).iphi << ","
-		   << hcalOut->at(iCard).at(iDigi).et << ")" << endl;
+	      cout << p << ": (" << eClusterOut->at(q).at(p).ieta << ","
+		   << eClusterOut->at(q).at(p).iphi << ","
+		   << eClusterOut->at(q).at(p).et << ")" << endl;
 	    }
 	}
-      cout << endl;
+      cout << endl; 
     }
   
   iEvent.put(ecalOut, "CTPOutEcal");
   iEvent.put(hcalOut, "CTPOutHcal");
-
-
-  //  etHisto->Fill(Et);
-
-  //  tree->Fill();
+  iEvent.put(eClusterOut, "CTPEClusters");
 }
 
 //define this as a plug-in

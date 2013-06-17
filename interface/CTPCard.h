@@ -28,66 +28,98 @@
 #include "DataFormats/EcalDigi/interface/EcalTriggerPrimitiveDigi.h"
 #include "DataFormats/HcalDigi/interface/HcalTriggerPrimitiveDigi.h"
 #include "DataFormats/EcalDigi/interface/EcalTriggerPrimitiveSample.h"
-#include "L1Trigger/UCT2015/interface/RCTCables.h"
 
-class RCTCables; //Forward declaration
+struct CTPOutput
+{
+  unsigned et;
+  int ieta;
+  unsigned iphi;
+#define CTPOUTPUT // So we don't define this struct again
+};  
 
 using namespace std;
 using namespace edm;
 using std::vector;
 
-#ifndef RCTCABLES_h // make sure we don't define these twice
-enum direction_t {NORTH, NEAST, EAST, SEAST, SOUTH, SWEST, WEST, NWEST};
-#endif // ifndef RCTCABLES_h
-
-struct CTPOutput;
-/* { */
-/*   unsigned et; */
-/*   int ieta; */
-/*   unsigned iphi; */
-/* }; */
 
 
 class CTPCard
 {
  public:
-  explicit CTPCard(double ecalLSB, const RCTCables* cables,
+  // In the constructor, iEtaMin, iEtaMax, iPhiMin, iPhiMax refer only to data
+  // "owned" by this card and do not include "padding" regions on each side.
+  // See long comments below for details.
+  explicit CTPCard(double ecalLSB,
 		   int iEtaMin, int iEtaMax, 
 		   unsigned iPhiMin, unsigned iPhiMax);
   ~CTPCard();
+
+  // Returns total et of region (Ecal+Hcal). Ignores padding.
   double sumEt() const;
-  // outputs top n digis sorted highest to lowest et
+
+  // Return top n digis sorted highest to lowest et. Ignores padding.
   vector<CTPOutput> topNEcalCands(unsigned n) const;
   vector<CTPOutput> topNHcalCands(unsigned n) const;
 
-/*   friend unsigned CTPCard::getNeighborTowerEt(int iEta, unsigned iPhi) const; */
-/*   friend unsigned CTPCard::getNeighborRegionEt(int iEta, unsigned iPhi) const; */
+  // Sets or resets digi collections to digis. Both setEcalDigis and 
+  // setHcalDigis must be used (correctly) at least once before most methods
+  // will work. Everything assumes digis are in eta order, and within each
+  // eta, are in phi order. Must include padding.
+  void setEcalDigis(EcalTrigPrimDigiCollection digis);
+  void setHcalDigis(HcalTrigPrimDigiCollection digis);
 
-  void setEcalDigis(EcalTrigPrimDigiCollection digis) {ecalDigis = digis;}
-  void setHcalDigis(HcalTrigPrimDigiCollection digis) {hcalDigis = digis;}
-
-/*   vector<CTPOutput> eTowerClusters(unsigned eClusterSeed, */
-/* 				   const EcalTrigPrimDigiCollection&  */
-/* 				   digis) const; */
+  // Finds 3x3 tower ecal clusters where the center has raw input 
+  // et > eClusterSeed and the center has the most et (or tied for most,
+  // depending on geometry--see implementation). Returns vector where each item
+  // is et of all 9 towers and location of center tower.
+  vector<CTPOutput> eTowerClusters(unsigned eClusterSeed) const;
 
  private:
   const double ecalLSB;
-  const int iEtaMin;
+
+
+  //// Min and max indices, nTow and nReg variables exclude padding. So, if 
+  // iEtaMin=5,iEtaMax=10,iPhiMin=7,iPhiMax=12==>nTowEta=6,nTowPhi=6,
+  // The digi collection actually runs iEta=4->11, iPhi=6->13, and covers
+  // an 8x8 tower area rather than the stated 6x6 tower area. This is done
+  // so that the padding remains "hidden" and no towers are double counted
+  // by the RCT. 
+  //// Therefore you must ALWAYS use e/hcalDigis[getTowerInd(iEta,iPhi)]
+  // to get the correct tower. Don't ever loop over all digis or try to get 
+  // indices by hand with something like (iEta-iEtaMin)*nTowPhi+(iPhi-iPhiMin).
+  // Aside from missing the possibility that phi is wrapped around and 
+  // iPhiMin>iPhi, you will probably get the wrong item because you don't 
+  // account for the padding.
+  const int iEtaMin; 
   const int iEtaMax;
   const unsigned iPhiMin;
   const unsigned iPhiMax;
   const unsigned nTowEta;
   const unsigned nTowPhi;
 
-  const RCTCables* cables;
 
+  //// Digi collections assumed to include one extra tower on each end in both
+  // eta and phi (unless the card is at minimum or maximum eta). These 
+  // "padding" regions (duplicated and passed in by CIOX cables) 
+  // allow us to compute clusters without passing data between cards. 
+  // See long comment above min/max declarations for details on how to get the 
+  // right digi (tl;rd: use ecalDigis[getTowInd(iEta,iPhi)] to get the right 
+  // one).
   EcalTrigPrimDigiCollection ecalDigis;
   HcalTrigPrimDigiCollection hcalDigis;
 
-/*   unsigned getNeighborTowerEt(int iEta, unsigned iPhi) const; */
-/*   unsigned getNeighborRegionEt(int iEta, unsigned iPhi) const; */
-/*   const CTPCard& getAdjacentCard(direction_t dir) const; */
+  // Use e/hcalDigis[getTowInd(iEta,iPhi)] to get the tower you want, even if
+  // it's owned by another card. It works for adjacent towers and that's all
+  // the hardware can do anyway. Don't do it any other way. Seriously.
+  unsigned getTowInd(int iEta, unsigned iPhi) const;
 
+  // Throws error if ecalDigis and hcalDigis are different sizes or both empty.
+  // Otherwise returns true. 
+  bool areDigisSet() const;
+
+  // Helpers to print a digi collection for debugging. Includes padding.
+  void printDigis(const EcalTrigPrimDigiCollection& digis);
+  void printDigis(const HcalTrigPrimDigiCollection& digis);
 };
 
 

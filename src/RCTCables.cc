@@ -2,19 +2,19 @@
 
 RCTCables::RCTCables(const ParameterSet& config) : 
   iEtaBounds(config.getParameter<vector<int> >("iEtaBounds")),
-  nEtaRegions(iEtaBounds.size()),
+  nCardsEta(iEtaBounds.size()),
   iPhiBounds(config.getParameter<vector<unsigned> >("iPhiBounds")),
-  nPhiRegions(iPhiBounds.size()),
+  nCardsPhi(iPhiBounds.size()),
   ecalLSB_(config.getParameter<double>("ecalLSB"))
 {
-  for(unsigned i = 0; i < nEtaRegions; ++i)
+  for(unsigned i = 0; i < nCardsEta; ++i)
     if(iEtaBounds.at(i) < -32 
        || iEtaBounds.at(i) > 32 
        || iEtaBounds.at(i) == 0)
       throw cms::Exception("BadInput")
 	<< "It looks like your eta boundaries are invalid" << std::endl;
   
-  for(unsigned i = 0; i < nPhiRegions; ++i)
+  for(unsigned i = 0; i < nCardsPhi; ++i)
     if(iPhiBounds.at(i) > 72
        || iPhiBounds.at(i) == 0)
       throw cms::Exception("BadInput")
@@ -22,27 +22,35 @@ RCTCables::RCTCables(const ParameterSet& config) :
 
   sort(iEtaBounds.begin(),iEtaBounds.end());
   sort(iPhiBounds.begin(),iPhiBounds.end());
-
-  for(unsigned eta = 0; eta < nEtaRegions; ++eta)
+  
+  for(unsigned e = 0; e < nCardsEta; ++e)
     {
-      for(unsigned phi = 0; phi < nPhiRegions; ++phi)
+      for(unsigned p = 0; p < nCardsPhi; ++p)
 	{
-	  cards.push_back(new CTPCard(ecalLSB_, this,
-				      (eta==0 ? -32 : iEtaBounds.at(eta-1)), 
-				      iEtaBounds.at(eta),
-				      (phi==0 ? 1 : iPhiBounds.at(phi-1)),
-				      iPhiBounds.at(phi)));
+	  CTPCard* card = new CTPCard(ecalLSB_, // LSB
+				      (e==0 ? // Must be correct for column 0
+				       -32 :
+				       (iEtaBounds.at(e-1) == -1 ? // no eta=0
+					1 : 
+					iEtaBounds.at(e-1)+1)), 
+				      iEtaBounds.at(e),
+				      (p==0 ? // Must be correct for row 0
+				       (iPhiBounds.at(nCardsPhi-1)%72)+1 : 
+				       iPhiBounds.at(p-1)+1),
+				      iPhiBounds.at(p));
+	  cards.push_back(card);
 	}
     }
 }
 
-RCTCables::~RCTCables() 
+RCTCables::~RCTCables()
 {
-  for(unsigned q = 0; q < cards.size(); q++)
-    delete cards.at(q);
+  for(int i = cards.size()-1; i >= 0; --i)
+    delete cards.at(i);
 }
+    
 
-unsigned RCTCables::getCTPIndex(int iEta, unsigned iPhi) const
+vector<unsigned> RCTCables::getCTPIndex(int iEta, unsigned iPhi) const
 {
   if(iEta < -32 || iEta > 32 || iEta == 0)
     throw cms::Exception("BadInput") << "Invalid Eta index" << std::endl;
@@ -52,44 +60,154 @@ unsigned RCTCables::getCTPIndex(int iEta, unsigned iPhi) const
   
   unsigned etaReg = 0;
   unsigned phiReg = 0;
+  vector<unsigned> out;
 
   while(iEtaBounds.at(etaReg) < iEta)
     ++etaReg;
 
-  while(iPhiBounds.at(phiReg) < iPhi)
-    ++phiReg;
+  if(iPhi <= iPhiBounds.at(nCardsPhi-1)) // otherwise wraps to 0
+    {
+      while(iPhiBounds.at(phiReg) < iPhi && phiReg < nCardsPhi)
+	++phiReg;
+    }
 
-  return etaReg * nPhiRegions + phiReg;
+  out.push_back(etaReg * nCardsPhi + phiReg);
+
+  int etaRegShift = 0;
+  int phiRegShift = 0;
+
+  if(etaReg != nCardsEta-1 && iEta == iEtaBounds.at(etaReg))
+    etaRegShift = 1;
+  else if(etaReg != 0)
+    {
+      // Do as two ifs to avoid accessing invalid vector element
+      if(iEta == iEtaBounds.at(etaReg-1)+1
+	 || (iEta == 1 && iEtaBounds.at(etaReg-1) == -1))
+	{
+	  etaRegShift = -1;
+	}
+    }
+
+  if(iPhi == iPhiBounds.at(phiReg))
+    phiRegShift = 1;
+  //  else if(iPhi == 1 && iPhiBounds.at(nCardsPhi-1) == 72)
+  else if(phiReg != 0 &&
+	  iPhi == iPhiBounds.at(phiReg-1)+1)
+    {
+      phiRegShift = -1;
+    }
+  else if(phiReg == 0 && iPhi == (iPhiBounds.at(nCardsPhi-1)%72)+1)
+    {
+      phiRegShift = nCardsPhi - 1;
+    }
+    
+
+  if(etaRegShift != 0)
+    out.push_back((etaReg+etaRegShift) * nCardsPhi + phiReg);
+  if(phiRegShift != 0)
+    {
+      out.push_back(etaReg * nCardsPhi 
+		    + ((phiReg + phiRegShift) % iPhiBounds.size()));
+      if(etaRegShift != 0)
+	out.push_back((etaReg+etaRegShift) * nCardsPhi 
+		      + ((phiReg + phiRegShift) % iPhiBounds.size()));
+    }
+
+  return out;
 }
 
 void RCTCables::setEcalDigis(const EcalTrigPrimDigiCollection& digisIn)
 {
+//   cout << endl << "For ieta = -26, iphi = 71, CTP index = " << endl;
+//   vector<unsigned> c = getCTPIndex(-26,71);
+//   for(unsigned d = 0; d < c.size(); ++d)
+//     cout << c.at(d) << ",";
+//   cout << endl << endl;
+  
+
+  if(digisIn.size() != 4608)
+    {
+      cout << endl;
+      for(unsigned q = 0; q < digisIn.size(); ++q)
+	cout << digisIn[q].id().ieta() << ","
+	     << digisIn[q].id().iphi() << endl;
+      cout << endl;
+     
+      throw cms::Exception("BadInput") << "Wrong number of Ecal digis ("
+				       << digisIn.size() << ")"
+				       << endl;
+    }
+  
   vector <EcalTrigPrimDigiCollection> digiSets = 
     vector<EcalTrigPrimDigiCollection>(getNCards());
-  
+
+  //  EcalTrigPrimDigiCollection digis = resortCollection(digisIn);
+
   for(unsigned i = 0; i < digisIn.size(); ++i)
     {
-      digiSets.at(getCTPIndex(digisIn[i].id().ieta(),digisIn[i].id().iphi()))
-	.push_back(digisIn[i]);
+      int iEta = digisIn[i].id().ieta();
+      unsigned iPhi = digisIn[i].id().iphi();
+      vector<unsigned> cardInds = getCTPIndex(iEta,iPhi);
+
+//       if(digisIn[i].compressedEt() > 0)
+// 	{
+// 	  cout << endl << "Digi (" << digisIn[i].id().ieta()
+// 	       << "," << digisIn[i].id().iphi()
+// 	       << "," << digisIn[i].compressedEt()
+// 	       << ")" << endl << "Will be placed in card(s)" << endl;
+// 	}
+
+      for(unsigned j = 0; j < cardInds.size(); ++j)
+	{
+	  digiSets.at(cardInds.at(j)).push_back(digisIn[i]);
+// 	  if(digisIn[i].compressedEt() > 0) 
+// 	    cout << cardInds.at(j) << " " << endl;
+	}
     }
 
-  for(unsigned j = 0; j < digiSets.size(); ++j)
-    cards.at(j)->setEcalDigis(digiSets.at(j));
+  for(unsigned k = 0; k < digiSets.size(); ++k)
+    {
+//       cout << endl << "Digis going in:" << endl;
+//       for(unsigned q = 0; q < digiSets.at(k).size(); ++q)
+// 	{
+// 	  cout << digiSets.at(k)[q].id().ieta() << ","
+// 	       << digiSets.at(k)[q].id().iphi() << ","
+// 	       << digiSets.at(k)[q].compressedEt() << ",";
+
+// 	  vector<unsigned> a = getCTPIndex(digiSets.at(k)[q].id().ieta(),
+// 					   digiSets.at(k)[q].id().iphi());
+// 	  for(unsigned b = 0; b < a.size(); ++b)
+// 	    cout << a.at(b) << ",";
+// 	  cout << endl;
+	  
+// 	}
+      cards.at(k)->setEcalDigis(digiSets.at(k));
+    }
 }
 
 void RCTCables::setHcalDigis(const HcalTrigPrimDigiCollection& digisIn)
 {
+  if(digisIn.size() != 4608)
+    throw cms::Exception("BadInput") << "Wrong number of Hcal digis"
+				     << endl;
+
   vector <HcalTrigPrimDigiCollection> digiSets = 
     vector<HcalTrigPrimDigiCollection>(getNCards());
-  
+
+  //  HcalTrigPrimDigiCollection digis = resortCollection(digisIn);
+
   for(unsigned i = 0; i < digisIn.size(); ++i)
     {
-      digiSets.at(getCTPIndex(digisIn[i].id().ieta(),digisIn[i].id().iphi()))
-	.push_back(digisIn[i]);
+      int iEta = digisIn[i].id().ieta();
+      unsigned iPhi = digisIn[i].id().iphi();
+      vector<unsigned> cardInds = getCTPIndex(iEta,iPhi);
+
+      for(unsigned j = 0; j < cardInds.size(); ++j)
+	digiSets.at(cardInds.at(j)).push_back(digisIn[i]);
     }
 
-  for(unsigned j = 0; j < digiSets.size(); ++j)
-    cards.at(j)->setHcalDigis(digiSets.at(j));
+  for(unsigned k = 0; k < digiSets.size(); ++k)
+    cards.at(k)->setHcalDigis(digiSets.at(k));
 }
 
 vector<vector<CTPOutput>> RCTCables::topNEcalCands(int n) const
@@ -119,4 +237,94 @@ double RCTCables::globalEtSum() const
       et += cards.at(i)->sumEt();
 
   return et;
+}
+
+// EcalTrigPrimDigiCollection 
+// RCTCables::resortCollection(const EcalTrigPrimDigiCollection& digis) const
+// {
+//   EcalTrigPrimDigiCollection output;
+
+//   // The default sort is dumb, so we'll use out own
+//   //// Put negative etas in increasing order (-32...-31......-1)
+//   for(int eta = 31; eta >= 0; --eta)
+//     for(unsigned phi = 0; phi < 72; ++phi)
+//       output.push_back(digis[eta*72+phi]);
+
+//   // Positive etas should already be in order
+//   for(int eta = 0; eta < 32; ++eta)
+//     for(unsigned phi = 0; phi < 72; ++phi)
+//       output.push_back(digis[eta*72+phi+2304]);
+
+//   return output;
+// }
+
+// HcalTrigPrimDigiCollection 
+// RCTCables::resortCollection(const HcalTrigPrimDigiCollection& digis) const
+// {
+//   HcalTrigPrimDigiCollection output;
+
+//   // The default sort is dumb, so we'll use out own
+//   //// Put negative etas in increasing order (-32...-31......-1)
+//   for(int eta = 31; eta >= 0; --eta)
+//     for(unsigned phi = 0; phi < 72; ++phi)
+//       output.push_back(digis[eta*72+phi]);
+
+//   // Positive etas should already be in order
+//   for(int eta = 0; eta < 32; ++eta)
+//     for(unsigned phi = 0; phi < 72; ++phi)
+//       output.push_back(digis[eta*72+phi+2304]);
+
+//   return output;
+// }
+
+unsigned RCTCables::getDigiIndex(int iEta, unsigned iPhi) const
+{
+  if(iEta == 0 || iEta < -32 || iEta > 32)
+    throw cms::Exception("BadIndex") << "Trying to get digi with invalid eta"
+				     << endl;
+  if(iPhi == 0 || iPhi > 72)
+    throw cms::Exception("BadIndex") << "Trying to get digi with invalid phi"
+				     << endl;
+
+  unsigned etaInd = 0;
+  unsigned phiInd = 0;
+
+  if(iEta < 0)
+    etaInd = (unsigned)((-1 * iEta) - 1);
+  else
+    etaInd = (unsigned)(iEta + 31);
+
+  phiInd = iPhi - 1;
+
+  return etaInd*72 + phiInd;
+}
+
+vector<vector<CTPOutput> > RCTCables::eTowerClusters(const unsigned 
+						     eClusterSeed) const
+{
+  vector<vector<CTPOutput> > output = vector<vector<CTPOutput> >();
+
+  for(unsigned i = 0; i < cards.size(); ++i)
+    {
+      vector<CTPOutput> thisOut = cards.at(i)->eTowerClusters(eClusterSeed);
+
+      if(thisOut.size() == 0 || thisOut.at(0).et == 0)
+	continue;
+      
+      output.push_back(thisOut);
+    }
+  
+  if(output.size() == 0)
+    {
+      vector<CTPOutput> zeroVec = vector<CTPOutput>();
+      CTPOutput zeros;
+      zeros.ieta = 0;
+      zeros.iphi = 0;
+      zeros.et = 0;
+
+      zeroVec.push_back(zeros);
+      output.push_back(zeroVec);
+    }
+
+  return output;
 }
