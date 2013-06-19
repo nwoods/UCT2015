@@ -58,15 +58,6 @@ void HcalTpgMipEmbedder::produce(edm::Event& evt, const edm::EventSetup& es) {
   edm::Handle<HcalTrigPrimDigiCollection> tpgs;
   evt.getByLabel(src_, tpgs);
 
-  std::cout << std::endl << "Digis going into MIP embedder:" << std::endl;
-  for(unsigned q = 0; q < tpgs->size(); ++q)
-    {
-      std::cout << "(" << (*tpgs)[q].id().ieta() 
-		<< "," << (*tpgs)[q].id().iphi()
-		<< "," << (*tpgs)[q].SOI_compressedEt() << ")" << std::endl;
-    }
-  std::cout << std::endl;
-
   std::auto_ptr<HcalTrigPrimDigiCollection> output(new HcalTrigPrimDigiCollection);
   output->reserve(tpgs->size());
 
@@ -97,15 +88,6 @@ void HcalTpgMipEmbedder::produce(edm::Event& evt, const edm::EventSetup& es) {
     }
     output->push_back(tpg);
   }
-
-  std::cout << "Digis leaving MIP Embedder:" << std::endl;
-  for(unsigned q = 0; q < output->size(); ++q)
-    {
-      std::cout << "(" << (*output)[q].id().ieta() 
-	   << "," << (*output)[q].id().iphi()
-	   << "," << (*output)[q].SOI_compressedEt() << ")" << std::endl;
-    }
-  std::cout << std::endl;
 
   evt.put(output);
 }
