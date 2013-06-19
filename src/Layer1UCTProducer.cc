@@ -92,7 +92,7 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
 
   if(doDebug)
     {
-      cout << "Which gave final Ecal outputs:" << endl
+      cout << "Which gave top Ecal cands:" << endl
 	   << "(iEta,iPhi,et)" << endl;
       for(unsigned iCard = 0; iCard < ecalOut->size(); ++iCard)
 	{
@@ -100,30 +100,31 @@ void Layer1UCTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
 	    {
 	      cout << "Card " << iCard << ":" << endl;
 	      for(unsigned iDigi = 0; 
-		  iDigi < ecalOut->at(iDigi).size(); 
+		  iDigi < ecalOut->at(iCard).size(); 
 		  ++iDigi)
 		{
-		  cout << iDigi << ": (" << ecalOut->at(iCard).at(iDigi).ieta 
+		  cout << iDigi << ": (";
+		  cout << ecalOut->at(iCard).at(iDigi).ieta 
 		       << "," << ecalOut->at(iCard).at(iDigi).iphi << ","
 		       << ecalOut->at(iCard).at(iDigi).et << ")" << endl;
 		}
+ 	    }
+	}
+      cout << "Done with Ecal cands" << endl << endl;
+
+      cout << "And top Hcal cands:" << endl
+	   << "(iEta,iPhi,et)" << endl;
+      for(unsigned iCard = 0; iCard < hcalOut->size(); ++iCard)
+	{
+	  cout << "Card " << iCard << ":" << endl;
+	  for(unsigned iDigi = 0; iDigi < hcalOut->at(iCard).size(); ++iDigi)
+	    {
+	      cout << iDigi << ": (" << hcalOut->at(iCard).at(iDigi).ieta 
+		   << "," << hcalOut->at(iCard).at(iDigi).iphi << ","
+		   << hcalOut->at(iCard).at(iDigi).et << ")" << endl;
 	    }
 	}
-      cout << endl;
-
-//       cout << "And final Hcal outputs:" << endl
-// 	   << "(iEta,iPhi,et)" << endl;
-//       for(unsigned iCard = 0; iCard < hcalOut->size(); ++iCard)
-// 	{
-// 	  cout << "Card " << iCard << ":" << endl;
-// 	  for(unsigned iDigi = 0; iDigi < hcalOut->at(iDigi).size(); ++iDigi)
-// 	    {
-// 	      cout << iDigi << ": (" << hcalOut->at(iCard).at(iDigi).ieta 
-// 		   << "," << hcalOut->at(iCard).at(iDigi).iphi << ","
-// 		   << hcalOut->at(iCard).at(iDigi).et << ")" << endl;
-// 	    }
-// 	}
-//       cout << endl;
+      cout << endl << endl;
 
       cout << "And E Tower Clusters" << endl << "(iEta,iPhi,et)" << endl;
       for(unsigned q = 0; q < eClusterOut->size(); ++q)

@@ -21,7 +21,8 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 # Set defaults:
-options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
+options.inputFiles = '/store/user/swanson/MuTauSkim/skim_100_0_Uha.root'
+#'/store/user/tapas/ETauSkim/skim_12_1_erV.root'
 options.outputFile = "caloTriggerEmulatorOut.root"
 options.maxEvents = 200
 options.parseArguments()

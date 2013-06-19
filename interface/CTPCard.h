@@ -74,6 +74,7 @@ class CTPCard
   // is et of all 9 towers and location of center tower.
   vector<CTPOutput> eTowerClusters(unsigned eClusterSeed) const;
 
+
  private:
   const double ecalLSB;
 
@@ -83,19 +84,26 @@ class CTPCard
   // The digi collection actually runs iEta=4->11, iPhi=6->13, and covers
   // an 8x8 tower area rather than the stated 6x6 tower area. This is done
   // so that the padding remains "hidden" and no towers are double counted
-  // by the RCT. 
+  // by the RCT. nDigis variables DO include padding, because they are just for
+  // error checking.
   //// Therefore you must ALWAYS use e/hcalDigis[getTowerInd(iEta,iPhi)]
   // to get the correct tower. Don't ever loop over all digis or try to get 
   // indices by hand with something like (iEta-iEtaMin)*nTowPhi+(iPhi-iPhiMin).
   // Aside from missing the possibility that phi is wrapped around and 
   // iPhiMin>iPhi, you will probably get the wrong item because you don't 
   // account for the padding.
-  const int iEtaMin; 
-  const int iEtaMax;
+  const int iEtaMinHcal; 
+  const int iEtaMaxHcal;
+  const int iEtaMinEcal; 
+  const int iEtaMaxEcal;
   const unsigned iPhiMin;
   const unsigned iPhiMax;
-  const unsigned nTowEta;
+  const unsigned nTowEtaEcal;
+  const unsigned nTowEtaHcal;
   const unsigned nTowPhi;
+  bool ecalSet;
+  bool hcalSet;
+  const bool allHF;
 
 
   //// Digi collections assumed to include one extra tower on each end in both
@@ -108,10 +116,11 @@ class CTPCard
   EcalTrigPrimDigiCollection ecalDigis;
   HcalTrigPrimDigiCollection hcalDigis;
 
-  // Use e/hcalDigis[getTowInd(iEta,iPhi)] to get the tower you want, even if
-  // it's owned by another card. It works for adjacent towers and that's all
-  // the hardware can do anyway. Don't do it any other way. Seriously.
-  unsigned getTowInd(int iEta, unsigned iPhi) const;
+  // Use e/hcalDigis[getTowIndE/Hcal(iEta,iPhi)] to get the tower you want, 
+  // even if it's owned by another card. It works for adjacent towers and 
+  // that's all the hardware can do anyway.
+  unsigned getTowIndEcal(int iEta, unsigned iPhi) const;
+  unsigned getTowIndHcal(int iEta, unsigned iPhi) const;
 
   // Throws error if ecalDigis and hcalDigis are different sizes or both empty.
   // Otherwise returns true. 

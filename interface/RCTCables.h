@@ -82,6 +82,8 @@ class RCTCables
   // Bounds are the MAXIMUM index handled by a given card:
   // if iEtaBound[0] == 4, then tower 4 is handled by card 0, 5 is not.
   // Does not check for towers that span multiple indices.
+  // These are card boundaries. Some cards may be HF with no ecal; these 
+  // bounds don't know that.
   vector<int> iEtaBounds;
   const unsigned nCardsEta;
   vector<unsigned> iPhiBounds;
@@ -89,18 +91,5 @@ class RCTCables
   vector<CTPCard*> cards;
   const double ecalLSB_;
 
-  /**** Actually, let's not do this. Let's let the cards sort the digis.****/
-  //// SortedCollections put themselves into a stupid order when placed in an 
-  // event. These sort by eta index, and within each eta sort by phi index.
-  // (These only work on SortedCollections sorted automatically. Used on  
-  // collections arranged in any other order this will give garbage). 
-  //   EcalTrigPrimDigiCollection 
-  //     resortCollection(const EcalTrigPrimDigiCollection& digis) const;
-  //   HcalTrigPrimDigiCollection 
-  //     resortCollection(const HcalTrigPrimDigiCollection& digis) const;
-
-  // Helper to find a given digi in the incoming whole collection
-  // (assumes digis are ordered as the Sorted collection does automatically).
-  unsigned getDigiIndex(int iEta,unsigned iPhi) const;
 };
 #endif /*end of include guard: RCTCables */
