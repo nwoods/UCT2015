@@ -137,6 +137,9 @@ private:
   double egLSB_;
   double regionLSB_;
 
+  InputTag regionInputTag_;
+  InputTag emCandInputTag_;
+
 };
 
 unsigned const UCT2015Producer::N_JET_PHI = L1CaloRegionDetId::N_PHI * 4;
@@ -158,7 +161,9 @@ UCT2015Producer::UCT2015Producer(const edm::ParameterSet& iConfig) :
   relativeIsolationCut(iConfig.getParameter<double>("relativeIsolationCut")),
   relativeJetIsolationCut(iConfig.getParameter<double>("relativeJetIsolationCut")),
   egLSB_(iConfig.getParameter<double>("egammaLSB")),
-  regionLSB_(iConfig.getParameter<double>("regionLSB"))
+  regionLSB_(iConfig.getParameter<double>("regionLSB")),
+  regionInputTag_(iConfig.getParameter<InputTag>("regionSrc")),
+  emCandInputTag_(iConfig.getParameter<InputTag>("emCandSrc"))
 {
   puLevel = 0;
   puLevelUIC = 0.0;
@@ -201,8 +206,8 @@ void
 UCT2015Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
-  iEvent.getByLabel("uctDigis", newRegions);
-  iEvent.getByLabel("uctDigis", newEMCands);
+  iEvent.getByLabel(regionInputTag_, newRegions);
+  iEvent.getByLabel(emCandInputTag_, newEMCands);
 
   if(puCorrect) puSubtraction();
 

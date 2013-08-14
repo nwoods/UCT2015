@@ -53,8 +53,8 @@ UCT2015EClusterProducer = cms.EDProducer(
 
 UCT2015Producer = cms.EDProducer(
     "UCT2015Producer",
-    puCorrect = cms.bool(True),
-    useUICrho = cms.bool(True),
+    puCorrect = cms.bool(False),
+    useUICrho = cms.bool(False),
     # All of these uint32 thresholds are in GeV.
     puETMax = cms.uint32(7),
     regionETCutForHT = cms.uint32(5),
@@ -67,13 +67,13 @@ UCT2015Producer = cms.EDProducer(
     relativeJetIsolationCut = cms.double(1.0),
     egammaLSB = cms.double(1.0), # This has to correspond with the value from L1CaloEmThresholds
     regionLSB = RCTConfigProducers.jetMETLSB,
-    regionSrc = cms.InputTag("uctDigis"),
+    regionSrc = cms.InputTag("TimeAveragePUSubtractor"),
     emCandSrc = cms.InputTag("uctDigis"),
 )
 
 UCTStage1BProducer = cms.EDProducer(
     "UCTStage1BProducer",
-    puCorrect = cms.bool(True),
+    puCorrect = cms.bool(False),
     egSeed = cms.uint32(5),
     tauSeed = cms.uint32(5),
     regionalHoECut = cms.double(0.05),
@@ -88,8 +88,14 @@ UCTStage1BProducer = cms.EDProducer(
     egLSB = cms.double(0.5),
     tauLSB = cms.double(1.0),  # This has to correspond with the value from L1CaloEmThresholds
     regionLSB = RCTConfigProducers.jetMETLSB,
-    regionSrc = cms.InputTag("uctDigis"),
+    regionSrc = cms.InputTag("TimeAveragePUSubtractor"),
     emCandSrc = cms.InputTag("uctDigis"),
+)
+
+TimeAveragePUSubtractor = cms.EDProducer(
+    "TAvgPUSubtractor",
+    regionSrc = cms.InputTag("uctDigis"),
+    tAvgPUCut = cms.uint32(7),
 )
     
 
@@ -108,6 +114,7 @@ uctEmulatorStep = cms.Sequence(
     hackHCALMIPs
     # Now make UCT and L1 objects
     * uctDigis
+    * TimeAveragePUSubtractor
     * UCT2015EClusterProducer
     * UCT2015Producer
     * UCTStage1BProducer
