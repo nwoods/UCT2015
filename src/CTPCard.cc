@@ -4,7 +4,9 @@
 
 CTPCard::CTPCard(double ecalLSB, 
 		 int iEtaMin, int iEtaMax,
-		 unsigned iPhiMin, unsigned iPhiMax) 
+		 unsigned iPhiMin, unsigned iPhiMax,
+		 unsigned regEtaMin, unsigned regEtaMax,
+		 unsigned regPhiMin, unsigned regPhiMax)
   : ecalLSB(ecalLSB),
     iEtaMinHcal(iEtaMin),
     iEtaMaxHcal(iEtaMax),
@@ -31,10 +33,46 @@ CTPCard::CTPCard(double ecalLSB,
 	     iPhiMax+73-iPhiMin)),
     ecalSet(iEtaMinEcal==iEtaMaxEcal), //
     hcalSet(false),
-    allHF(iEtaMinEcal==iEtaMaxEcal)
+    allHF(iEtaMinEcal==iEtaMaxEcal),
+    eClusterSeed(5),
+    jetSeed(7),
+    regEtaMin(regEtaMin),
+    regEtaMax(regEtaMax),
+    regPhiMin(regPhiMin),
+    regPhiMax(regPhiMax),
+    nRegEta(regEtaMax - regEtaMin + 1),
+    nRegPhi((regPhiMin < regPhiMax ? // Get right # phi inds even if wrapped
+	     regPhiMax-regPhiMin+1 :
+	     regPhiMax+19-regPhiMin)),
+    regSet(false),
+    candsSet(false),
+    candsSorted(false),
+    PUEtMax(7),
+    nCandsOut(4),
+    nJetsOut(6),
+    coreRelIsoCut(.1),
+    jetRelIsoCut(.1)
 {
   ecalDigis = EcalTrigPrimDigiCollection();
   hcalDigis = HcalTrigPrimDigiCollection();
+
+  regions = L1CaloRegionCollection();
+  egtCands = L1CaloEmCollection();
+
+  sinphi = vector<double>(18);
+  cosphi = vector<double>(18);
+
+  for(double i = 0; i < 10; ++i)
+    {
+      sinphi.at(i) = sin(i/9. * 3.1415927);
+      cosphi.at(i) = cos(i/9. * 3.1415927);
+    }
+  for(double i = 10; i < 18; ++i)
+    {
+      sinphi.at(i) = sin((i/9. - 2.) * 3.1415927);
+      cosphi.at(i) = cos((i/9. - 2.) * 3.1415927);
+    }
+
 }
 
 CTPCard::~CTPCard() {}
@@ -53,8 +91,8 @@ bool CTPCard::areDigisSet() const
   return response;
 }
 
-double CTPCard::sumEt() const
-{  
+double CTPCard::sumTowEt() const
+{
 
   if(!areDigisSet())
     return -1;
@@ -100,28 +138,10 @@ void CTPCard::setEcalDigis(EcalTrigPrimDigiCollection digis)
     {
       unsigned expectedSize = (nTowEtaEcal + 2) * (nTowPhi + 2);
 
-      if(iEtaMinEcal == -28 || iEtaMaxEcal == 28) // No padding at ends
+      if(iEtaMinEcal == -28) // No padding at left edge
 	expectedSize -= (nTowPhi + 2);
-
-//       cout << endl << "ecalDigis size (expected) = " << ecalDigis.size()
-// 	   << "(" << expectedSize << ")" << endl
-// 	   << "eta,phi,i,ind:" << endl;
-   
-//       cout << endl
-// 	   << "ecalDigis size (expected) = " << digis.size()
-// 	   << "(" << expectedSize << ") = " 
-// 	   << (iEtaMin==-32||iEtaMax==32?nTowEta+1:nTowEta+2) 
-// 	   << "*" << (nTowPhi+2) 
-// 	   << endl << ") with eta(min,max) = (" << iEtaMin << ","
-// 	   << iEtaMax << "), phi(min,max) = (" 
-// 	   << iPhiMin << "," << iPhiMax << ")" << endl << endl
-// 	   << "eta,phi,i,ind:" << endl << endl;
-      
-//       if(digis.size() != expectedSize)
-// 	{
-// 	  throw cms::Exception("BadInput") << "Wrong number of ecal digis for "
-// 					   << "this card." << endl;
-// 	}
+      if(iEtaMaxEcal == 28) // No padding at right edge
+	expectedSize -= (nTowPhi + 2);
 
       ecalDigis = EcalTrigPrimDigiCollection(expectedSize);
 
@@ -135,10 +155,6 @@ void CTPCard::setEcalDigis(EcalTrigPrimDigiCollection digis)
     }
   else
     {
- //      if(digis.size() != ecalDigis.size())
-// 	throw cms::Exception("BadInput") << "Wrong number of ecal digis in new"
-// 					 << " collection" << endl;
-
       for(unsigned i = 0; i < digis.size(); ++i)
 	{
 	  int e = digis[i].id().ieta();
@@ -201,28 +217,10 @@ void CTPCard::setHcalDigis(HcalTrigPrimDigiCollection digis)
   if(hcalDigis.size() == 0)
     {
       unsigned expectedSize = (nTowEtaHcal + 2) * (nTowPhi + 2);
-      if(iEtaMinHcal == -32 || iEtaMaxHcal == 32) // No padding at ends
+      if(iEtaMinHcal == -32) // No padding at left edge
 	expectedSize -= (nTowPhi + 2);
-      
-//       cout << endl << "hcalDigis size (expected) = " << hcalDigis.size()
-// 	   << "(" << expectedSize << ")" << endl
-// 	   << "eta,phi,i,ind:" << endl;
-      
-//       cout << endl
-// 	   << "hcalDigis size (expected = " << digis.size()
-// 	   << "(" << expectedSize << ") = " 
-// 	   << (iEtaMin==-32||iEtaMax==32?nTowEta+1:nTowEta+2) 
-// 	   << "*" << (nTowPhi+2) 
-// 	   << endl << ") with eta(min,max) = (" << iEtaMin << ","
-// 	   << iEtaMax << "), phi(min,max) = (" 
-// 	   << iPhiMin << "," << iPhiMax << ")" << endl << endl
-// 	   << "eta,phi,i,ind:" << endl << endl;
-      
-//       if(digis.size() != expectedSize)
-// 	{
-// 	  throw cms::Exception("BadInput") << "Wrong number of hcal digis for "
-// 					   << "this card." << endl;
-// 	}
+      if(iEtaMaxHcal == 32) // No padding at right edge
+	expectedSize -= (nTowPhi + 2);
 
       hcalDigis = HcalTrigPrimDigiCollection(expectedSize);
       for(unsigned i = 0; i < digis.size(); ++i)
@@ -230,18 +228,11 @@ void CTPCard::setHcalDigis(HcalTrigPrimDigiCollection digis)
 	  int e = digis[i].id().ieta();
 	  unsigned p = digis[i].id().iphi();
 
-// 	  cout << e << "," << p << "," << i 
-// 	       << "," << getTowInd(e,p) << endl;
-
 	  hcalDigis[getTowIndHcal(e,p)] = digis[i];
 	}
     }
   else
     {
-//       if(digis.size() != hcalDigis.size())
-// 	throw cms::Exception("BadInput") << "Wrong number of hcal digis in new"
-// 					 << " collection" << endl;
-
       for(unsigned i = 0; i < digis.size(); ++i)
 	{
 	  int e = digis[i].id().ieta();
@@ -426,7 +417,7 @@ vector<CTPOutput> CTPCard::topNHcalCands(unsigned n) const
   return out;
 }
 
-vector<CTPOutput> CTPCard::eTowerClusters(unsigned eClusterSeed) const
+vector<CTPOutput> CTPCard::eTowerClusters() const
 {
   if(allHF)
     return vector<CTPOutput>();
@@ -714,5 +705,455 @@ void CTPCard::printDigis(const HcalTrigPrimDigiCollection& digis)
     cout << endl << "EMPTY DIGI COLLECTION" << endl;
   cout << endl;
 }
+
+
+
+
+
+unsigned CTPCard::getRegInd(unsigned regEta, unsigned regPhi) const
+{
+  unsigned etaInd;
+
+  etaInd = regEta - regEtaMin;
+  if(regEtaMin != 0)
+    etaInd += 1; // include padding if there is any
+
+  unsigned phiInd;
+  phiInd = (regPhi + 19 - regPhiMin) % 18;
+
+  return etaInd * (nRegPhi + 2) // 2 extra columns for padding
+    + phiInd;
+}
+
+
+
+void CTPCard::setRegions(L1CaloRegionCollection rgns)
+{
+  if(regions.size() == 0)
+    {
+      unsigned expectedSize = (nRegEta + 2) * (nRegPhi + 2);
+      if(regEtaMin == 0) // No padding at left edge
+	expectedSize -= (nRegPhi + 2);
+      if(regEtaMax == 17) // No padding at right edge
+	expectedSize -= (nRegPhi + 2);
+
+      regions = L1CaloRegionCollection(expectedSize);
+      for(unsigned i = 0; i < rgns.size(); ++i)
+	{
+	  int e = rgns.at(i).id().ieta();
+	  unsigned p = rgns.at(i).id().iphi();
+
+	  regions.at(getRegInd(e,p)) = rgns.at(i);
+	}
+    }
+  else
+    {
+      for(unsigned i = 0; i < rgns.size(); ++i)
+	{
+	  int e = rgns.at(i).id().ieta();
+	  unsigned p = rgns.at(i).id().iphi();
+
+	  regions.at(getRegInd(e,p)) = rgns.at(i);
+	}	  
+    }
+
+  // Undo zero suppression
+  unsigned etaStart;
+  if(regEtaMin == 0)
+    etaStart = 0;
+  else
+    etaStart = regEtaMin - 1;
+  unsigned etaEnd;
+  if(regEtaMax == 17)
+    etaEnd = 17;
+  else
+    etaEnd = regEtaMax + 1;
+  unsigned phiStart = (regPhiMin + 17) % 18;
+  unsigned phiEnd = (regPhiMax + 1) % 18;
+
+  for(unsigned regEta = etaStart; regEta <= etaEnd; ++regEta)
+    {
+      for(unsigned regPhi = phiStart; 
+	  regPhi != (phiEnd+1)%18; 
+	  regPhi = (regPhi+1)%18)
+	{
+	  unsigned ind = getRegInd(regEta,regPhi);
+	  if(regions.at(ind).empty())
+	    {
+	      regions.at(ind) = 
+		L1CaloRegion::makeRegionFromGctIndices(0,
+					 false,
+					 false,
+					 false,
+					 false,
+					 regEta,
+					 regPhi);
+	    }
+	}
+    }
+
+  PUCorrect();
+
+  regSet = true;
+  jetsFound = false;
+}
+
+
+
+void CTPCard::setEGTCands(L1CaloEmCollection cands)
+{
+  egtCands = cands;
+
+  candsSet = true;
+  candsSorted = false;
+}
+
+
+void CTPCard::PUCorrect()
+{
+  PULevel = 0;
+  unsigned puCount = 0;
+
+  for(unsigned p = 0; p < regions.size(); ++p)
+    {
+      if(regions.at(p).et() <= PUEtMax)
+	{
+	  PULevel += regions.at(p).et();
+	  ++puCount;
+	}
+    }
+
+  PULevel /= puCount;
+
+  for(unsigned q = 0; q < regions.size(); ++q)
+    {
+      uint16_t newData = regions.at(q).raw();
+      
+      if(regions.at(q).et() < PULevel) 
+	{ 
+	  // set ET to zero if all pileup
+	  // this just zeros the last 8 (HF) or 11 (B/E) bits
+	  if(regions.at(q).isHf())
+	    newData &= 0xFF00;
+	  else
+	    newData &= 0xFC00;
+	}
+      else // otherwise just subtract PU
+	newData -= PULevel;
+      
+      regions.at(q).setRawData(newData);
+    }
+}
+
+unsigned CTPCard::s1Et() const
+{
+  unsigned et = 0;
+
+  for(unsigned eta = regEtaMin; eta <= regEtaMax; ++eta)
+    {
+      for(unsigned phi = regPhiMin; phi != (regPhiMax+1)%18; phi = (phi+1)%18)
+	{
+	  et += regions.at(getRegInd(eta,phi)).et();
+	}
+    }
+
+  return et;
+}
+
+
+
+unsigned CTPCard::s1Met() const
+{
+  double ex = 0.;
+  double ey = 0.;
+  for(unsigned eta = regEtaMin; eta <= regEtaMax; ++eta)
+    {
+      for(unsigned phi = regPhiMin; phi != (regPhiMax+1)%18; phi = (phi+1)%18)
+	{
+	  ex += regions.at(getRegInd(eta,phi)).et() * cosphi.at(phi);
+	  ey += regions.at(getRegInd(eta,phi)).et() * sinphi.at(phi);
+	}
+    }
+
+  return unsigned(sqrt(ex*ex + ey*ey));
+}
+
+
+unsigned CTPCard::s1Ht()
+{
+  if(!jetsFound)
+    makeJetClusters();
+
+  return ht;
+}
+
+
+
+unsigned CTPCard::s1Mht()
+{
+  if(!jetsFound)
+    makeJetClusters();
+
+  return mht;
+}
+
+
+void CTPCard::makeJetClusters()
+{
+  ht = 0;
+  double hx = 0;
+  double hy = 0;
+
+  if(!areRegionsSet())
+    return;
+
+  if(jets.size() != 0)
+    jets.clear();
+
+  jets = vector<CTPOutput>();
+
+  for(unsigned regEta = regEtaMin; regEta <= regEtaMax; ++regEta)
+    {
+      for(unsigned regPhi = regPhiMin; 
+	  regPhi != (regPhiMax + 1) % 18; 
+	  regPhi = (regPhi + 1) % 18)
+	{
+	  unsigned ind = getRegInd(regEta,regPhi);
+
+	  double centerEt = regions.at(ind).et();
+	  if((centerEt <= jetSeed))
+	    continue;
+	  
+	  double et = centerEt;
+	  double ex = centerEt * cosphi.at(regPhi);
+	  double ey = centerEt * sinphi.at(regPhi);
+
+	  bool clusterCenter = true;
+	  for(int etaDir = (regEta == 0 ? 
+			    0 : // if centerEta=0, don't check below
+			    -1); 
+	      clusterCenter && // current tower must be center
+		etaDir <= (regEta == 21 ?
+			   0 : // if centerEta=21, don't check above
+			   1);
+	      ++etaDir)
+	    {
+	      for(int phiDir = -1;
+		  phiDir <= 1 && clusterCenter;
+		  ++phiDir)
+		{
+		  if(etaDir == 0 && phiDir == 0)
+		    continue;
+		  
+		  int neighborEta = regEta + etaDir;
+
+		  int neighborPhi = (regPhi + 18 + phiDir) % 18;
+	  
+		  unsigned neighborEt = 
+		    regions.at(getRegInd(neighborEta, neighborPhi)).et();
+
+		  if((neighborEt >= centerEt && (etaDir == 1 || 
+						 (etaDir == 0 &&
+						  phiDir == 1)))
+		     || (neighborEt > centerEt && (etaDir == -1 ||
+						   (etaDir == 0 &&
+						    phiDir == -1))))
+		    {
+		      clusterCenter = false;
+		      break;
+		    }
+		  et += neighborEt;
+		  ex += neighborEt * cosphi.at(neighborPhi);
+		  ey += neighborEt * sinphi.at(neighborPhi);
+		}
+	    }
+	  if(clusterCenter)
+	    {
+	      CTPOutput cluster;
+	      cluster.et = et;
+	      cluster.ieta = regEta;
+	      cluster.iphi = regPhi;
+
+	      jets.push_back(cluster);
+
+	      ht += unsigned(et);
+	      hx += ex;
+	      hy += ey;
+	    }
+	}
+    }
+
+  mht = unsigned(sqrt(hx*hx + hy*hy));
+
+  if(jets.size() == 0)
+    {
+      CTPOutput zeros;
+      zeros.ieta = 0;
+      zeros.iphi = 0;
+      zeros.et = 0;
+
+      jets.push_back(zeros);
+
+      mht = 0;
+    }
+  
+  jetsFound = true;
+}
+
+
+
+vector<CTPOutput> CTPCard::s1Jets()
+{
+  if(!jetsFound)
+    makeJetClusters();
+
+  return vector<CTPOutput>(jets.end() - (nJetsOut - 1), jets.end());
+}
+
+
+bool CTPCard::areRegionsSet() const
+{
+  bool response = false;
+
+  if(!regSet)
+    throw cms::Exception("EmptyCollection") << "RCT regions never initialized."
+					    << endl;
+
+  response = true;
+  return response;
+}
+
+
+bool CTPCard::areCandsSet() const
+{
+  bool response = false;
+
+  if(!candsSet)
+    throw cms::Exception("EmptyCollection") 
+      << "EM candidates never initialized."
+      << endl;
+
+  response = true;
+  return response;
+}
+
+
+vector<CTPOutput> CTPCard::s1RlxTau()
+{
+  if(!candsSorted)
+    sortCands();
+
+  return vector<CTPOutput>(rlxTaus.end() - (nCandsOut - 1), rlxTaus.end());
+}
+
+
+
+vector<CTPOutput> CTPCard::s1IsoTau()
+{
+  if(!candsSorted)
+    sortCands();
+
+  return vector<CTPOutput>(isoTaus.end() - (nCandsOut - 1), isoTaus.end());
+}
+
+
+
+vector<CTPOutput> CTPCard::s1RlxEG()
+{
+  if(!candsSorted)
+    sortCands();
+
+  return vector<CTPOutput>(rlxEGs.end() - (nCandsOut - 1), rlxEGs.end());
+}
+
+
+
+vector<CTPOutput> CTPCard::s1IsoEG()
+{
+  if(!candsSorted)
+    sortCands();
+
+  return vector<CTPOutput>(isoEGs.end() - (nCandsOut - 1), isoEGs.end());
+}
+
+
+
+void CTPCard::sortCands()
+{
+  if(!candsSet)
+    throw cms::Exception("EmptyData") << "Cannot sort cands--they are not set"
+				      << endl;
+
+  if(candsSorted)
+    {
+      rlxEGs.clear();
+      isoEGs.clear();
+      rlxTaus.clear();
+      isoTaus.clear();
+    }
+
+  vector<CTPOutput> output = vector<CTPOutput>();
+
+  for(unsigned i = 0; i < egtCands.size(); ++i)
+    {
+      L1CaloEmCand candIn = egtCands.at(i);
+      CTPOutput candOut;
+      candOut.et = candIn.rank();
+      candOut.crate = candIn.rctCrate();
+      candOut.card = candIn.rctCard();
+      candOut.region = candIn.rctRegion();
+      unsigned eta = candIn.regionId().ieta();
+      unsigned phi = candIn.regionId().iphi();
+
+      unsigned ind = getRegInd(eta,phi);
+      L1CaloRegion reg = regions.at(ind);
+
+      double coreRelIso = reg.et() - candOut.et / candOut.et;
+
+      double jetEt = 0;
+      for(int etaDir = (eta == 0 ? 
+			0 : // if centerEta=0, don't check below
+			-1); 
+	  etaDir <= (eta == 21 ?
+		     0 : // if centerEta=21, don't check above
+		     1);
+	  ++etaDir)
+	{
+	  for(int phiDir = -1; phiDir <= 1; ++phiDir)
+	    {		  
+	      int neighborEta = eta + etaDir;
+	      int neighborPhi = (phi + 18 + phiDir) % 18;
+	  
+	      unsigned neighborEt = 
+		regions.at(getRegInd(neighborEta, neighborPhi)).et();
+
+	      jetEt += neighborEt;
+	    }
+	}
+      double jetRelIso = (jetEt - candOut.et) / candOut.et;
+
+      bool isolated = coreRelIso > coreRelIsoCut && 
+	jetRelIso > jetRelIsoCut;
+
+      rlxTaus.push_back(candOut);
+      if(isolated)
+	isoTaus.push_back(candOut);
+      
+      if(!reg.tauVeto() && !reg.mip()) // may need to change?
+	{
+	  rlxEGs.push_back(candOut);
+	  if(isolated)
+	    isoEGs.push_back(candOut);
+	}
+    }
+
+  sort(rlxEGs.begin(),rlxEGs.end());
+  sort(isoEGs.begin(),isoEGs.end());
+  sort(rlxTaus.begin(),rlxTaus.end());
+  sort(isoTaus.begin(),isoTaus.end());
+
+  candsSorted = true;
+}
+
 
 

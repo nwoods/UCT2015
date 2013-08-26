@@ -5,10 +5,10 @@ Script to make rate plots for both PU methods and compare them
 Author: N. Woods, M.Cepeda, S. Dasu, L. Dodd, E. Friis  	  UW Madison
 
 
-Usage: python allRatePlots.py TAVGPUFILE.root XAVGPUFILE.root label[optional] 
+Usage: python comparePURates.py TAVGPUFILE.root XAVGPUFILE.root label[optional] 
 
  
-E.G
+E.G.
 python allRatePlots.py TAVGPUFILE.root XAVGPUFILE.root v3
 will produce rate plots in ~/www/v3_filename.png
 
@@ -72,7 +72,8 @@ else:
 #Jet Candidates
 jet_old_ntuple = x_ntuple_file.Get("jetL1Rate/Ntuple")
 t_jet_uct_ntuple = t_ntuple_file.Get("jetUCTRate/Ntuple")
-x_jet_uct_ntuple = x_ntuple_file.Get("corrjetUCTRate/Ntuple")
+x_jet_uct_ntuple = x_ntuple_file.Get("jetUCTRate/Ntuple")
+#x_jet_uct_ntuple = x_ntuple_file.Get("corrjetUCTRate/Ntuple")
 
 #EG Candidates
 iso_old_eg_ntuple = x_ntuple_file.Get("isoEGL1Rate/Ntuple")
@@ -110,6 +111,21 @@ def make_plot(tree, variable, selection, binning, xaxis='', title='', calFactor=
 ######################################################################################
 #  make_ _rate method calculates rate given a pt histogram and returns histogram     #
 ######################################################################################
+
+def make_rate(pt, color, markerStyle):
+    ''' Make a rate plot with speficied color and marker style '''
+    numBins = pt.GetXaxis().GetNbins()
+    rate = pt.Clone()
+
+    for i in range(1, numBins+1):
+        rate.SetBinContent(i, pt.Integral(i, numBins))
+
+    rate.SetLineColor(color)
+    rate.SetMarkerStyle(markerStyle)
+    rate.SetMarkerColor(color)
+
+    return rate    
+
  
 def make_old_rate(pt):
     ''' Make a rate plot out of L1Extra Pts '''
@@ -194,9 +210,9 @@ def plotRates(oldntuple, tuctntuple, xuctntuple, binning, filename, title='', xa
         L1G_CALIB_FACTOR
         )
 
-    oldRate = make_old_rate(old_pt)
-    tUCTRate = make_uct_rate_t(t_uct_pt)
-    xUCTRate = make_uct_rate_x(x_uct_pt)
+    oldRate = make_rate(old_pt, ROOT.EColor.kRed, 20)
+    tUCTRate = make_rate(t_uct_pt, ROOT.EColor.kBlue, 22)
+    xUCTRate = make_rate(x_uct_pt, ROOT.EColor.kGreen, 21)
 
     canvas.SetLogy()
     oldRate.SetTitle(title)
@@ -208,7 +224,8 @@ def plotRates(oldntuple, tuctntuple, xuctntuple, binning, filename, title='', xa
     legend.SetFillColor(ROOT.EColor.kWhite)
     legend.SetBorderSize(1)
     legend.AddEntry(tUCTRate, "UCT (time avg PU)", "p")
-    legend.AddEntry(xUCTRate, "UCT (space avg PU)", "p")
+    legend.AddEntry(xUCTRate, "UCT (no PU subtraction)", "p")
+#    legend.AddEntry(xUCTRate, "UCT (space avg PU)", "p")
     legend.AddEntry(oldRate, "Current", "p")
     legend.Draw("same")
     saveas = saveWhere+filename+'.png' 

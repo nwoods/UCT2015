@@ -41,7 +41,7 @@ uctDigis = cms.EDProducer(
 UCT2015EClusterProducer = cms.EDProducer(
     "UCT2015EClusterProducer",
     debug = cms.bool(False),
-    puCorrect = cms.bool(True),
+    puCorrect = cms.bool(False),
     puETMax = cms.uint32(7),
     eClusterSeed = cms.uint32(5),
     # Transparency correction calibration
@@ -71,6 +71,10 @@ UCT2015Producer = cms.EDProducer(
     emCandSrc = cms.InputTag("uctDigis"),
 )
 
+UCT2015EfficiencyProducer = UCT2015Producer.clone(
+    regionSrc = cms.InputTag("EstimatedPUSubtractor"),
+)
+
 UCTStage1BProducer = cms.EDProducer(
     "UCTStage1BProducer",
     puCorrect = cms.bool(False),
@@ -92,10 +96,22 @@ UCTStage1BProducer = cms.EDProducer(
     emCandSrc = cms.InputTag("uctDigis"),
 )
 
+UCTStage1BEfficiencyProducer = UCTStage1BProducer.clone(
+    regionSrc = cms.InputTag("EstimatedPUSubtractor"),
+)
+
 TimeAveragePUSubtractor = cms.EDProducer(
     "TAvgPUSubtractor",
     regionSrc = cms.InputTag("uctDigis"),
     tAvgPUCut = cms.uint32(7),
+)
+
+EstimatedPUSubtractor = cms.EDProducer(
+    "EstimatedPUSubtractor",
+    regionSrc = cms.InputTag("uctDigis"),
+    pvSrc = cms.InputTag("offlinePrimaryVertices"),
+    PUParamSrc = cms.string("/afs/hep.wisc.edu/home/nwoods/CMSSW_5_3_6_patch1/src/L1Trigger/UCT2015/test/TAvgPUParams.root"),
+    PUProfileName = cms.string("tAvgPUVsNVtx"),
 )
     
 
@@ -121,4 +137,17 @@ uctEmulatorStep = cms.Sequence(
     * l1extraParticles
 )
 
+uctEfficiencyEmulatorStep = cms.Sequence(
+    hackHCALMIPs
+    # Now make UCT and L1 objects
+    * uctDigis
+    * EstimatedPUSubtractor
+    * UCT2015EClusterProducer
+    * UCT2015EfficiencyProducer
+    * UCTStage1BEfficiencyProducer
+    * l1extraParticles
+)
+
 emulationSequence = cms.Sequence(uctDigiStep * uctEmulatorStep)
+
+efficiencyEmulationSequence = cms.Sequence(uctDigiStep * uctEfficiencyEmulatorStep)

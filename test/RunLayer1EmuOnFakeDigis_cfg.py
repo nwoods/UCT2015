@@ -21,7 +21,7 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 # Set defaults:
-options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
+#options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
 options.outputFile = "fakeDataTestOut.root"
 #options.debug = True ## causing crash?
 options.parseArguments()
@@ -78,6 +78,25 @@ process.FakeDigiProducer = cms.EDProducer(
     doDebug = cms.bool(True),#options.debug),
     )
 
+process.FakeRegionProducer = cms.EDProducer(
+    "FakeRegionProducer",
+    regFileNames = cms.vstring("./fakeRegions/stage1Regions0.txt",
+                               "./fakeRegions/stage1Regions1.txt",
+                               "./fakeRegions/stage1Regions2.txt",
+                               "./fakeRegions/stage1Regions3.txt",
+                               "./fakeRegions/stage1Regions4.txt",
+                               "./fakeRegions/stage1Regions5.txt",
+                               "./fakeRegions/stage1Regions6.txt",),
+    candFileNames = cms.vstring("./fakeCands/stage1EmCands0.txt",
+                                "./fakeCands/stage1EmCands1.txt",
+                                "./fakeCands/stage1EmCands2.txt",
+                                "./fakeCands/stage1EmCands3.txt",
+                                "./fakeCands/stage1EmCands4.txt",
+                                "./fakeCands/stage1EmCands5.txt",
+                                "./fakeCands/stage1EmCands6.txt",),
+    doDebug = cms.bool(True),
+    )
+
 process.Layer1UCTProducer = cms.EDProducer(
     "Layer1UCTProducer",
     hcalDigiSrc = cms.InputTag("FakeDigiProducer","fakeHcalDigis"),
@@ -88,8 +107,12 @@ process.Layer1UCTProducer = cms.EDProducer(
     iPhiBounds = cms.vuint32(4,10,16,22,28,34,40,46,52,58,64,70),
     #(8,16,24,32,40,48,56,64,72),
     ecalLSB = cms.double(0.5),
+    regEtaBounds = cms.vint32(21,),
+    regPhiBounds = cms.vint32(17,),
     ),
-    doDebug = cms.bool(True),#options.debug),
+    rctRegions = cms.InputTag("FakeRegionProducer","fakeRegions"),
+    emCands = cms.InputTag("FakeRegionProducer","fakeCands"),
+    doDebug = cms.bool(True),
     )
 
 #process.load("L1Trigger.UCT2015.emulation_cfi")

@@ -97,6 +97,14 @@ void AnalyzePUNVtx::Loop()
 	      
 	      ++nPURegAtEta.at(eta);
 	      puEtAtEta.at(eta) += regEt->at(ind);
+
+	      hvTAvgPUVsPhi.at(eta)->Fill(phi, tAvgPU->at(ind));
+	      hvRegEtVsNVtx.at(eta)->Fill(nVtx, regEt->at(ind));
+
+	      if(eta == 3)
+		hRegEtVsPhi3->Fill(phi, regEt->at(ind));
+	      if(eta == 4)
+		hRegEtVsPhi4->Fill(phi, regEt->at(ind));
 	    }
 	}
 
@@ -764,6 +772,7 @@ void AnalyzePUNVtx::fitPUToNVtx()
   cout << "Var B:" << endl;
   for(unsigned p = 0; p < 22; ++p)
     cout << varCoeffB.at(p) << endl;
+
 }
 
 
@@ -787,4 +796,17 @@ void AnalyzePUNVtx::getVarGraph(TProfile* PU, TGraph& gr)
   TVectorD wy(wye.size(),&wye[0]);
 
   gr = TGraph(ex,wy);
+}
+
+
+void AnalyzePUNVtx::saveParams()
+{
+  TFile f("TAvgPUParams.root", "new");
+
+  for(unsigned i = 0; i < hvTAvgPUVsNVtx.size(); ++i)
+    {
+      hvTAvgPUVsNVtx.at(i)->Write();
+    }
+
+  f.Close();
 }

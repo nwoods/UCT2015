@@ -84,6 +84,7 @@ class AnalyzePUNVtx {
   //  void fitPUToLumi();
   void fitPUToNVtx();
   void getVarGraph(TProfile* PU, TGraph& gr);
+  void saveParams();
 
   TH1F* hTAvgPU;
   TH1F* hXAvgPU;
@@ -132,6 +133,11 @@ class AnalyzePUNVtx {
   TProfile* hTAvgPUVsNVtxHiEta;
   vector<TProfile*> hvTAvgPUVsAvgLumi;
   vector<TProfile*> hvTAvgPUVsNVtx;
+  vector<TProfile*> hvRegEtVsNVtx;
+  vector<TProfile*> hvTAvgPUVsPhi;
+
+  TProfile* hRegEtVsPhi3;
+  TProfile* hRegEtVsPhi4;
 
   unsigned int nAll0;
 
@@ -224,9 +230,50 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
       hvTAvgPUVsNVtx.at(eta)->SetMinimum(0.);
       hvTAvgPUVsNVtx.at(eta)->SetMaximum(4.);
     }
+  for(unsigned eta = 0; eta < 22; ++eta)
+    {
+      stringstream sName;
+      sName << "tAvgPUVsPhi" << eta;
+      stringstream sTitle;
+      sTitle << "Time Avg PU Level Vs phi (Eta=" 
+	     << eta << ")";
+      hvTAvgPUVsPhi.push_back(new TProfile(sName.str().c_str(),
+					   sTitle.str().c_str(),
+					   18, -0.5, 17.5,
+					   0., 10.));
+      hvTAvgPUVsPhi.at(eta)->SetMinimum(0.);
+      hvTAvgPUVsPhi.at(eta)->SetMaximum(4.);
+      hvTAvgPUVsPhi.at(eta)->SetErrorOption("s");
+    }
+  for(unsigned eta = 0; eta < 22; ++eta)
+    {
+      stringstream sName;
+      sName << "regEtVsNVtx" << eta;
+      stringstream sTitle;
+      sTitle << "Region Et Vs Avg # Primary Vertices (Eta=" 
+	     << eta << ")";
+      hvRegEtVsNVtx.push_back(new TProfile(sName.str().c_str(),
+					   sTitle.str().c_str(),
+					   30, 8., 68.,
+					   0., 10.));
+      hvRegEtVsNVtx.at(eta)->SetMinimum(0.);
+      hvRegEtVsNVtx.at(eta)->SetMaximum(4.);
+    }
+  hRegEtVsPhi3 = new TProfile("regEtVsPhi3",
+			      "Region Et Vs Phi (Eta=3)",
+			      18, -0.5, 17.5,
+			      0.,10.);
+  hRegEtVsPhi3->SetMinimum(0.);
+  hRegEtVsPhi3->SetMaximum(2.);
+  hRegEtVsPhi4 = new TProfile("regEtVsPhi4",
+			      "Region Et Vs Phi (Eta=4)",
+			      18, -0.5, 17.5,
+			      0.,10.);
+  hRegEtVsPhi4->SetMinimum(0.);
+  hRegEtVsPhi4->SetMaximum(2.);
   hTAvgPUVsAvgLumiLoEta = new TProfile("tAvgPUVsAvgLumiLoEta", 
 			  "Time Avg PU Level vs Avg Luminosity (4<Eta<17)", 
-				       0, 18.5, 21.5,
+				       20, 18.5, 21.5,
 				       0., 10.);
   hTAvgPUVsAvgLumiLoEta->SetMinimum(0.);
   hTAvgPUVsAvgLumiLoEta->SetMaximum(.75);

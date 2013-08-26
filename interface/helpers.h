@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  Helpers.h
+ *       Filename:  helpers.h
  *
  *    Description:  Common UCT functions.
  *

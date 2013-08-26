@@ -56,7 +56,7 @@ private:
 
   auto_ptr<L1CaloRegionCollection> newRegions;
 
-  vector<unsigned> regionPUAvg;
+  vector<unsigned> regionPUTotal;
   vector<list<unsigned>> prevRegRanks;
   const unsigned tAvgPUCut;
 
@@ -70,8 +70,8 @@ TAvgPUSubtractor::TAvgPUSubtractor(const ParameterSet& iConfig) :
   tAvgPUCut(iConfig.getParameter<unsigned>("tAvgPUCut")),
   regionInputTag(iConfig.getParameter<InputTag>("regionSrc"))
 {
-  regionPUAvg = vector<unsigned>(396,0);
-  for(unsigned i = 0; i < regionPUAvg.size(); ++i)
+  regionPUTotal = vector<unsigned>(396,0);
+  for(unsigned i = 0; i < regionPUTotal.size(); ++i)
     prevRegRanks.push_back(list<unsigned>());
 
   produces<L1CaloRegionCollection>();
@@ -127,26 +127,26 @@ void TAvgPUSubtractor::updatePU()
 	  
 	  if(prevRegRanks.at(ind).size() == 0) // if fist item, PU=0
 	    {
-	      regionPUAvg.at(ind) = 0;
+	      regionPUTotal.at(ind) = 0;
 	    }
 
 	  if(newRank < tAvgPUCut)
 	    {
 	      if(prevRegRanks.at(ind).size() == 257)
 		{
-		  unsigned totalSum = regionPUAvg.at(ind) << 8;
+		  unsigned totalSum = regionPUTotal.at(ind);// << 8;
 		  totalSum -= prevRegRanks.at(ind).back();
 		  prevRegRanks.at(ind).pop_back();
 		  totalSum += prevRegRanks.at(ind).front();
-		  regionPUAvg.at(ind) = totalSum >> 8;
+		  regionPUTotal.at(ind) = totalSum;// >> 8;
 		}
 	      else if(prevRegRanks.at(ind).size() != 0)
 		{
-		  unsigned totalSum = regionPUAvg.at(ind) * 
-		    (prevRegRanks.at(ind).size() - 1);
+		  unsigned totalSum = regionPUTotal.at(ind);// * 
+		  //(prevRegRanks.at(ind).size() - 1);
 		  totalSum += prevRegRanks.at(ind).front();
-		  regionPUAvg.at(ind) = totalSum / 
-		    prevRegRanks.at(ind).size();
+		  regionPUTotal.at(ind) = totalSum;// / 
+		  //prevRegRanks.at(ind).size();
 		}
 	  
 	      prevRegRanks.at(ind).push_front(newRegions->at(ind).et());
@@ -166,7 +166,11 @@ void TAvgPUSubtractor::subtractPU()
 	  unsigned ind = getRegInd(eta,phi);
 
 	  unsigned newEt = newRegions->at(ind).et();
-	  unsigned puLevel = regionPUAvg.at(ind);
+	  unsigned puLevel = regionPUTotal.at(ind);
+	  if(prevRegRanks.at(ind).size() == 257)
+	    puLevel /= 256;
+	  else if(prevRegRanks.at(ind).size() != 0)
+	    puLevel /= prevRegRanks.at(ind).size();
 
 	  if(newEt > puLevel)
 	    newEt -= puLevel;

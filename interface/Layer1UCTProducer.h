@@ -48,6 +48,8 @@ class Layer1UCTProducer : public edm::EDProducer
   // User members
   const edm::InputTag hcalDigiSrc;
   const edm::InputTag ecalDigis;
+  const edm::InputTag regionSource;
+  const edm::InputTag emCandSource;
   const edm::ParameterSet cableParams;
   const bool doDebug;
 

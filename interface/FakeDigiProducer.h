@@ -7,7 +7,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <iostream>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"

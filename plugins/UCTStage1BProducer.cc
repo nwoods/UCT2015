@@ -100,6 +100,9 @@ private:
 
   list<UCTCandidate> jetList;
 
+  const InputTag regionSrc_;
+  const InputTag emCandSrc_;
+
 };
 
 void UCTStage1BProducer::fillRegionInfo(
@@ -221,7 +224,9 @@ UCTStage1BProducer::UCTStage1BProducer(const edm::ParameterSet& iConfig) :
   tauRelativeEMJetIsolationCut(iConfig.getParameter<double>("tauRelativeEMJetIsolationCut")),
   egLSB_(iConfig.getParameter<double>("egLSB")),
   tauLSB_(iConfig.getParameter<double>("tauLSB")),
-  regionLSB_(iConfig.getParameter<double>("regionLSB"))
+  regionLSB_(iConfig.getParameter<double>("regionLSB")),
+  regionSrc_(iConfig.getParameter<InputTag>("regionSrc")),
+  emCandSrc_(iConfig.getParameter<InputTag>("emCandSrc"))
 {
   // Also declare we produce unpacked collections (which have more info)
   produces<UCTCandidateCollection>( "RelaxedEGUnpacked" ) ;
@@ -237,8 +242,8 @@ void
 UCTStage1BProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
-  iEvent.getByLabel("uctDigis", stage1Regions);
-  iEvent.getByLabel("uctDigis", tauCands);
+  iEvent.getByLabel(regionSrc_, stage1Regions);
+  iEvent.getByLabel(emCandSrc_, tauCands);
   iEvent.getByLabel("UCT2015EClusterProducer", "EClustersUnpacked", emClusters);
   iEvent.getByLabel("UCT2015EClusterProducer", "ERegions", emRegions);
 

@@ -71,6 +71,9 @@ UCT2015Producer = cms.EDProducer(
     emCandSrc = cms.InputTag("uctDigis"),
 )
 
+# Just to make python happy
+UCT2015EfficiencyProducer = UCT2015Producer.clone()
+
 UCTStage1BProducer = cms.EDProducer(
     "UCTStage1BProducer",
     puCorrect = cms.bool(True),
