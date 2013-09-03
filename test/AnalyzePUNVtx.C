@@ -400,24 +400,24 @@ void AnalyzePUNVtx::plotAll()
 
   string sTAvgPUVsNVtxAllEta("tAvgPUVsNVtxAllEta");
   TCanvas cTAvgPUVsNVtxAllEta = TCanvas(sTAvgPUVsNVtxAllEta.c_str(), 
-       "Plot of Average Inst. Luminosity vs Time-Averaged Pileup (all Eta)", 
+       "Plot of Average # Primary Vertices vs Time-Averaged Pileup (all Eta)", 
 					  800, 600);
 
-  hTAvgPUVsNVtxMdEta->GetXaxis()->SetTitle("Average Inst. Luminosity");
-  hTAvgPUVsNVtxMdEta->GetYaxis()->SetTitle("Time Avg Pileup (GeV)");
-  hTAvgPUVsNVtxMdEta->SetTitle("Time-Avg Pileup vs. Avg Luminosity");
+  hTAvgPUVsNVtxMdEta->GetXaxis()->SetTitle("Average nPVs");
+  hTAvgPUVsNVtxMdEta->GetYaxis()->SetTitle("Time Avg Pileup Level(GeV)");
+  hTAvgPUVsNVtxMdEta->SetTitle("Time-Avg Pileup vs. Avg # Primary Vertices");
   hTAvgPUVsNVtxMdEta->SetMarkerColor(kRed);
   hTAvgPUVsNVtxMdEta->SetLineColor(kRed);
   hTAvgPUVsNVtxMdEta->Draw();
 
-  hTAvgPUVsNVtxHiEta->GetXaxis()->SetTitle("Average Inst. Luminosity");
-  hTAvgPUVsNVtxHiEta->GetYaxis()->SetTitle("Time Avg Pileup (GeV)");
+  hTAvgPUVsNVtxHiEta->GetXaxis()->SetTitle("Average nPVs");
+  hTAvgPUVsNVtxHiEta->GetYaxis()->SetTitle("Time Avg Pileup Level (GeV)");
   hTAvgPUVsNVtxHiEta->SetMarkerColor(kGreen);
   hTAvgPUVsNVtxHiEta->SetLineColor(kGreen);
   hTAvgPUVsNVtxHiEta->Draw("same");
 
-  hTAvgPUVsNVtxLoEta->GetXaxis()->SetTitle("Average Inst. Luminosity");
-  hTAvgPUVsNVtxLoEta->GetYaxis()->SetTitle("Time Avg Pileup (GeV)");
+  hTAvgPUVsNVtxLoEta->GetXaxis()->SetTitle("Average nPVs");
+  hTAvgPUVsNVtxLoEta->GetYaxis()->SetTitle("Time Avg Pileup Level (GeV)");
   hTAvgPUVsNVtxLoEta->SetMarkerColor(kBlue);
   hTAvgPUVsNVtxLoEta->SetLineColor(kBlue);
   hTAvgPUVsNVtxLoEta->Draw("same");
