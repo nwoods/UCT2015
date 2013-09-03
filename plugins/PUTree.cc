@@ -80,6 +80,7 @@ private:
   vector<float>* uicPUSubEt_;
   vector<float>* comboPU_;
   vector<list<float>> prevStrips_;
+  vector<float>* estPULevel_;
 
 
   // only used for MC
@@ -88,6 +89,7 @@ private:
   float sumPUPt_;
 
   Handle<L1CaloRegionCollection> newRegions_;
+  Handle<vector<float>> estimatedPULevel_;
 
   double regionLSB_;
 
@@ -113,6 +115,7 @@ PUTree::PUTree(const ParameterSet& pset) :
   uicPUSubEt_ = new vector<float>(18*22,0.);
   comboPU_ = new vector<float>(22,0.);
   prevStrips_ = vector<list<float>>(22,list<float>());
+  estPULevel_ = new vector<float>(22,0.);
 
 
   // Initialize the ntuple builder
@@ -143,6 +146,7 @@ PUTree::PUTree(const ParameterSet& pset) :
       tree->Branch("nPUVtx", &nPUVtx_, "nPUVtx/i");
       tree->Branch("sumPUPt", &sumPUPt_, "nPUVtx/F");
     }
+  tree->Branch("estimatedPULevel", "std::vector<float>", &estPULevel_);
 
   //   src_ = pset.getParameter<VInputTag>("src");
   scalerSrc_ = pset.exists("scalerSrc") ?
@@ -162,6 +166,7 @@ PUTree::~PUTree()
   delete xAvgPUSubEt_;
   delete regEt_;
   delete comboPU_;
+  delete estPULevel_;
 }
 
 
@@ -197,6 +202,12 @@ void PUTree::analyze(const Event& evt, const EventSetup& es)
     }
 
   evt.getByLabel("uctDigis", newRegions_);
+  evt.getByLabel("EstimatedPUSubtractor", estimatedPULevel_);
+
+  for(unsigned i = 0; i < 22; ++i)
+    {
+      estPULevel_->at(i) = estimatedPULevel_->at(i);
+    }
 
   if(newRegions_->size() == 18*22)
     {

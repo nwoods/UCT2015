@@ -63,6 +63,15 @@ from L1Trigger.UCT2015.emulation_cfi import *
 process.load("EventFilter.ScalersRawToDigi.ScalersRawToDigi_cfi")
 process.scalersRawToDigi.scalersInputTag = 'rawDataCollector'
 
+process.EstimatedPUSubtractor = cms.EDProducer(
+    "EstimatedPUSubtractor",
+    regionSrc = cms.InputTag("uctDigis"),
+    pvSrc = cms.InputTag("offlinePrimaryVertices"),
+    PUParamSrc = cms.string("./TAvgPUParams.root"),
+    PUProfileName = cms.string("tAvgPUVsNVtx"),
+    hasReco = cms.bool(True),
+)
+
 process.makePUTree = cms.EDAnalyzer(
     "PUTree",
     regionLSB = cms.double(0.5),
@@ -76,6 +85,7 @@ process.p1 = cms.Path(
     process.hackHCALMIPs *
     process.uctDigis *
     process.scalersRawToDigi *
+    process.EstimatedPUSubtractor *
     process.makePUTree
 )
 

@@ -51,6 +51,7 @@ class AnalyzePUNVtx {
   vector<float>   *uicPU;
   vector<float>   *uicPUSubEt;
   vector<float>   *comboPU;
+  vector<float>   *estPULvl;
   float           nVtx;
 
   // List of branches
@@ -69,6 +70,7 @@ class AnalyzePUNVtx {
   TBranch        *b_uicPUSubEt;   //!
   TBranch        *b_comboPU;
   TBranch        *b_nVtx;
+  TBranch        *b_estPULvl;
 
   AnalyzePUNVtx(TTree *tree=0);
   virtual ~AnalyzePUNVtx();
@@ -100,6 +102,9 @@ class AnalyzePUNVtx {
   TH1F* hComboPU;
   TH1F* hComboPUSubEt;
   TH1F* hNVtx;
+  TH1F* hEstPU;
+  TH1F* hEstPUSubEt;
+
   TH2F* hTAvgPUVsAvgLumi;
   TH2F* h2TAvgPUVsAvgLumiLoEta;
   TH2F* h2TAvgPUVsAvgLumiMdEta;
@@ -112,15 +117,18 @@ class AnalyzePUNVtx {
 /*   TH2F* hTAvgPUVsPhi;	    */
 /*   TH2F* hTAvgPUSubEtVsEta; */
 /*   TH2F* hXAvgPUSubEtVsEta; */
+
   TProfile* hTAvgPUVsAvgLumiLoEta;
   TProfile* hTAvgPUVsAvgLumiMdEta;
   TProfile* hTAvgPUVsAvgLumiHiEta;
   TProfile* hTAvgPUVsEta;
+  TProfile* hEstPUVsEta;
   TProfile* hTAvgPUVsPhi;
   TProfile* hUICPUVsEta;
   TProfile* hTAvgPUSubEtVsEta;
   TProfile* hXAvgPUSubEtVsEta;
   TProfile* hUICPUSubEtVsEta;
+  TProfile* hEstPUSubEtVsEta;
   TProfile* hStripPUVsEta;
   TProfile* hStripPUSubEtVsEta;
   TProfile* hComboPUVsEta;
@@ -131,8 +139,13 @@ class AnalyzePUNVtx {
   TProfile* hTAvgPUVsNVtxLoEta;
   TProfile* hTAvgPUVsNVtxMdEta;
   TProfile* hTAvgPUVsNVtxHiEta;
+  TProfile* hEstPUVsNVtxLoEta;
+  TProfile* hEstPUVsNVtxMdEta;
+  TProfile* hEstPUVsNVtxHiEta;
+
   vector<TProfile*> hvTAvgPUVsAvgLumi;
   vector<TProfile*> hvTAvgPUVsNVtx;
+  vector<TProfile*> hvEstPUVsNVtx;
   vector<TProfile*> hvRegEtVsNVtx;
   vector<TProfile*> hvTAvgPUVsPhi;
 
@@ -151,16 +164,16 @@ class AnalyzePUNVtx {
 #ifdef AnalyzePUNVtx_cxx
 AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) : 
   fChain(0),
-  pathToPlots("/home/nwoods/www/L1_PU_2012D/")
+  pathToPlots("/home/nwoods/www/L1_PU_nVtx_skim/")
 {
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
   if (tree == 0) {
-    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/scratch/nwoods/puComp_all_nVtx_0.root");
+    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/scratch/nwoods/puComp_skim0.root");
     if (!f || !f->IsOpen()) {
-      f = new TFile("/scratch/nwoods/puComp_all_nVtx_0.root");
+      f = new TFile("/scratch/nwoods/puComp_skim0.root");
     }
-    TDirectory * dir = (TDirectory*)f->Get("/scratch/nwoods/puComp_all_nVtx_0.root:/makePUTree");
+    TDirectory * dir = (TDirectory*)f->Get("/scratch/nwoods/puComp_skim0.root:/makePUTree");
     dir->GetObject("Ntuple",tree);
   }
   Init(tree);
@@ -168,12 +181,15 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
 
   hTAvgPU = new TH1F("tAvgPU", "Time Average PU (all regions)", 
 		     20, 0., 4.5);
+  hEstPU = new TH1F("estPU", "Estimated PU (all eta)", 
+		     20, 0., 4.5);
   hUICPU = new TH1F("uicPU", "Space Average PU (all regions)", 
 		    20, 0., 4.5);
   hAvgLumi = new TH1F("avgLumi", "Time Average Luminosity (all regions)", 
 		      20, 18.5, 21.5);
   hXAvgPU = new TH1F("xAvgPU", "Region Average PU", 20, 0., 4.5);
   hTAvgPUSubEt = new TH1F("tAvgPUSubEt", "Et-PU(time avg)", 27, -3., 6.);
+  hEstPUSubEt = new TH1F("estPUSubEt", "Et-PU(est)", 27, -3., 6.);
   hXAvgPUSubEt = new TH1F("xAvgPUSubEt", "Et-PU(region avg)", 27, -3., 6.);
   hUICPUSubEt = new TH1F("uicPUSubEt", "Et-PU(space avg)", 27, -3., 6.);
   hRegEt = new TH1F("regEt", "4x4 Region Et", 10, 0., 5.);
@@ -183,6 +199,7 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
   hComboPU = new TH1F("comboPU", "Combination PU", 20, 0., 4.5);
   hComboPUSubEt = new TH1F("comboPUSubEt", "Et-PU(combination)", 27, -3., 6.);
   hNVtx = new TH1F("nVtx", "# Primary Vertices", 30, 8., 68.);
+
   hTAvgPUVsAvgLumi = new TH2F("tAvgPUVsAvgLumi", 
 			      "Time-Avg PU Level vs Avg Luminosity (All Eta)", 
 			      20, 18.5, 21.5,
@@ -203,6 +220,7 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
 				 "Et - PU(combination) vs GCT Eta Index", 
 				 22, -0.5, 21.5,
 				 40, -2., 3.);
+
   for(unsigned eta = 0; eta < 22; ++eta)
     {
       stringstream sName;
@@ -215,6 +233,19 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
 					       0., 10.));
       hvTAvgPUVsAvgLumi.at(eta)->SetMinimum(0.);
       hvTAvgPUVsAvgLumi.at(eta)->SetMaximum(6.);
+    }
+  for(unsigned eta = 0; eta < 22; ++eta)
+    {
+      stringstream sName;
+      sName << "estPUVsNVtx" << eta;
+      stringstream sTitle;
+      sTitle << "Time Avg PU Level Vs # (Eta=" << eta << ")";
+      hvEstPUVsAvgLumi.push_back(new TProfile(sName.str().c_str(),
+					       sTitle.str().c_str(),
+					       100, 200., 3400.,
+					       0., 10.));
+      hvEstPUVsAvgLumi.at(eta)->SetMinimum(0.);
+      hvEstPUVsAvgLumi.at(eta)->SetMaximum(6.);
     }
   for(unsigned eta = 0; eta < 22; ++eta)
     {
@@ -259,6 +290,7 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
       hvRegEtVsNVtx.at(eta)->SetMinimum(0.);
       hvRegEtVsNVtx.at(eta)->SetMaximum(4.);
     }
+
   hRegEtVsPhi3 = new TProfile("regEtVsPhi3",
 			      "Region Et Vs Phi (Eta=3)",
 			      18, -0.5, 17.5,
@@ -307,6 +339,26 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
 				       0., 10.);
   hTAvgPUVsNVtxHiEta->SetMinimum(0.);
   hTAvgPUVsNVtxHiEta->SetMaximum(2.);
+
+  hEstPUVsNVtxLoEta = new TProfile("estPUVsNVtxLoEta", 
+         	     "Estimated PU Level vs # Primary Vertices (4<Eta<17)",
+				       32, 8., 40.,
+				       0., 10.);
+  hEstPUVsNVtxLoEta->SetMinimum(0.);
+  hEstPUVsNVtxLoEta->SetMaximum(2.);
+  hEstPUVsNVtxMdEta = new TProfile("estPUVsNVtxMdEta", 
+	  "Estimated PU Level vs Avg # Primary Vertices (2<Eta<5 & 16<Eta<19)",
+				       32, 8., 40.,
+				       0., 10.);
+  hEstPUVsNVtxMdEta->SetMinimum(0.);
+  hEstPUVsNVtxMdEta->SetMaximum(2.);
+  hEstPUVsNVtxHiEta = new TProfile("estPUVsNVtxHiEta", 
+		      "Estimated PU Level vs Avg Luminosity (Eta<3 & Eta>18)", 
+				       32, 8., 40.,
+				       0., 10.);
+  hEstPUVsNVtxHiEta->SetMinimum(0.);
+  hEstPUVsNVtxHiEta->SetMaximum(2.);
+
   hTAvgPUVsEta = new TProfile("tAvgPUVsEta", 
 			  "Time Avg PU Level vs GCT Eta Index", 
 			  22, -0.5, 21.5,
@@ -331,6 +383,14 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
 			  -2., 5.);
   hTAvgPUSubEtVsEta->SetMinimum(-2.5);
   hTAvgPUSubEtVsEta->SetMaximum(2.5);
+
+  hEstPUSubEtVsEta = new TProfile("estPUSubEtVsEta", 
+			  "4x4 Et - PU(est) vs GCT Eta Index",
+			  22, -0.5, 21.5,
+			  -2., 5.);
+  hEstPUSubEtVsEta->SetMinimum(-2.5);
+  hEstPUSubEtVsEta->SetMaximum(2.5);
+
   hXAvgPUSubEtVsEta = new TProfile("xAvgPUSubEtVsEta", 
 			  "4x4 Et - PU(region avg) vs GCT Eta Index",
 			  22, -0.5, 21.5,
@@ -433,6 +493,7 @@ void AnalyzePUNVtx::Init(TTree *tree)
   uicPUSubEt = 0;
   comboPU = 0;
   nVtx = 0;
+  estPULvl = 0;
 
   // Set branch addresses and branch pointers
   if (!tree) return;
@@ -455,6 +516,7 @@ void AnalyzePUNVtx::Init(TTree *tree)
   fChain->SetBranchAddress("lumiStd", &lumiStd, &b_lumiStd);
   fChain->SetBranchAddress("comboPU", &comboPU, &b_comboPU);
   fChain->SetBranchAddress("nVtx", &nVtx, &b_nVtx);
+  fChain->SetBranchAddress("estimatedPULevel", &estPULvl, &b_estPULvl);
   Notify();
 }
 

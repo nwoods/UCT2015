@@ -77,6 +77,7 @@ void AnalyzePUNVtx::Loop()
 		hTAvgPUVsNVtxHiEta->Fill(nVtx, tAvgPU->at(ind));
 	      else
 		hTAvgPUVsNVtxMdEta->Fill(nVtx, tAvgPU->at(ind));
+	      
 	      hTAvgPUVsAvgLumi->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
 	      hvTAvgPUVsAvgLumi.at(eta)->Fill(lumiAvg->at(ind), 
 					      tAvgPU->at(ind));
@@ -92,6 +93,8 @@ void AnalyzePUNVtx::Loop()
 	      hRegEt->Fill(regEt->at(ind));
 	      hLumiStd->Fill(lumiStd->at(ind));
 	      hTAvgPUSubEtVsEta->Fill((float)eta, tAvgPUSubEt->at(ind));
+	      hEstPUSubEtVsEta->Fill((float)eta, 
+				     regEt->at(ind) - estPULvl->at(eta));
 	      h2TAvgPUSubEtVsEta->Fill((float)eta, tAvgPUSubEt->at(ind));
 	      hXAvgPUSubEtVsEta->Fill((float)eta, xAvgPUSubEt->at(ind));
 	      hUICPUSubEtVsEta->Fill((float)eta, uicPUSubEt->at(ind));
@@ -120,6 +123,18 @@ void AnalyzePUNVtx::Loop()
 	  hComboPU->Fill(comboPU->at(eta));
 	  hComboPUVsEta->Fill((float)eta,comboPU->at(eta));
 	  
+	  hvEstPUVsNVtx.at(eta)->Fill(nVtx, 
+				      estPULvl->at(eta));
+
+	  hEstPU->Fill(estPULvl->at(eta));
+
+	  if(eta >= 5 && eta <= 16)
+	    hEstPUVsNVtxLoEta->Fill(nVtx, estPULvl->at(eta));
+	  else if(eta <= 2 || eta >= 19)
+	    hEstPUVsNVtxHiEta->Fill(nVtx, estPULvl->at(eta));
+	  else
+	    hEstPUVsNVtxMdEta->Fill(nVtx, estPULvl->at(eta));
+
 	  for(unsigned phi = 0; phi < 18; ++phi)
 	    {
 	      unsigned ind = eta * 18 + phi;
@@ -158,6 +173,20 @@ void AnalyzePUNVtx::plotAll()
   stringstream ssTAvgPU;
   ssTAvgPU << pathToPlots << sTAvgPU << ".png";
   cTAvgPU.Print(ssTAvgPU.str().c_str());
+
+  string sEstPU("estPU");
+  TCanvas cEstPU = TCanvas(sEstPU.c_str(), "Estimated Pileup Plot", 
+			    600, 600);
+  hEstPU->SetFillStyle(1001);
+  hEstPU->SetFillColor(kBlue);
+  hEstPU->GetXaxis()->SetTitle("PU(est) (GeV)");
+  hEstPU->GetYaxis()->SetTitle("4x4 Regions x Eta Indices");
+  hEstPU->GetYaxis()->SetTitleOffset(1.8);
+  hEstPU->GetYaxis()->SetTitleSize(.04);
+  hEstPU->Draw();
+  stringstream ssEstPU;
+  ssEstPU << pathToPlots << sEstPU << ".png";
+  cEstPU.Print(ssEstPU.str().c_str());
 
   string sXAvgPU("xAvgPU");
   TCanvas cXAvgPU = TCanvas(sXAvgPU.c_str(), "Space-Averaged Pileup", 
@@ -275,6 +304,21 @@ void AnalyzePUNVtx::plotAll()
   stringstream ssTAvgPUSubEt;
   ssTAvgPUSubEt << pathToPlots << sTAvgPUSubEt << ".png";
   cTAvgPUSubEt.Print(ssTAvgPUSubEt.str().c_str());
+
+
+  string sEstPUSubEt("EstPUSubEt");
+  TCanvas cEstPUSubEt = TCanvas(sEstPUSubEt.c_str(), 
+				"Estimated Pileup-Subtracted Et Plot", 
+				600, 600);
+  hEstPUSubEt->SetFillStyle(1001);
+  hEstPUSubEt->SetFillColor(kBlue);
+  hEstPUSubEt->GetXaxis()->SetTitle("Et-PU(est) (GeV)");
+  hEstPUSubEt->GetYaxis()->SetTitle("4x4 Regions x Events");
+  hEstPUSubEt->GetYaxis()->SetTitleOffset(1.2);
+  hEstPUSubEt->Draw();
+  stringstream ssEstPUSubEt;
+  ssEstPUSubEt << pathToPlots << sEstPUSubEt << ".png";
+  cEstPUSubEt.Print(ssEstPUSubEt.str().c_str());
 
 
   string sXAvgPUSubEt("spaceAvgPUSubEt");
@@ -434,6 +478,42 @@ void AnalyzePUNVtx::plotAll()
   cTAvgPUVsNVtxAllEta.Print(ssTAvgPUVsNVtxAllEta.str().c_str());
 
 
+  string sEstPUVsNVtxAllEta("estPUVsNVtxAllEta");
+  TCanvas cEstPUVsNVtxAllEta = TCanvas(sEstPUVsNVtxAllEta.c_str(), 
+       "Plot of Average # Primary Vertices vs Estimated Pileup (all Eta)", 
+					  800, 600);
+
+  hEstPUVsNVtxMdEta->GetXaxis()->SetTitle("Average nPVs");
+  hEstPUVsNVtxMdEta->GetYaxis()->SetTitle("Estimated Pileup Level(GeV)");
+  hEstPUVsNVtxMdEta->SetTitle("Estimated Pileup vs. Avg # Primary Vertices");
+  hEstPUVsNVtxMdEta->SetMarkerColor(kRed);
+  hEstPUVsNVtxMdEta->SetLineColor(kRed);
+  hEstPUVsNVtxMdEta->Draw();
+
+  hEstPUVsNVtxHiEta->GetXaxis()->SetTitle("Average nPVs");
+  hEstPUVsNVtxHiEta->GetYaxis()->SetTitle("Estimated Pileup Level (GeV)");
+  hEstPUVsNVtxHiEta->SetMarkerColor(kGreen);
+  hEstPUVsNVtxHiEta->SetLineColor(kGreen);
+  hEstPUVsNVtxHiEta->Draw("same");
+
+  hEstPUVsNVtxLoEta->GetXaxis()->SetTitle("Average nPVs");
+  hEstPUVsNVtxLoEta->GetYaxis()->SetTitle("Estimated Pileup Level (GeV)");
+  hEstPUVsNVtxLoEta->SetMarkerColor(kBlue);
+  hEstPUVsNVtxLoEta->SetLineColor(kBlue);
+  hEstPUVsNVtxLoEta->Draw("same");
+
+  TLegend* leg2 = new TLegend(.2, .65, .45, .85);
+  leg2->AddEntry(hEstPUVsNVtxLoEta, "4<|eta|<17");
+  leg2->AddEntry(hEstPUVsNVtxMdEta, "2<|eta|<5 & 16<|eta|<19");
+  leg2->AddEntry(hEstPUVsNVtxHiEta, "|eta|<3 & |eta|>18");
+  leg2->SetFillColor(kWhite);
+  leg2->Draw("same");
+
+  stringstream ssEstPUVsNVtxAllEta;
+  ssEstPUVsNVtxAllEta << pathToPlots << sEstPUVsNVtxAllEta << ".png";
+  cEstPUVsNVtxAllEta.Print(ssEstPUVsNVtxAllEta.str().c_str());
+
+
   string sTAvgPUVsEta("tAvgPUVsEta");
   TCanvas cTAvgPUVsEta = TCanvas(sTAvgPUVsEta.c_str(), 
 				 "Plot of Eta vs Time Average Pileup", 
@@ -518,6 +598,19 @@ void AnalyzePUNVtx::plotAll()
   stringstream ssTAvgPUSubEtVsEta;
   ssTAvgPUSubEtVsEta << pathToPlots << sTAvgPUSubEtVsEta << ".png";
   cTAvgPUSubEtVsEta.Print(ssTAvgPUSubEtVsEta.str().c_str());
+
+
+  string sEstPUSubEtVsEta("estPUSubEtVsEta");
+  TCanvas cEstPUSubEtVsEta = TCanvas(sEstPUSubEtVsEta.c_str(), 
+		    "Estimated Pileup-Subtracted Et Vs Eta Plot", 800, 600);
+  hEstPUSubEtVsEta->GetXaxis()->SetTitle("GCT Eta Index");
+  hEstPUSubEtVsEta->GetYaxis()->SetTitle("4x4 Region Et - PU(est) (GeV)");
+  hEstPUSubEtVsEta->GetYaxis()->SetTitleSize(0.04);
+  hEstPUSubEtVsEta->GetYaxis()->SetTitleOffset(1.4);
+  hEstPUSubEtVsEta->Draw("E");
+  stringstream ssEstPUSubEtVsEta;
+  ssEstPUSubEtVsEta << pathToPlots << sEstPUSubEtVsEta << ".png";
+  cEstPUSubEtVsEta.Print(ssEstPUSubEtVsEta.str().c_str());
 
 
   string sXAvgPUSubEtVsEta("xAvgPUSubEtVsEta");

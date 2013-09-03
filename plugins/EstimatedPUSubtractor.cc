@@ -36,6 +36,10 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
+#include "DataFormats/Scalers/interface/LumiScalers.h"
+
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+
 using namespace std;
 using namespace edm;
 
@@ -48,11 +52,18 @@ public:
 private:
   // Data Members
   auto_ptr<L1CaloRegionCollection> newRegions;
+  auto_ptr<vector<float>> estimatedPULevel;
 
   const InputTag regionInputTag;
   const InputTag pvSrc;
+  const bool hasReco;
 
-  unsigned nVtx;
+  // for when we have reco
+  float nVtx;
+
+  // for when we don't have reco
+  InputTag scalerSrc_;
+  Float_t instLumi_;
 
   // Set by setParams to be 1 TProfile for each eta index, 
   //// where x-axis is <nVtx> (as determined by lumi scalers), y-axis is 
@@ -85,7 +96,7 @@ private:
     return eta * 18 + phi;
   }
 
-  unsigned getPULevel(unsigned eta, float nVtx) const;
+  float getPULevel(unsigned eta, float nVtx) const;
 };
 
 //
@@ -95,7 +106,8 @@ EstimatedPUSubtractor::EstimatedPUSubtractor(const ParameterSet& iConfig) :
   regionInputTag(iConfig.getParameter<InputTag>("regionSrc")),
   pvSrc(iConfig.exists("pvSrc") ? 
 	iConfig.getParameter<edm::InputTag>("pvSrc") : 
-	InputTag("offlinePrimaryVertices"))
+	InputTag("offlinePrimaryVertices")),
+  hasReco(iConfig.getParameter<bool>("hasReco"))
   
 {
   string paramFileName = iConfig.getParameter<string>("PUParamSrc");
@@ -105,7 +117,15 @@ EstimatedPUSubtractor::EstimatedPUSubtractor(const ParameterSet& iConfig) :
   f->Close();
   delete f;
 
+  if(!hasReco)
+    {
+      scalerSrc_ = iConfig.exists("scalerSrc") ?
+	iConfig.getParameter<InputTag>("scalerSrc") :
+	InputTag("scalersRawToDigi");
+    }
+
   produces<L1CaloRegionCollection>();
+  produces<vector<float>>();
 }
 
 
@@ -124,8 +144,10 @@ EstimatedPUSubtractor::produce(Event& iEvent, const EventSetup& iSetup)
 				       << " regions!" << endl;
 
   newRegions = auto_ptr<L1CaloRegionCollection>(new L1CaloRegionCollection);
+  estimatedPULevel = auto_ptr<vector<float>>(new vector<float>);
 
   newRegions->resize(22*18);
+  estimatedPULevel->resize(22);
 
   for(unsigned q = 0; q < regionHandle->size(); ++q)
     {
@@ -138,14 +160,29 @@ EstimatedPUSubtractor::produce(Event& iEvent, const EventSetup& iSetup)
     }
   
   // Get PV collection
-  edm::Handle<reco::VertexCollection> vertices;
-  iEvent.getByLabel(pvSrc, vertices);
+  if(hasReco)
+    {
+      edm::Handle<reco::VertexCollection> vertices;
+      iEvent.getByLabel(pvSrc, vertices);
 
-  nVtx = vertices->size();
+      nVtx = (float) vertices->size();
+    }
+  else
+    {
+      Handle<LumiScalersCollection> lumiScalers;
+      iEvent.getByLabel(scalerSrc_, lumiScalers);
+      instLumi_ = -1;
+      if (lumiScalers->size())
+	{
+	  instLumi_ = lumiScalers->begin()->instantLumi();
+	  nVtx = lumiScalers->begin()->pileup();
+	}
+    }
 
   subtractPU();
 
   iEvent.put(newRegions);
+  iEvent.put(estimatedPULevel);
 }
 
 
@@ -153,7 +190,8 @@ void EstimatedPUSubtractor::subtractPU()
 {
   for(unsigned eta = 0; eta < 22; ++eta)
     {
-      unsigned puLevel = getPULevel(eta, nVtx);
+      float puLevel = getPULevel(eta, nVtx);
+      estimatedPULevel->at(eta) = puLevel;
 
       for(unsigned phi = 0; phi < 18; ++phi)
 	{
@@ -162,7 +200,7 @@ void EstimatedPUSubtractor::subtractPU()
 	  unsigned newEt = newRegions->at(ind).et();
 
 	  if(newEt > puLevel)
-	    newEt -= puLevel;
+	    newEt -= (unsigned) std::round(puLevel);
 	  else
 	    newEt = 0;
 
@@ -269,7 +307,6 @@ void EstimatedPUSubtractor::subtractPU()
 
 void EstimatedPUSubtractor::setParams(TFile* f, string profName)
 {
-  cout << "Profile name: contents of 1st bin" << endl;
   for(unsigned eta = 0; eta < 22; ++eta)
     {
       stringstream nameStream;
@@ -283,10 +320,9 @@ void EstimatedPUSubtractor::setParams(TFile* f, string profName)
 }
 
 
-unsigned EstimatedPUSubtractor::getPULevel(unsigned eta, float nVtx) const
+float EstimatedPUSubtractor::getPULevel(unsigned eta, float nVtx) const
 {
-  return (unsigned) std::round(PUProfile.at(eta)->
-			       GetBinContent(getBinInd(nVtx)));
+  return PUProfile.at(eta)->GetBinContent(getBinInd(nVtx));
 }
 
 //define this as a plug-in
