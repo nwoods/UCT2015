@@ -15,4 +15,7 @@ double jetcorr(double pt, int ieta, unsigned int pileup);
 // Version using UIC PU eta-dependent correction method.
 double jetcorrUIC(double pt, int ieta, unsigned int pileup);
 
+// Version using TAvg PU subtraction algo
+double jetcorrTAvg(double pt, int ieta);
+
 #endif

@@ -151,7 +151,7 @@ class AnalyzePUNVtx {
 #ifdef AnalyzePUNVtx_cxx
 AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) : 
   fChain(0),
-  pathToPlots("/home/nwoods/www/L1_PU_nVtx/")
+  pathToPlots("/home/nwoods/www/L1_PU_2012D/")
 {
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
@@ -291,22 +291,22 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
   hTAvgPUVsAvgLumiHiEta->SetMaximum(.75);
   hTAvgPUVsNVtxLoEta = new TProfile("tAvgPUVsNVtxLoEta", 
          	      "Time Avg PU Level vs Avg # Primary Vertices (4<Eta<17)",
-				       30, 8., 68.,
+				       32, 8., 40.,
 				       0., 10.);
   hTAvgPUVsNVtxLoEta->SetMinimum(0.);
-  hTAvgPUVsNVtxLoEta->SetMaximum(3.);
+  hTAvgPUVsNVtxLoEta->SetMaximum(2.);
   hTAvgPUVsNVtxMdEta = new TProfile("tAvgPUVsNVtxMdEta", 
 	   "Time Avg PU Level vs Avg # Primary Vertices (2<Eta<5 & 16<Eta<19)",
-				       30, 8., 68.,
+				       32, 8., 40.,
 				       0., 10.);
   hTAvgPUVsNVtxMdEta->SetMinimum(0.);
-  hTAvgPUVsNVtxMdEta->SetMaximum(3.);
+  hTAvgPUVsNVtxMdEta->SetMaximum(2.);
   hTAvgPUVsNVtxHiEta = new TProfile("tAvgPUVsNVtxHiEta", 
 		       "Time Avg PU Level vs Avg Luminosity (Eta<3 & Eta>18)", 
-				       30, 8., 68.,
+				       32, 8., 40.,
 				       0., 10.);
   hTAvgPUVsNVtxHiEta->SetMinimum(0.);
-  hTAvgPUVsNVtxHiEta->SetMaximum(3.);
+  hTAvgPUVsNVtxHiEta->SetMaximum(2.);
   hTAvgPUVsEta = new TProfile("tAvgPUVsEta", 
 			  "Time Avg PU Level vs GCT Eta Index", 
 			  22, -0.5, 21.5,

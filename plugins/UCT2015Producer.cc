@@ -87,6 +87,7 @@ private:
 
   bool puCorrect;
   bool useUICrho; // which PU denstity to use for energy correction determination
+  bool tAvgPU;
 
   unsigned int puETMax;
   unsigned int puLevel;
@@ -151,6 +152,7 @@ unsigned const UCT2015Producer::N_JET_ETA = L1CaloRegionDetId::N_ETA * 4;
 UCT2015Producer::UCT2015Producer(const edm::ParameterSet& iConfig) :
   puCorrect(iConfig.getParameter<bool>("puCorrect")),
   useUICrho(iConfig.getParameter<bool>("useUICrho")),
+  tAvgPU(iConfig.getParameter<bool>("tAvgPU")),
   puETMax(iConfig.getParameter<unsigned int>("puETMax")),
   regionETCutForHT(iConfig.getParameter<unsigned int>("regionETCutForHT")),
   regionETCutForMET(iConfig.getParameter<unsigned int>("regionETCutForMET")),
@@ -494,7 +496,7 @@ list<UCTCandidate>
 UCT2015Producer::correctJets(const list<UCTCandidate>& jets) {
   // jet corrections only valid if PU density has been calculated
   list<UCTCandidate> corrlist;
-  if (!puCorrect) return corrlist;
+  if (!puCorrect && !tAvgPU) return corrlist;
 
   corrlist.clear();
 
@@ -507,7 +509,10 @@ UCT2015Producer::correctJets(const list<UCTCandidate>& jets) {
     //apply Michael's jet correction function
     if (useUICrho){
       jpt = jetcorrUIC(jetET, jet->getInt("rgnEta"), jet->getFloat("puLevelUIC"));
-    }else{
+    }else if(tAvgPU){
+      jpt = jetcorrTAvg(jetET, jet->getInt("rgnEta"));
+    }
+    else{
       jpt = jetcorr(jetET, jet->getInt("rgnEta"), jet->getFloat("puLevel"));
     }
     if (jpt>0)

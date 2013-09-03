@@ -53,7 +53,7 @@ UCT2015EClusterProducer = cms.EDProducer(
 
 UCT2015Producer = cms.EDProducer(
     "UCT2015Producer",
-    puCorrect = cms.bool(False),
+    puCorrect = cms.bool(False),#refers to space avg PU, not time avg
     useUICrho = cms.bool(False),
     # All of these uint32 thresholds are in GeV.
     puETMax = cms.uint32(7),
@@ -69,6 +69,7 @@ UCT2015Producer = cms.EDProducer(
     regionLSB = RCTConfigProducers.jetMETLSB,
     regionSrc = cms.InputTag("TimeAveragePUSubtractor"),
     emCandSrc = cms.InputTag("uctDigis"),
+    tAvgPU = cms.bool(True),
 )
 
 UCT2015EfficiencyProducer = UCT2015Producer.clone(
@@ -104,16 +105,7 @@ TimeAveragePUSubtractor = cms.EDProducer(
     "TAvgPUSubtractor",
     regionSrc = cms.InputTag("uctDigis"),
     tAvgPUCut = cms.uint32(7),
-)
-
-EstimatedPUSubtractor = cms.EDProducer(
-    "EstimatedPUSubtractor",
-    regionSrc = cms.InputTag("uctDigis"),
-    pvSrc = cms.InputTag("offlinePrimaryVertices"),
-    PUParamSrc = cms.string("/afs/hep.wisc.edu/home/nwoods/CMSSW_5_3_6_patch1/src/L1Trigger/UCT2015/test/TAvgPUParams.root"),
-    PUProfileName = cms.string("tAvgPUVsNVtx"),
-)
-    
+)    
 
 from L1Trigger.L1ExtraFromDigis.l1extraParticles_cfi import *
 
@@ -141,7 +133,7 @@ uctEfficiencyEmulatorStep = cms.Sequence(
     hackHCALMIPs
     # Now make UCT and L1 objects
     * uctDigis
-    * EstimatedPUSubtractor
+#    * EstimatedPUSubtractor
     * UCT2015EClusterProducer
     * UCT2015EfficiencyProducer
     * UCTStage1BEfficiencyProducer

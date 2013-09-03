@@ -230,18 +230,10 @@ process.sumsUCTRates = cms.EDAnalyzer(
     l1SETSrc = cms.InputTag("UCT2015Producer", "METUnpacked"),
 )
 
-if options.isTAvg:
-    process.uctHadronicRates = cms.Sequence(
-        process.jetUCTRate
-        #* process.corrjetUCTRate
-        #* process.sumsUCTRates
-        )
-else:
-    process.uctHadronicRates = cms.Sequence(
-        #process.jetUCTRate *
-        process.corrjetUCTRate
-        #* process.sumsUCTRates
-        )
+process.uctHadronicRates = cms.Sequence(
+    process.corrjetUCTRate
+    #* process.sumsUCTRates
+    )
     
 
 

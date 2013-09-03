@@ -45,6 +45,9 @@ void AnalyzePUNVtx::Loop()
 // 	  continue;
 // 	}      
 
+      if(run == 198609 || run == 198603)
+	continue;
+
       hXAvgPU->Fill(xAvgPU);
       hNVtx->Fill(nVtx);
 
@@ -65,15 +68,15 @@ void AnalyzePUNVtx::Loop()
 	      if(eta >= 5 && eta <= 16)
 		hTAvgPUVsAvgLumiLoEta->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
 	      else if(eta <= 2 || eta >= 19)
-		hTAvgPUVsAvgLumiMdEta->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
-	      else
 		hTAvgPUVsAvgLumiHiEta->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
+	      else
+		hTAvgPUVsAvgLumiMdEta->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
 	      if(eta >= 5 && eta <= 16)
 		hTAvgPUVsNVtxLoEta->Fill(nVtx, tAvgPU->at(ind));
 	      else if(eta <= 2 || eta >= 19)
-		hTAvgPUVsNVtxMdEta->Fill(nVtx, tAvgPU->at(ind));
-	      else
 		hTAvgPUVsNVtxHiEta->Fill(nVtx, tAvgPU->at(ind));
+	      else
+		hTAvgPUVsNVtxMdEta->Fill(nVtx, tAvgPU->at(ind));
 	      hTAvgPUVsAvgLumi->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
 	      hvTAvgPUVsAvgLumi.at(eta)->Fill(lumiAvg->at(ind), 
 					      tAvgPU->at(ind));

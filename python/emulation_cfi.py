@@ -69,6 +69,7 @@ UCT2015Producer = cms.EDProducer(
     regionLSB = RCTConfigProducers.jetMETLSB,
     regionSrc = cms.InputTag("uctDigis"),
     emCandSrc = cms.InputTag("uctDigis"),
+    tAvgPU = cms.bool(False),
 )
 
 # Just to make python happy

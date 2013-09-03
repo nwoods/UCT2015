@@ -71,8 +71,8 @@ else:
 ####################################
 #Jet Candidates
 jet_old_ntuple = x_ntuple_file.Get("jetL1Rate/Ntuple")
-t_jet_uct_ntuple = t_ntuple_file.Get("jetUCTRate/Ntuple")
-x_jet_uct_ntuple = x_ntuple_file.Get("jetUCTRate/Ntuple")
+t_jet_uct_ntuple = t_ntuple_file.Get("corrjetUCTRate/Ntuple")
+x_jet_uct_ntuple = x_ntuple_file.Get("corrjetUCTRate/Ntuple")
 #x_jet_uct_ntuple = x_ntuple_file.Get("corrjetUCTRate/Ntuple")
 
 #EG Candidates
