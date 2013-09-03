@@ -1,13 +1,13 @@
-#define AnalyzePUNVtx_cxx
-#include "AnalyzePUNVtx.h"
+#define AnalyzePUEst_cxx
+#include "AnalyzePUEst.h"
 
 using namespace std;
 
-void AnalyzePUNVtx::Loop()
+void AnalyzePUEst::Loop()
 {
 //   In a ROOT session, you can do:
-//      Root > .L AnalyzePUNVtx.C
-//      Root > AnalyzePUNVtx t
+//      Root > .L AnalyzePUEst.C
+//      Root > AnalyzePUEst t
 //      Root > t.GetEntry(12); // Fill t data members with entry number 12
 //      Root > t.Show();       // Show values of entry 12
 //      Root > t.Show(16);     // Read and show values of entry 16
@@ -95,6 +95,7 @@ void AnalyzePUNVtx::Loop()
 	      hTAvgPUSubEtVsEta->Fill((float)eta, tAvgPUSubEt->at(ind));
 	      hEstPUSubEtVsEta->Fill((float)eta, 
 				     regEt->at(ind) - estPULvl->at(eta));
+	      hEstPUSubEt->Fill(regEt->at(ind) - estPULvl->at(eta));
 	      h2TAvgPUSubEtVsEta->Fill((float)eta, tAvgPUSubEt->at(ind));
 	      hXAvgPUSubEtVsEta->Fill((float)eta, xAvgPUSubEt->at(ind));
 	      hUICPUSubEtVsEta->Fill((float)eta, uicPUSubEt->at(ind));
@@ -158,7 +159,7 @@ void AnalyzePUNVtx::Loop()
 
 
 
-void AnalyzePUNVtx::plotAll()
+void AnalyzePUEst::plotAll()
 {
   string sTAvgPU("tAvgPU");
   TCanvas cTAvgPU = TCanvas(sTAvgPU.c_str(), "Time-Averaged Pileup Plot", 
@@ -502,12 +503,12 @@ void AnalyzePUNVtx::plotAll()
   hEstPUVsNVtxLoEta->SetLineColor(kBlue);
   hEstPUVsNVtxLoEta->Draw("same");
 
-  TLegend* leg2 = new TLegend(.2, .65, .45, .85);
-  leg2->AddEntry(hEstPUVsNVtxLoEta, "4<|eta|<17");
-  leg2->AddEntry(hEstPUVsNVtxMdEta, "2<|eta|<5 & 16<|eta|<19");
-  leg2->AddEntry(hEstPUVsNVtxHiEta, "|eta|<3 & |eta|>18");
-  leg2->SetFillColor(kWhite);
-  leg2->Draw("same");
+  TLegend* leg3 = new TLegend(.2, .65, .45, .85);
+  leg3->AddEntry(hEstPUVsNVtxLoEta, "4<|eta|<17");
+  leg3->AddEntry(hEstPUVsNVtxMdEta, "2<|eta|<5 & 16<|eta|<19");
+  leg3->AddEntry(hEstPUVsNVtxHiEta, "|eta|<3 & |eta|>18");
+  leg3->SetFillColor(kWhite);
+  leg3->Draw("same");
 
   stringstream ssEstPUVsNVtxAllEta;
   ssEstPUVsNVtxAllEta << pathToPlots << sEstPUVsNVtxAllEta << ".png";
@@ -747,7 +748,7 @@ void AnalyzePUNVtx::plotAll()
 }
 
 
-// void AnalyzePUNVtx::fitPUToLumi()
+// void AnalyzePUEst::fitPUToLumi()
 // {
 //   vector<float> coeffHiA;
 //   vector<float> coeffHiB;
@@ -805,7 +806,7 @@ void AnalyzePUNVtx::plotAll()
 // }
 
 
-void AnalyzePUNVtx::fitPUToNVtx()
+void AnalyzePUEst::fitPUToNVtx()
 {
   vector<float> avgCoeffA;
   vector<float> avgCoeffB;
@@ -872,7 +873,7 @@ void AnalyzePUNVtx::fitPUToNVtx()
 }
 
 
-void AnalyzePUNVtx::getVarGraph(TProfile* PU, TGraph& gr)
+void AnalyzePUEst::getVarGraph(TProfile* PU, TGraph& gr)
 {
   int nBins = PU->GetNbinsX();
   vector<double> ecks;
@@ -895,7 +896,7 @@ void AnalyzePUNVtx::getVarGraph(TProfile* PU, TGraph& gr)
 }
 
 
-void AnalyzePUNVtx::saveParams()
+void AnalyzePUEst::saveParams()
 {
   TFile f("TAvgPUParams.root", "new");
 

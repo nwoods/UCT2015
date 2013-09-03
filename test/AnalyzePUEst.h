@@ -5,8 +5,8 @@
 // found on file: pu_tree_numEvent555.root
 //////////////////////////////////////////////////////////
 
-#ifndef AnalyzePUNVtx_h
-#define AnalyzePUNVtx_h
+#ifndef AnalyzePUEst_h
+#define AnalyzePUEst_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -31,7 +31,7 @@ using namespace std;
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
-class AnalyzePUNVtx {
+class AnalyzePUEst {
  public :
   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
   Int_t           fCurrent; //!current Tree number in a TChain
@@ -72,8 +72,8 @@ class AnalyzePUNVtx {
   TBranch        *b_nVtx;
   TBranch        *b_estPULvl;
 
-  AnalyzePUNVtx(TTree *tree=0);
-  virtual ~AnalyzePUNVtx();
+  AnalyzePUEst(TTree *tree=0);
+  virtual ~AnalyzePUEst();
   virtual Int_t    Cut(Long64_t entry);
   virtual Int_t    GetEntry(Long64_t entry);
   virtual Long64_t LoadTree(Long64_t entry);
@@ -161,8 +161,8 @@ class AnalyzePUNVtx {
 
 #endif
 
-#ifdef AnalyzePUNVtx_cxx
-AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) : 
+#ifdef AnalyzePUEst_cxx
+AnalyzePUEst::AnalyzePUEst(TTree *tree) : 
   fChain(0),
   pathToPlots("/home/nwoods/www/L1_PU_est/")
 {
@@ -240,12 +240,12 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
       sName << "estPUVsNVtx" << eta;
       stringstream sTitle;
       sTitle << "Time Avg PU Level Vs # (Eta=" << eta << ")";
-      hvEstPUVsAvgLumi.push_back(new TProfile(sName.str().c_str(),
+      hvEstPUVsNVtx.push_back(new TProfile(sName.str().c_str(),
 					       sTitle.str().c_str(),
 					       100, 200., 3400.,
 					       0., 10.));
-      hvEstPUVsAvgLumi.at(eta)->SetMinimum(0.);
-      hvEstPUVsAvgLumi.at(eta)->SetMaximum(6.);
+      hvEstPUVsNVtx.at(eta)->SetMinimum(0.);
+      hvEstPUVsNVtx.at(eta)->SetMaximum(6.);
     }
   for(unsigned eta = 0; eta < 22; ++eta)
     {
@@ -447,19 +447,19 @@ AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) :
   hStripPUSubEtVsRegEt->SetMaximum(4.);
 }
 
-AnalyzePUNVtx::~AnalyzePUNVtx()
+AnalyzePUEst::~AnalyzePUEst()
 {
   if (!fChain) return;
   delete fChain->GetCurrentFile();
 }
 
-Int_t AnalyzePUNVtx::GetEntry(Long64_t entry)
+Int_t AnalyzePUEst::GetEntry(Long64_t entry)
 {
   // Read contents of entry.
   if (!fChain) return 0;
   return fChain->GetEntry(entry);
 }
-Long64_t AnalyzePUNVtx::LoadTree(Long64_t entry)
+Long64_t AnalyzePUEst::LoadTree(Long64_t entry)
 {
   // Set the environment to read one entry
   if (!fChain) return -5;
@@ -472,7 +472,7 @@ Long64_t AnalyzePUNVtx::LoadTree(Long64_t entry)
   return centry;
 }
 
-void AnalyzePUNVtx::Init(TTree *tree)
+void AnalyzePUEst::Init(TTree *tree)
 {
   // The Init() function is called when the selector needs to initialize
   // a new tree or chain. Typically here the branch addresses and branch
@@ -520,7 +520,7 @@ void AnalyzePUNVtx::Init(TTree *tree)
   Notify();
 }
 
-Bool_t AnalyzePUNVtx::Notify()
+Bool_t AnalyzePUEst::Notify()
 {
   // The Notify() function is called when a new file is opened. This
   // can be either for a new TTree in a TChain or when when a new TTree
@@ -531,14 +531,14 @@ Bool_t AnalyzePUNVtx::Notify()
   return kTRUE;
 }
 
-void AnalyzePUNVtx::Show(Long64_t entry)
+void AnalyzePUEst::Show(Long64_t entry)
 {
   // Print contents of entry.
   // If entry is not specified, print current entry
   if (!fChain) return;
   fChain->Show(entry);
 }
-Int_t AnalyzePUNVtx::Cut(Long64_t entry)
+Int_t AnalyzePUEst::Cut(Long64_t entry)
 {
   // This function may be called from Loop.
   // returns  1 if entry is accepted.
@@ -548,4 +548,4 @@ Int_t AnalyzePUNVtx::Cut(Long64_t entry)
 
 
 
-#endif // #ifdef AnalyzePUNVtx_cxx
+#endif // #ifdef AnalyzePUEst_cxx
