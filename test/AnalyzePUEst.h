@@ -164,16 +164,16 @@ class AnalyzePUNVtx {
 #ifdef AnalyzePUNVtx_cxx
 AnalyzePUNVtx::AnalyzePUNVtx(TTree *tree) : 
   fChain(0),
-  pathToPlots("/home/nwoods/www/L1_PU_nVtx_skim/")
+  pathToPlots("/home/nwoods/www/L1_PU_est/")
 {
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
   if (tree == 0) {
-    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/scratch/nwoods/puComp_skim0.root");
+    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/scratch/nwoods/estPU_res_skim0.root");
     if (!f || !f->IsOpen()) {
-      f = new TFile("/scratch/nwoods/puComp_skim0.root");
+      f = new TFile("/scratch/nwoods/estPU_res_skim0.root");
     }
-    TDirectory * dir = (TDirectory*)f->Get("/scratch/nwoods/puComp_skim0.root:/makePUTree");
+    TDirectory * dir = (TDirectory*)f->Get("/scratch/nwoods/estPU_res_skim0.root:/makePUTree");
     dir->GetObject("Ntuple",tree);
   }
   Init(tree);
