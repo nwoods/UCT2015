@@ -187,16 +187,16 @@ for jetCut in jetRange:
     for regCut in regRange:
 1PtCut = 20
 
-rlx EG
-compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "", # No reco selection (rlx EG)
-                     "!l1gMIP&&!l1gTauVeto", # UCT EG
-                     "", # No old L1 selection
-                     "rlx_eg_eff_%0.2f"%(L1PtCut),
-                     "Relaxed EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
+# rlx EG
+# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "", # No reco selection (rlx EG)
+#                      "!l1gMIP&&!l1gTauVeto", # UCT EG
+#                      "", # No old L1 selection
+#                      "rlx_eg_eff_%0.2f"%(L1PtCut),
+#                      "Relaxed EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
 iso EG
 compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
                      "recoPt", L1PtCut, [40, 0, 200],
@@ -207,36 +207,36 @@ compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
                      "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
                      "RECO p_{T} (GeV)")
 
-rlx tau
-compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "", # No reco selection (rlx tau)
-                     "", # UCT tau
-                     "", # No old L1 selection
-                     "rlx_tau_eff_%0.2f"%(L1PtCut),
-                     "Relaxed EG Efficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-
-iso tau
-compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "dr03CombinedEt < 0.2", # Isolated (iso tau)
-                     "l1gJetPt>0&&(l1gJetPt-l1gPt)/l1gPt<=.1", # UCT Iso Tau
-                     "", # No old L1 selection lol
-                     "iso_tau_eff_%0.2f"%(L1PtCut),
-                     "Isolated Tau fficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-Jet
-
-for JetL1PtCut in [30., 50., 70., 150., 200.]:
-
-   compare_efficiencies(jet_ntuple_t, jet_ntuple_x, jet_ntuple_old,
-                        "recoPt", JetL1PtCut, [40, 0, 200],
-                        "", # No reco selection 
-                        "", # No UCT selection
-                        "", # No old L1 selection
-                        "jet_eff_%0.2f"%(JetL1PtCut),
-                        "Jet efficiency (%uGeV)"%(JetL1PtCut),# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                        "RECO p_{T} (GeV)")
+# rlx tau
+# compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "", # No reco selection (rlx tau)
+#                      "", # UCT tau
+#                      "", # No old L1 selection
+#                      "rlx_tau_eff_%0.2f"%(L1PtCut),
+#                      "Relaxed EG Efficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# 
+# iso tau
+# compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "dr03CombinedEt < 0.2", # Isolated (iso tau)
+#                      "l1gJetPt>0&&(l1gJetPt-l1gPt)/l1gPt<=.1", # UCT Iso Tau
+#                      "", # No old L1 selection lol
+#                      "iso_tau_eff_%0.2f"%(L1PtCut),
+#                      "Isolated Tau fficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# #Jet
+# 
+# for JetL1PtCut in [30., 50., 70., 150., 200.]:
+# 
+#    compare_efficiencies(jet_ntuple_t, jet_ntuple_x, jet_ntuple_old,
+#                         "recoPt", JetL1PtCut, [40, 0, 200],
+#                         "", # No reco selection 
+#                         "", # No UCT selection
+#                         "", # No old L1 selection
+#                         "jet_eff_%0.2f"%(JetL1PtCut),
+#                         "Jet efficiency (%uGeV)"%(JetL1PtCut),# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                         "RECO p_{T} (GeV)")
