@@ -69,7 +69,7 @@ process.EstimatedPUSubtractor = cms.EDProducer(
     pvSrc = cms.InputTag("offlinePrimaryVertices"),
     PUParamSrc = cms.string("./TAvgPUParams.root"),
     PUProfileName = cms.string("tAvgPUVsNVtx"),
-    hasReco = cms.bool(True),
+    hasReco = cms.bool(False),
 )
 
 process.makePUTree = cms.EDAnalyzer(
