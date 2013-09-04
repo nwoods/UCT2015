@@ -143,6 +143,15 @@ class AnalyzePUEst {
   TProfile* hEstPUVsNVtxMdEta;
   TProfile* hEstPUVsNVtxHiEta;
 
+  TProfile* hEstPUSubEtVsNVtxLoEta;
+  TProfile* hEstPUSubEtVsNVtxMdEta;
+  TProfile* hEstPUSubEtVsNVtxHiEta;
+  TProfile* hTAvgPUSubEtVsNVtxLoEta;
+  TProfile* hTAvgPUSubEtVsNVtxMdEta;
+  TProfile* hTAvgPUSubEtVsNVtxHiEta;
+  vector<TProfile*> hvTAvgPUSubEtVsNVtx;
+  vector<TProfile*> hvEstPUSubEtVsNVtx;
+
   vector<TProfile*> hvTAvgPUVsAvgLumi;
   vector<TProfile*> hvTAvgPUVsNVtx;
   vector<TProfile*> hvEstPUVsNVtx;
@@ -239,10 +248,10 @@ AnalyzePUEst::AnalyzePUEst(TTree *tree) :
       stringstream sName;
       sName << "estPUVsNVtx" << eta;
       stringstream sTitle;
-      sTitle << "Time Avg PU Level Vs # (Eta=" << eta << ")";
+      sTitle << "Estimated PU Level Vs # Primary Vertices (Eta=" << eta << ")";
       hvEstPUVsNVtx.push_back(new TProfile(sName.str().c_str(),
 					       sTitle.str().c_str(),
-					       100, 200., 3400.,
+					       60, 8., 68.,
 					       0., 10.));
       hvEstPUVsNVtx.at(eta)->SetMinimum(0.);
       hvEstPUVsNVtx.at(eta)->SetMaximum(6.);
@@ -256,11 +265,40 @@ AnalyzePUEst::AnalyzePUEst(TTree *tree) :
 	     << eta << ")";
       hvTAvgPUVsNVtx.push_back(new TProfile(sName.str().c_str(),
 					    sTitle.str().c_str(),
-					    30, 8., 68.,
+					    60, 8., 68.,
 					    0., 10.));
       hvTAvgPUVsNVtx.at(eta)->SetMinimum(0.);
       hvTAvgPUVsNVtx.at(eta)->SetMaximum(4.);
     }
+
+  for(unsigned eta = 0; eta < 22; ++eta)
+    {
+      stringstream sName;
+      sName << "estPUSubEtVsNVtx" << eta;
+      stringstream sTitle;
+      sTitle << "Et - PU(est) Vs # Primary Vertices (Eta=" << eta << ")";
+      hvEstPUSubEtVsNVtx.push_back(new TProfile(sName.str().c_str(),
+						sTitle.str().c_str(),
+						32, 8., 40.,
+						-10., 10.));
+      hvEstPUSubEtVsNVtx.at(eta)->SetMinimum(-1.);
+      hvEstPUSubEtVsNVtx.at(eta)->SetMaximum(1.);
+    }
+  for(unsigned eta = 0; eta < 22; ++eta)
+    {
+      stringstream sName;
+      sName << "tAvgPUSubEtVsNVtx" << eta;
+      stringstream sTitle;
+      sTitle << "Et - PU(time avg) Vs # Primary Vertices (Eta=" 
+	     << eta << ")";
+      hvTAvgPUSubEtVsNVtx.push_back(new TProfile(sName.str().c_str(),
+						 sTitle.str().c_str(),
+						 32, 8., 40.,
+						 -10., 10.));
+      hvTAvgPUSubEtVsNVtx.at(eta)->SetMinimum(-1.);
+      hvTAvgPUSubEtVsNVtx.at(eta)->SetMaximum(1.);
+    }
+
   for(unsigned eta = 0; eta < 22; ++eta)
     {
       stringstream sName;
@@ -321,6 +359,7 @@ AnalyzePUEst::AnalyzePUEst(TTree *tree) :
 				       0., 10.);
   hTAvgPUVsAvgLumiHiEta->SetMinimum(0.);
   hTAvgPUVsAvgLumiHiEta->SetMaximum(.75);
+
   hTAvgPUVsNVtxLoEta = new TProfile("tAvgPUVsNVtxLoEta", 
          	      "Time Avg PU Level vs Avg # Primary Vertices (4<Eta<17)",
 				       32, 8., 40.,
@@ -329,35 +368,73 @@ AnalyzePUEst::AnalyzePUEst(TTree *tree) :
   hTAvgPUVsNVtxLoEta->SetMaximum(2.);
   hTAvgPUVsNVtxMdEta = new TProfile("tAvgPUVsNVtxMdEta", 
 	   "Time Avg PU Level vs Avg # Primary Vertices (2<Eta<5 & 16<Eta<19)",
-				       32, 8., 40.,
-				       0., 10.);
+				    32, 8., 40.,
+				    0., 10.);
   hTAvgPUVsNVtxMdEta->SetMinimum(0.);
   hTAvgPUVsNVtxMdEta->SetMaximum(2.);
   hTAvgPUVsNVtxHiEta = new TProfile("tAvgPUVsNVtxHiEta", 
 		       "Time Avg PU Level vs Avg Luminosity (Eta<3 & Eta>18)", 
-				       32, 8., 40.,
-				       0., 10.);
+				    32, 8., 40.,
+				    0., 10.);
   hTAvgPUVsNVtxHiEta->SetMinimum(0.);
   hTAvgPUVsNVtxHiEta->SetMaximum(2.);
 
   hEstPUVsNVtxLoEta = new TProfile("estPUVsNVtxLoEta", 
          	     "Estimated PU Level vs # Primary Vertices (4<Eta<17)",
-				       32, 8., 40.,
-				       0., 10.);
+				   32, 8., 40.,
+				   0., 10.);
   hEstPUVsNVtxLoEta->SetMinimum(0.);
   hEstPUVsNVtxLoEta->SetMaximum(2.);
   hEstPUVsNVtxMdEta = new TProfile("estPUVsNVtxMdEta", 
 	  "Estimated PU Level vs Avg # Primary Vertices (2<Eta<5 & 16<Eta<19)",
-				       32, 8., 40.,
-				       0., 10.);
+				   32, 8., 40.,
+				   0., 10.);
   hEstPUVsNVtxMdEta->SetMinimum(0.);
   hEstPUVsNVtxMdEta->SetMaximum(2.);
   hEstPUVsNVtxHiEta = new TProfile("estPUVsNVtxHiEta", 
 		      "Estimated PU Level vs Avg Luminosity (Eta<3 & Eta>18)", 
-				       32, 8., 40.,
-				       0., 10.);
+				   32, 8., 40.,
+				   0., 10.);
   hEstPUVsNVtxHiEta->SetMinimum(0.);
   hEstPUVsNVtxHiEta->SetMaximum(2.);
+
+  hTAvgPUSubEtVsNVtxLoEta = new TProfile("tAvgPUSubEtVsNVtxLoEta", 
+         	      "Et - PU(time avg) vs # Primary Vertices (4<Eta<17)",
+					 32, 8., 40.,
+					 -10., 10.);
+  hTAvgPUSubEtVsNVtxLoEta->SetMinimum(-1.);
+  hTAvgPUSubEtVsNVtxLoEta->SetMaximum(1.);
+  hTAvgPUSubEtVsNVtxMdEta = new TProfile("tAvgPUSubEtVsNVtxMdEta", 
+	   "Et - PU(time avg) vs # Primary Vertices (2<Eta<5 & 16<Eta<19)",
+					 32, 8., 40.,
+					 -10., 10.);
+  hTAvgPUSubEtVsNVtxMdEta->SetMinimum(-1.);
+  hTAvgPUSubEtVsNVtxMdEta->SetMaximum(1.);
+  hTAvgPUSubEtVsNVtxHiEta = new TProfile("tAvgPUSubEtVsNVtxHiEta", 
+	       "Et - PU(time avg) vs # Primary Vertices (Eta<3 & Eta>18)", 
+					 32, 8., 40.,
+					 -10., 10.);
+  hTAvgPUSubEtVsNVtxHiEta->SetMinimum(-1.);
+  hTAvgPUSubEtVsNVtxHiEta->SetMaximum(1.);
+
+  hEstPUSubEtVsNVtxLoEta = new TProfile("estPUSubEtVsNVtxLoEta", 
+         	     "Et - PU(est) vs # Primary Vertices (4<Eta<17)",
+					32, 8., 40.,
+					-10., 10.);
+  hEstPUSubEtVsNVtxLoEta->SetMinimum(-1.);
+  hEstPUSubEtVsNVtxLoEta->SetMaximum(1.);
+  hEstPUSubEtVsNVtxMdEta = new TProfile("estPUSubEtVsNVtxMdEta", 
+	  "Et - PU(est) vs # Primary Vertices (2<Eta<5 & 16<Eta<19)",
+					32, 8., 40.,
+					-10., 10.);
+  hEstPUSubEtVsNVtxMdEta->SetMinimum(-1.);
+  hEstPUSubEtVsNVtxMdEta->SetMaximum(1.);
+  hEstPUSubEtVsNVtxHiEta = new TProfile("estPUSubEtVsNVtxHiEta", 
+		      "Et - PU(est) vs # Primary Vertices (Eta<3 & Eta>18)", 
+					32, 8., 40.,
+					-10., 10.);
+  hEstPUSubEtVsNVtxHiEta->SetMinimum(-1.);
+  hEstPUSubEtVsNVtxHiEta->SetMaximum(1.);
 
   hTAvgPUVsEta = new TProfile("tAvgPUVsEta", 
 			  "Time Avg PU Level vs GCT Eta Index", 

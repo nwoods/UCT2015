@@ -65,24 +65,38 @@ void AnalyzePUEst::Loop()
 
 	      hTAvgPU->Fill(tAvgPU->at(ind));
 	      hUICPU->Fill(uicPU->at(ind));
+
 	      if(eta >= 5 && eta <= 16)
-		hTAvgPUVsAvgLumiLoEta->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
+		{
+		  hTAvgPUVsAvgLumiLoEta->Fill(lumiAvg->at(ind), 
+					      tAvgPU->at(ind));
+		  hTAvgPUVsNVtxLoEta->Fill(nVtx, tAvgPU->at(ind));
+		  hTAvgPUSubEtVsNVtxLoEta->Fill(nVtx, tAvgPUSubEt->at(ind));
+		}
 	      else if(eta <= 2 || eta >= 19)
-		hTAvgPUVsAvgLumiHiEta->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
+		{
+		  hTAvgPUVsAvgLumiHiEta->Fill(lumiAvg->at(ind), 
+					      tAvgPU->at(ind));
+		  hTAvgPUVsNVtxHiEta->Fill(nVtx, tAvgPU->at(ind));
+		  hTAvgPUSubEtVsNVtxHiEta->Fill(nVtx, tAvgPUSubEt->at(ind));
+		}
 	      else
-		hTAvgPUVsAvgLumiMdEta->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
-	      if(eta >= 5 && eta <= 16)
-		hTAvgPUVsNVtxLoEta->Fill(nVtx, tAvgPU->at(ind));
-	      else if(eta <= 2 || eta >= 19)
-		hTAvgPUVsNVtxHiEta->Fill(nVtx, tAvgPU->at(ind));
-	      else
-		hTAvgPUVsNVtxMdEta->Fill(nVtx, tAvgPU->at(ind));
-	      
+		{
+		  hTAvgPUVsAvgLumiMdEta->Fill(lumiAvg->at(ind), 
+					      tAvgPU->at(ind));
+		  hTAvgPUVsNVtxMdEta->Fill(nVtx, tAvgPU->at(ind));
+		  hTAvgPUSubEtVsNVtxMdEta->Fill(nVtx, tAvgPUSubEt->at(ind));
+		}
 	      hTAvgPUVsAvgLumi->Fill(lumiAvg->at(ind), tAvgPU->at(ind));
 	      hvTAvgPUVsAvgLumi.at(eta)->Fill(lumiAvg->at(ind), 
 					      tAvgPU->at(ind));
 	      hvTAvgPUVsNVtx.at(eta)->Fill(nVtx, 
 					   tAvgPU->at(ind));
+	      hvTAvgPUSubEtVsNVtx.at(eta)->Fill(nVtx, 
+						tAvgPUSubEt->at(ind));
+	      hvEstPUSubEtVsNVtx.at(eta)->Fill(nVtx, 
+					       regEt->at(ind) 
+					       - estPULvl->at(eta));
 	      hTAvgPUVsEta->Fill((float)eta, tAvgPU->at(ind));
 	      hUICPUVsEta->Fill((float)eta, uicPU->at(ind));
 	      hTAvgPUVsPhi->Fill((float)phi, tAvgPU->at(ind));
@@ -152,6 +166,26 @@ void AnalyzePUEst::Loop()
 	      h2ComboPUSubEtVsEta->Fill((float)eta,comboPUSubEt);
 
 	      hStripPUSubEtVsRegEt->Fill(regEt->at(ind),stripPUSubEt);
+
+	      if(eta >= 5 && eta <= 16)
+		{
+		  hEstPUSubEtVsNVtxLoEta->Fill(nVtx, 
+					       regEt->at(ind) 
+					       - estPULvl->at(eta));
+		}
+	      else if(eta <= 2 || eta >= 19)	  
+		{
+		  hEstPUSubEtVsNVtxHiEta->Fill(nVtx, 
+					       regEt->at(ind) 
+					       - estPULvl->at(eta));
+		}
+	      else
+		{				  
+		  hEstPUSubEtVsNVtxMdEta->Fill(nVtx, 
+					       regEt->at(ind) 
+					       - estPULvl->at(eta));
+		}
+
 	    }
 	}
     }
@@ -513,6 +547,84 @@ void AnalyzePUEst::plotAll()
   stringstream ssEstPUVsNVtxAllEta;
   ssEstPUVsNVtxAllEta << pathToPlots << sEstPUVsNVtxAllEta << ".png";
   cEstPUVsNVtxAllEta.Print(ssEstPUVsNVtxAllEta.str().c_str());
+
+
+  string sTAvgPUSubEtVsNVtxAllEta("tAvgPUSubEtVsNVtxAllEta");
+  TCanvas cTAvgPUSubEtVsNVtxAllEta = TCanvas(sTAvgPUSubEtVsNVtxAllEta.c_str(), 
+       "Plot of Average # Primary Vertices vs Et - PU(time avg) (all Eta)", 
+					  800, 600);
+
+  hTAvgPUSubEtVsNVtxMdEta->GetXaxis()->SetTitle("Average nPVs");
+  hTAvgPUSubEtVsNVtxMdEta->GetYaxis()->SetTitle("4x4 Region Et - Pileup Level(GeV)");
+  hTAvgPUSubEtVsNVtxMdEta->SetTitle("Et - PU(time avg) vs. # Primary Vertices");
+  hTAvgPUSubEtVsNVtxMdEta->SetMarkerColor(kRed);
+  hTAvgPUSubEtVsNVtxMdEta->SetLineColor(kRed);
+  //  hTAvgPUSubEtVsNVtxMdEta->SetErrorOption("s");
+  hTAvgPUSubEtVsNVtxMdEta->Draw();
+
+  hTAvgPUSubEtVsNVtxHiEta->GetXaxis()->SetTitle("Average nPVs");
+  hTAvgPUSubEtVsNVtxHiEta->GetYaxis()->SetTitle("4x4 Region Et - Pileup Level (GeV)");
+  hTAvgPUSubEtVsNVtxHiEta->SetMarkerColor(kGreen);
+  hTAvgPUSubEtVsNVtxHiEta->SetLineColor(kGreen);
+  //  hTAvgPUSubEtVsNVtxHiEta->SetErrorOption("s");
+  hTAvgPUSubEtVsNVtxHiEta->Draw("same");
+
+  hTAvgPUSubEtVsNVtxLoEta->GetXaxis()->SetTitle("Average nPVs");
+  hTAvgPUSubEtVsNVtxLoEta->GetYaxis()->SetTitle("4x4 Region Et - Pileup Level (GeV)");
+  hTAvgPUSubEtVsNVtxLoEta->SetMarkerColor(kBlue);
+  hTAvgPUSubEtVsNVtxLoEta->SetLineColor(kBlue);
+  //  hTAvgPUSubEtVsNVtxLoEta->SetErrorOption("s");
+  hTAvgPUSubEtVsNVtxLoEta->Draw("same");
+
+  TLegend* leg4 = new TLegend(.2, .65, .45, .85);
+  leg4->AddEntry(hTAvgPUSubEtVsNVtxLoEta, "4<|eta|<17");
+  leg4->AddEntry(hTAvgPUSubEtVsNVtxMdEta, "2<|eta|<5 & 16<|eta|<19");
+  leg4->AddEntry(hTAvgPUSubEtVsNVtxHiEta, "|eta|<3 & |eta|>18");
+  leg4->SetFillColor(kWhite);
+  leg4->Draw("same");
+
+  stringstream ssTAvgPUSubEtVsNVtxAllEta;
+  ssTAvgPUSubEtVsNVtxAllEta << pathToPlots << sTAvgPUSubEtVsNVtxAllEta << ".png";
+  cTAvgPUSubEtVsNVtxAllEta.Print(ssTAvgPUSubEtVsNVtxAllEta.str().c_str());
+
+
+  string sEstPUSubEtVsNVtxAllEta("estPUSubEtVsNVtxAllEta");
+  TCanvas cEstPUSubEtVsNVtxAllEta = TCanvas(sEstPUSubEtVsNVtxAllEta.c_str(), 
+       "Plot of Average # Primary Vertices vs Estimated Pileup (all Eta)", 
+					  800, 600);
+
+  hEstPUSubEtVsNVtxMdEta->GetXaxis()->SetTitle("Average nPVs");
+  hEstPUSubEtVsNVtxMdEta->GetYaxis()->SetTitle("4x4 Region Et - Pileup Level(GeV)");
+  hEstPUSubEtVsNVtxMdEta->SetTitle("Et - PU(est) vs. # Primary Vertices");
+  hEstPUSubEtVsNVtxMdEta->SetMarkerColor(kRed);
+  hEstPUSubEtVsNVtxMdEta->SetLineColor(kRed);
+  //  hEstPUSubEtVsNVtxMdEta->SetErrorOption("s");
+  hEstPUSubEtVsNVtxMdEta->Draw();
+
+  hEstPUSubEtVsNVtxHiEta->GetXaxis()->SetTitle("Average nPVs");
+  hEstPUSubEtVsNVtxHiEta->GetYaxis()->SetTitle("4x4 Region Et - Pileup Level (GeV)");
+  hEstPUSubEtVsNVtxHiEta->SetMarkerColor(kGreen);
+  hEstPUSubEtVsNVtxHiEta->SetLineColor(kGreen);
+  //  hEstPUSubEtVsNVtxHiEta->SetErrorOption("s");
+  hEstPUSubEtVsNVtxHiEta->Draw("same");
+
+  hEstPUSubEtVsNVtxLoEta->GetXaxis()->SetTitle("Average nPVs");
+  hEstPUSubEtVsNVtxLoEta->GetYaxis()->SetTitle("4x4 Region Et - Pileup Level (GeV)");
+  hEstPUSubEtVsNVtxLoEta->SetMarkerColor(kBlue);
+  hEstPUSubEtVsNVtxLoEta->SetLineColor(kBlue);
+  //  hEstPUSubEtVsNVtxLoEta->SetErrorOption("s");
+  hEstPUSubEtVsNVtxLoEta->Draw("same");
+
+  TLegend* leg5 = new TLegend(.2, .65, .45, .85);
+  leg5->AddEntry(hEstPUSubEtVsNVtxLoEta, "4<|eta|<17");
+  leg5->AddEntry(hEstPUSubEtVsNVtxMdEta, "2<|eta|<5 & 16<|eta|<19");
+  leg5->AddEntry(hEstPUSubEtVsNVtxHiEta, "|eta|<3 & |eta|>18");
+  leg5->SetFillColor(kWhite);
+  leg5->Draw("same");
+
+  stringstream ssEstPUSubEtVsNVtxAllEta;
+  ssEstPUSubEtVsNVtxAllEta << pathToPlots << sEstPUSubEtVsNVtxAllEta << ".png";
+  cEstPUSubEtVsNVtxAllEta.Print(ssEstPUSubEtVsNVtxAllEta.str().c_str());
 
 
   string sTAvgPUVsEta("tAvgPUVsEta");
