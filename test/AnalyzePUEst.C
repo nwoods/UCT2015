@@ -928,7 +928,7 @@ void AnalyzePUEst::fitPUToNVtx()
   for(unsigned eta = 0; eta < hvTAvgPUVsNVtx.size(); ++eta)
     {
       // Fit mean of PU algorithm result
-      TF1* fLin = new TF1("fLin", "pol1", 8., 68.);
+      TF1* fLin = new TF1("fLin", "pol1", 8., 35.);
 
       hvTAvgPUVsNVtx.at(eta)->Fit("fLin","QR");
 
@@ -955,7 +955,7 @@ void AnalyzePUEst::fitPUToNVtx()
 
       var.push_back(new TGraph(ex, wy));
 
-      TF1* fLin2 = new TF1("fLin2", "pol1", 8., 68.);
+      TF1* fLin2 = new TF1("fLin2", "pol1", 8., 40.);
       var.at(eta)->Fit("fLin2", "QR");
 
       varCoeffA.push_back(fLin2->GetParameter(0));
@@ -1010,7 +1010,7 @@ void AnalyzePUEst::getVarGraph(TProfile* PU, TGraph& gr)
 
 void AnalyzePUEst::saveParams()
 {
-  TFile f("TAvgPUParams.root", "new");
+  TFile f("TAvgPUParams_2012D_v2.root", "new");
 
   for(unsigned i = 0; i < hvTAvgPUVsNVtx.size(); ++i)
     {
