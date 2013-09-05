@@ -33,9 +33,6 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "DataFormats/VertexReco/interface/Vertex.h"
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
-
 #include "DataFormats/Scalers/interface/LumiScalers.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
@@ -55,18 +52,13 @@ private:
   auto_ptr<vector<float>> estimatedPULevel;
 
   const InputTag regionInputTag;
-  const InputTag pvSrc;
-  const bool hasReco;
 
   vector<float> coeffA;
   vector<float> coeffB;
 
-  // for when we have reco
   float nVtx;
 
-  // for when we don't have reco
   InputTag scalerSrc_;
-  Float_t instLumi_;
 
   // Set by setParams to be 1 TProfile for each eta index, 
   //// where x-axis is <nVtx> (as determined by lumi scalers), y-axis is 
@@ -108,12 +100,7 @@ private:
 // constructors and destructor
 //
 EstimatedPUSubtractor::EstimatedPUSubtractor(const ParameterSet& iConfig) :
-  regionInputTag(iConfig.getParameter<InputTag>("regionSrc")),
-  pvSrc(iConfig.exists("pvSrc") ? 
-	iConfig.getParameter<edm::InputTag>("pvSrc") : 
-	InputTag("offlinePrimaryVertices")),
-  hasReco(iConfig.getParameter<bool>("hasReco"))
-  
+  regionInputTag(iConfig.getParameter<InputTag>("regionSrc"))  
 {
 //   string paramFileName = iConfig.getParameter<string>("PUParamSrc");
 //   TFile* f = new TFile(paramFileName.c_str());
@@ -126,13 +113,10 @@ EstimatedPUSubtractor::EstimatedPUSubtractor(const ParameterSet& iConfig) :
   coeffB.resize(22);
   setCoeffs();
 
-  if(!hasReco)
-    {
-      scalerSrc_ = iConfig.exists("scalerSrc") ?
-	iConfig.getParameter<InputTag>("scalerSrc") :
-	InputTag("scalersRawToDigi");
-    }
-
+  scalerSrc_ = iConfig.exists("scalerSrc") ?
+    iConfig.getParameter<InputTag>("scalerSrc") :
+    InputTag("scalersRawToDigi");
+   
   produces<L1CaloRegionCollection>();
   produces<vector<float>>();
 }
@@ -168,26 +152,13 @@ EstimatedPUSubtractor::produce(Event& iEvent, const EventSetup& iSetup)
       newRegions->at(ind) = regionHandle->at(q);
     }
   
-  // Get PV collection
-  if(hasReco)
+  Handle<LumiScalersCollection> lumiScalers;
+  iEvent.getByLabel(scalerSrc_, lumiScalers);
+  if (lumiScalers->size())
     {
-      edm::Handle<reco::VertexCollection> vertices;
-      iEvent.getByLabel(pvSrc, vertices);
-
-      nVtx = (float) vertices->size();
+      nVtx = lumiScalers->begin()->pileup();
     }
-  else
-    {
-      Handle<LumiScalersCollection> lumiScalers;
-      iEvent.getByLabel(scalerSrc_, lumiScalers);
-      instLumi_ = -1;
-      if (lumiScalers->size())
-	{
-	  instLumi_ = lumiScalers->begin()->instantLumi();
-	  nVtx = lumiScalers->begin()->pileup();
-	}
-    }
-
+   
   subtractPU();
 
   iEvent.put(newRegions);

@@ -66,10 +66,8 @@ process.scalersRawToDigi.scalersInputTag = 'rawDataCollector'
 process.EstimatedPUSubtractor = cms.EDProducer(
     "EstimatedPUSubtractor",
     regionSrc = cms.InputTag("uctDigis"),
-    pvSrc = cms.InputTag("offlinePrimaryVertices"),
-    PUParamSrc = cms.string("./TAvgPUParams.root"),
-    PUProfileName = cms.string("tAvgPUVsNVtx"),
-    hasReco = cms.bool(False),
+#    PUParamSrc = cms.string("./TAvgPUParams.root"),
+#    PUProfileName = cms.string("tAvgPUVsNVtx"),
 )
 
 process.makePUTree = cms.EDAnalyzer(
