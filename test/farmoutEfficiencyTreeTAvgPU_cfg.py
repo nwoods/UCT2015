@@ -601,9 +601,6 @@ reco_object_step = process.recoObjects
 process.EstimatedPUSubtractor = cms.EDProducer(
     "EstimatedPUSubtractor",
     regionSrc = cms.InputTag("uctDigis"),
-    pvSrc = cms.InputTag("offlinePrimaryVertices"),
-    PUParamSrc = cms.string("./TAvgPUParams.root"),
-    PUProfileName = cms.string("tAvgPUVsNVtx"),
 )
 
 if options.isTAvg:
@@ -618,7 +615,7 @@ if options.isTAvg:
         * process.UCT2015EfficiencyProducer
         * process.UCTStage1BEfficiencyProducer
         * process.l1extraParticles
-        * process.corrjetEfficiency
+        * process.jetEfficiency
     )
 else:
     process.p1 = cms.Path(
