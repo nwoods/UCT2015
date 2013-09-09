@@ -140,7 +140,6 @@ EstimatedPUSubtractor::produce(Event& iEvent, const EventSetup& iSetup)
   estimatedPULevel = auto_ptr<vector<float>>(new vector<float>);
 
   newRegions->resize(22*18);
-  estimatedPULevel->resize(22);
 
   for(unsigned q = 0; q < regionHandle->size(); ++q)
     {
@@ -159,6 +158,14 @@ EstimatedPUSubtractor::produce(Event& iEvent, const EventSetup& iSetup)
       nVtx = lumiScalers->begin()->pileup();
     }
    
+  for(unsigned eta = 0; eta < 22; ++eta)
+    {
+      for(unsigned phi = 0; phi < 18; ++phi)
+	{
+	  estimatedPULevel->push_back(getPULevel(eta,nVtx));
+	}
+    }
+
   subtractPU();
 
   iEvent.put(newRegions);
@@ -171,7 +178,6 @@ void EstimatedPUSubtractor::subtractPU()
   for(unsigned eta = 0; eta < 22; ++eta)
     {
       float puLevel = getPULevel(eta, nVtx);
-      estimatedPULevel->at(eta) = puLevel;
 
       for(unsigned phi = 0; phi < 18; ++phi)
 	{

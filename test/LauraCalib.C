@@ -340,7 +340,7 @@ void Lauratestcalib(){
 void fill_calib_sample(){
 
   //file used to get calibrations
-  TFile f("/scratch/nwoods/UCTEfficiency_TAvgPU_2.root");
+  TFile f("/scratch/nwoods/UCTEfficiency_TAvgPU7.root");
   //change to corrjetEfficiency when running calibrations
   TTree * tree = (TTree *) f.Get("jetEfficiency/Ntuple");
 

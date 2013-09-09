@@ -88,6 +88,8 @@ private:
   bool puCorrect;
   bool useUICrho; // which PU denstity to use for energy correction determination
   bool tAvgPU;
+  InputTag tAvgPUSrc;
+  Handle<vector<float>> tAvgPULevel;
 
   unsigned int puETMax;
   unsigned int puLevel;
@@ -153,6 +155,7 @@ UCT2015Producer::UCT2015Producer(const edm::ParameterSet& iConfig) :
   puCorrect(iConfig.getParameter<bool>("puCorrect")),
   useUICrho(iConfig.getParameter<bool>("useUICrho")),
   tAvgPU(iConfig.getParameter<bool>("tAvgPU")),
+  tAvgPUSrc(iConfig.getParameter<InputTag>("tAvgPUSrc")),
   puETMax(iConfig.getParameter<unsigned int>("puETMax")),
   regionETCutForHT(iConfig.getParameter<unsigned int>("regionETCutForHT")),
   regionETCutForMET(iConfig.getParameter<unsigned int>("regionETCutForMET")),
@@ -210,6 +213,9 @@ UCT2015Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   iEvent.getByLabel(regionInputTag_, newRegions);
   iEvent.getByLabel(emCandInputTag_, newEMCands);
+
+  if(tAvgPU)
+    iEvent.getByLabel(tAvgPUSrc, tAvgPULevel);
 
   if(puCorrect) puSubtraction();
 
@@ -480,11 +486,41 @@ void UCT2015Producer::makeJets() {
         theJet.setInt("rgnEta", jetEta);
         theJet.setInt("rgnPhi", jetPhi);
         // Embed the puLevel information in the jet object for later tuning
-        theJet.setFloat("puLevel", puLevel);
         theJet.setFloat("puLevelUIC", puLevelUIC);
         // Store information about the "core" PT of the jet (central region)
         theJet.setFloat("associatedRegionEt", regionET);
         jetList.push_back(theJet);
+
+	if(tAvgPU)
+	  {
+	    float jetPULevel = 0.;
+	    unsigned etaMin;
+	    unsigned etaMax;
+	    
+	    if(jetEta == 0)
+	      etaMin = 0;
+	    else 
+	      etaMin = jetEta - 1;
+
+	    if(jetEta == 21)
+	      etaMax = 21;
+	    else
+	      etaMax = jetEta + 1;
+
+	    for(unsigned eta = etaMin; eta <= etaMax; ++eta)
+	      {
+		for(int phi = (jetPhi + 17)%18; phi != (jetPhi+2)%18;
+		    phi = (phi + 1)%18)
+		  {
+		    jetPULevel += tAvgPULevel->at(eta*18+phi);
+		  }
+	      }
+	    theJet.setFloat("puLevel", jetPULevel);
+	  }
+	else
+	  {
+	    theJet.setFloat("puLevel", puLevel);
+	  }
       }
     }
   }

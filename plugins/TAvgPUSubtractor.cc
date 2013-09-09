@@ -55,6 +55,7 @@ private:
   }
 
   auto_ptr<L1CaloRegionCollection> newRegions;
+  auto_ptr<vector<float>> regPULevel;
 
   vector<unsigned> regionPUTotal;
   vector<list<unsigned>> prevRegRanks;
@@ -75,6 +76,7 @@ TAvgPUSubtractor::TAvgPUSubtractor(const ParameterSet& iConfig) :
     prevRegRanks.push_back(list<unsigned>());
 
   produces<L1CaloRegionCollection>();
+  produces<vector<float>>();
 }
 
 
@@ -93,8 +95,9 @@ TAvgPUSubtractor::produce(Event& iEvent, const EventSetup& iSetup)
 				     << " regions!" << endl;
 
   newRegions = auto_ptr<L1CaloRegionCollection>(new L1CaloRegionCollection);
-
   newRegions->resize(22*18);
+
+  regPULevel = auto_ptr<vector<float>>(new vector<float>());
 
   for(unsigned q = 0; q < regionHandle->size(); ++q)
     {
@@ -111,6 +114,7 @@ TAvgPUSubtractor::produce(Event& iEvent, const EventSetup& iSetup)
   subtractPU();
 
   iEvent.put(newRegions);
+  iEvent.put(regPULevel);
 }
 
 
@@ -171,6 +175,8 @@ void TAvgPUSubtractor::subtractPU()
 	    puLevel /= 256;
 	  else if(prevRegRanks.at(ind).size() != 0)
 	    puLevel /= prevRegRanks.at(ind).size();
+
+	  regPULevel->push_back((float) puLevel);
 
 	  if(newEt > puLevel)
 	    newEt -= puLevel;

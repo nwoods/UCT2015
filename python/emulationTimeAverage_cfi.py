@@ -70,10 +70,12 @@ UCT2015Producer = cms.EDProducer(
     regionSrc = cms.InputTag("TimeAveragePUSubtractor"),
     emCandSrc = cms.InputTag("uctDigis"),
     tAvgPU = cms.bool(True),
+    tAvgPUSrc = cms.InputTag("TimeAveragePUSubtractor"),
 )
 
 UCT2015EfficiencyProducer = UCT2015Producer.clone(
     regionSrc = cms.InputTag("EstimatedPUSubtractor"),
+    tAvgPUSrc = cms.InputTag("EstimatedPUSubtractor"),
 )
 
 UCTStage1BProducer = cms.EDProducer(
