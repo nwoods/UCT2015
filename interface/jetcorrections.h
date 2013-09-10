@@ -16,6 +16,6 @@ double jetcorr(double pt, int ieta, unsigned int pileup);
 double jetcorrUIC(double pt, int ieta, unsigned int pileup);
 
 // Version using TAvg PU subtraction algo
-double jetcorrTAvg(double pt, int ieta);
+double jetcorrTAvg(double pt, double puLevel, int ieta);
 
 #endif

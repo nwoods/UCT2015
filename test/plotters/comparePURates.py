@@ -240,30 +240,46 @@ def plotRates(oldntuple, tuctntuple, xuctntuple, binning, filename, title='', xa
 #############                  Hist Title, X asix label)         ###############
 ################################################################################
 
+#Rlx EG
 plotRates(rlx_old_eg_ntuple, t_rlx_uct_eg_ntuple, x_rlx_uct_eg_ntuple,
           [40, 0, 150],
-          'rlx_eg_rate',
+          'rlx_eg_rate_noTauVeto',
           "Relaxed EG Rate", "L1 p_{T} (GeV)",
-          "!mipBit&&!tauVeto")
-plotRates(rlx_old_tau_ntuple, t_rlx_uct_tau_ntuple, x_rlx_uct_tau_ntuple,
-          [40, 0, 150],
-          'rlx_tau_rate',
-          "Relaxed Tau Rate", "L1 p_{T} (GeV)")
+          "!mipBit&&((!tauVeto&&pt<63)||pt>63)")
+
+# #Rlx tau
+# plotRates(rlx_old_tau_ntuple, t_rlx_uct_tau_ntuple, x_rlx_uct_tau_ntuple,
+#           [40, 0, 150],
+#           'rlx_tau_rate',
+#           "Relaxed Tau Rate", "L1 p_{T} (GeV)")
+# 
+# #Iso EG
+# plotRates(iso_old_eg_ntuple, t_rlx_uct_eg_ntuple, x_rlx_uct_eg_ntuple,
+#           [40, 0, 150],
+#           'iso_eg_rate',
+#           "Isolated EG Rate", "L1 p_{T} (GeV)",
+#           "jetPt>0&&(jetPt-pt)/pt<=.1&&!mipBit&&!tauVeto")
+# 
+#Iso EG No TauVeto
 plotRates(iso_old_eg_ntuple, t_rlx_uct_eg_ntuple, x_rlx_uct_eg_ntuple,
           [40, 0, 150],
           'iso_eg_rate',
-          "Isolated EG Rate", "L1 p_{T} (GeV)",
-          "jetPt>0&&(jetPt-pt)/pt<=.1&&!mipBit&&!tauVeto")
+          "Isolated EG Rate (No tauVeto above 63 GeV)", "L1 p_{T} (GeV)",
+          "((jetPt>0&&(jetPt-pt)/pt<=.1)||pt>63)&&!mipBit&&((!tauVeto&&pt<63)||pt>63)")
+
+#Iso Tau
 plotRates(rlx_old_tau_ntuple, t_rlx_uct_tau_ntuple, x_rlx_uct_tau_ntuple,
           [40, 0, 150],
           'iso_tau_rate',
           "Isolated Tau Rate", "L1 p_{T} (GeV)",
-          "jetPt>0&&(jetPt-pt)/pt<=.1")
-plotRates(jet_old_ntuple,t_jet_uct_ntuple,x_jet_uct_ntuple,
-          [40, 0, 200],
-          'jet_rate',
-          "Jet Rate", "L1 p_{T} (GeV)")
+          "(jetPt>0&&(jetPt-pt)/pt<=.1)||pt>63")
 
+# #Singe Jet
+# plotRates(jet_old_ntuple,t_jet_uct_ntuple,x_jet_uct_ntuple,
+#           [40, 0, 200],
+#           'jet_rate',
+#           "Jet Rate", "L1 p_{T} (GeV)")
+# 
 
 
 

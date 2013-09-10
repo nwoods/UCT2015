@@ -549,7 +549,7 @@ UCT2015Producer::correctJets(const list<UCTCandidate>& jets) {
     if (useUICrho){
       jpt = jetcorrUIC(jetET, jet->getInt("rgnEta"), jet->getFloat("puLevelUIC"));
     }else if(tAvgPU){
-      jpt = jetcorrTAvg(jetET, jet->getInt("rgnEta"));
+      jpt = jetcorrTAvg(jetET, jet->getFloat("puLevel"), jet->getInt("rgnEta"));
     }
     else{
       jpt = jetcorr(jetET, jet->getInt("rgnEta"), jet->getFloat("puLevel"));

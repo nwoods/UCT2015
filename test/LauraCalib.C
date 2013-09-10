@@ -263,7 +263,7 @@ void control_plots(){
   //	control_plots(80, offset80);
 
 
-  ofstream output("calib_step1_forealz_ptalphagamma_npvsall_test.txt");
+  ofstream output("TAvgPUJetCal.txt");
   for (int etabin=0; etabin < NUM_ETA_BINS; etabin++){
     output << R_alpha[etabin] << ", " << R_beta[etabin]  << ", " << R_gamma[etabin] << ",\n"; 
   }
@@ -321,7 +321,7 @@ void Lauratestcalib(){
     gMinuit->FixParameter(2);
 
     gMinuit->Release(0);
-    //	gMinuit->Release(1);
+    gMinuit->Release(1);
     gMinuit->Release(2);
 
     gMinuit->Migrad();
@@ -340,7 +340,7 @@ void Lauratestcalib(){
 void fill_calib_sample(){
 
   //file used to get calibrations
-  TFile f("/scratch/nwoods/UCTEfficiency_TAvgPU7.root");
+  TFile f("/scratch/nwoods/UCTEfficiency_TAvgPU_uncal_rev2.root");
   //change to corrjetEfficiency when running calibrations
   TTree * tree = (TTree *) f.Get("jetEfficiency/Ntuple");
 

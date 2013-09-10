@@ -649,7 +649,7 @@ if options.isTAvg:
         * process.UCT2015EfficiencyProducer
         * process.UCTStage1BEfficiencyProducer
         * process.l1extraParticles
-        * process.jetEfficiency
+        * process.corrjetEfficiency
     )
 else:
     process.p1 = cms.Path(
