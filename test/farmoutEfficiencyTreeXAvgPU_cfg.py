@@ -23,8 +23,9 @@ import os
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 # Set useful defaults
-options.inputFiles = $inputFileNames#'/store/user/tapas/ETauSkimRun2012D/skim_101_1_MBW.root'
-options.outputFile = "$outputFileName"#"uct_efficiency_tree.root"
+options.inputFiles = $inputFileNames
+options.outputFile = "$outputFileName"
+options.maxEvents = -1
 options.register(
     'eicIsolationThreshold',
     3,
@@ -69,6 +70,12 @@ options.register(
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
+options.register(
+    'isMC',
+    0,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.int,
+    'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
 
 options.parseArguments()
 
@@ -79,12 +86,22 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-# CMSSW 5 data
-process.GlobalTag.globaltag = 'GR_R_53_V21::All'
-
-process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
-process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
-print "Using global tag for 52X data: %s" % process.GlobalTag.globaltag
+# Load the correct global tag, based on the release
+if 'CMSSW_6' in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = 'POSTLS161_V12::All'
+    print "Using global tag for upgrade MC: %s" % process.GlobalTag.globaltag
+    if not options.isMC:
+        raise ValueError("There is no data in CMSSW 6, you must mean isMC=1")
+else:
+    if not options.isMC:
+        # CMSSW 5 data
+        process.GlobalTag.globaltag = 'GR_R_53_V21::All'
+    else:
+        # CMSSW 5 MC
+        process.GlobalTag.globaltag = 'START53_V7B::All'
+    process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
+    process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
+    print "Using global tag for 52X data: %s" % process.GlobalTag.globaltag
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
@@ -101,10 +118,22 @@ process.TFileService = cms.Service(
 )
 
 # Load emulation and RECO sequences
-if options.isTAvg:
-    process.load("L1Trigger.UCT2015.emulationTimeAverage_cfi")
-else:
+if not options.isMC:
     process.load("L1Trigger.UCT2015.emulation_cfi")
+else:
+    process.load("L1Trigger.UCT2015.emulationMC_cfi")
+
+# Load emulation and RECO sequences
+if options.isTAvg:
+    if not options.isMC:
+        process.load("L1Trigger.UCT2015.emulationTimeAverage_cfi")
+    else:
+        process.load("L1Trigger.UCT2015.emulationTimeAverageMC_cfi")
+else:
+    if not options.isMC:
+        process.load("L1Trigger.UCT2015.emulation_cfi")
+    else:
+        process.load("L1Trigger.UCT2015.emulationMC_cfi")
 
 process.load("L1Trigger.UCT2015.recoObjects_cfi")
 
@@ -462,8 +491,8 @@ else:
         electron_branches,
         )
         )
-    
-    
+
+
 # Package all of the lepton efficiencies into one sequence
 process.leptonEfficiencies = cms.Sequence(
     #process.isoTauEfficiency *
@@ -522,7 +551,7 @@ process.corrjetEfficiency = cms.EDAnalyzer(
         cms.InputTag("l1extraParticles", "Tau"),
         cms.InputTag("l1extraParticles", "Forward"),
     ),
-    l1GSrc = cms.VInputTag(cms.InputTag("UCT2015Producer", "CorrJetUnpacked")),
+    l1GSrc = cms.VInputTag(cms.InputTag("UCT2015EfficiencyProducer", "CorrJetUnpacked")),
     l1GPUSrc = cms.InputTag("UCT2015Producer", "PULevel"),
     # Max DR for RECO-trigger matching
     maxDR = cms.double(0.5),
@@ -598,11 +627,30 @@ process.pionEfficiency = cms.EDAnalyzer(
 
 reco_object_step = process.recoObjects
 
+process.EstimatedPUSubtractor = cms.EDProducer(
+    "EstimatedPUSubtractor",
+    regionSrc = cms.InputTag("uctDigis"),
+)
+
+if options.isMC:
+    reco_object_step = process.recoObjects_truthMatched
+    process.rlxTauPlusJetEfficiency.recoSrc = cms.VInputTag("trueTaus")
+    process.isoTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
+    process.rlxTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
+
 if options.isTAvg:
     process.p1 = cms.Path(
-        reco_object_step *
-        process.efficiencyEmulationSequence *
-        process.jetEfficiency
+        reco_object_step 
+#        * process.efficiencyEmulationSequence
+        * process.uctDigiStep 
+        * process.hackHCALMIPs
+        * process.uctDigis
+        * process.EstimatedPUSubtractor
+        * process.UCT2015EClusterProducer
+        * process.UCT2015EfficiencyProducer
+        * process.UCTStage1BEfficiencyProducer
+        * process.l1extraParticles
+        * process.jetEfficiency
     )
 else:
     process.p1 = cms.Path(
@@ -718,7 +766,8 @@ process.uctSumsEfficiency = cms.EDAnalyzer(
 
 # Make a version of UCT without PU corrections.
 process.UCT2015ProducerNoPU = process.UCT2015EfficiencyProducer.clone(
-    puCorrect = False
+    puCorrect = False,
+    TAvgPU = cms.bool(False),
 )
 process.uctSumsNoPUEfficiency = process.uctSumsEfficiency.clone(
     l1MHTSrc = cms.InputTag("UCT2015ProducerNoPU", "MHTUnpacked"),

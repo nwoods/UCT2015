@@ -69,6 +69,12 @@ options.register(
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
+options.register(
+    'isMC',
+    0,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.int,
+    'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
 
 options.parseArguments()
 
@@ -79,12 +85,22 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-# CMSSW 5 data
-process.GlobalTag.globaltag = 'GR_R_53_V21::All'
-
-process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
-process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
-print "Using global tag for 52X data: %s" % process.GlobalTag.globaltag
+# Load the correct global tag, based on the release
+if 'CMSSW_6' in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = 'POSTLS161_V12::All'
+    print "Using global tag for upgrade MC: %s" % process.GlobalTag.globaltag
+    if not options.isMC:
+        raise ValueError("There is no data in CMSSW 6, you must mean isMC=1")
+else:
+    if not options.isMC:
+        # CMSSW 5 data
+        process.GlobalTag.globaltag = 'GR_R_53_V21::All'
+    else:
+        # CMSSW 5 MC
+        process.GlobalTag.globaltag = 'START53_V7B::All'
+    process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
+    process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
+    print "Using global tag for 52X data: %s" % process.GlobalTag.globaltag
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
@@ -101,10 +117,22 @@ process.TFileService = cms.Service(
 )
 
 # Load emulation and RECO sequences
-if options.isTAvg:
-    process.load("L1Trigger.UCT2015.emulationTimeAverage_cfi")
-else:
+if not options.isMC:
     process.load("L1Trigger.UCT2015.emulation_cfi")
+else:
+    process.load("L1Trigger.UCT2015.emulationMC_cfi")
+
+# Load emulation and RECO sequences
+if options.isTAvg:
+    if not options.isMC:
+        process.load("L1Trigger.UCT2015.emulationTimeAverage_cfi")
+    else:
+        process.load("L1Trigger.UCT2015.emulationTimeAverageMC_cfi")
+else:
+    if not options.isMC:
+        process.load("L1Trigger.UCT2015.emulation_cfi")
+    else:
+        process.load("L1Trigger.UCT2015.emulationMC_cfi")
 
 process.load("L1Trigger.UCT2015.recoObjects_cfi")
 
@@ -602,6 +630,12 @@ process.EstimatedPUSubtractor = cms.EDProducer(
     "EstimatedPUSubtractor",
     regionSrc = cms.InputTag("uctDigis"),
 )
+
+if options.isMC:
+    reco_object_step = process.recoObjects_truthMatched
+    process.rlxTauPlusJetEfficiency.recoSrc = cms.VInputTag("trueTaus")
+    process.isoTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
+    process.rlxTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
 
 if options.isTAvg:
     process.p1 = cms.Path(

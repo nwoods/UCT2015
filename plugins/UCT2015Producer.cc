@@ -215,7 +215,9 @@ UCT2015Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByLabel(emCandInputTag_, newEMCands);
 
   if(tAvgPU)
-    iEvent.getByLabel(tAvgPUSrc, tAvgPULevel);
+    {
+      iEvent.getByLabel(tAvgPUSrc, tAvgPULevel);
+    }
 
   if(puCorrect) puSubtraction();
 
@@ -489,7 +491,6 @@ void UCT2015Producer::makeJets() {
         theJet.setFloat("puLevelUIC", puLevelUIC);
         // Store information about the "core" PT of the jet (central region)
         theJet.setFloat("associatedRegionEt", regionET);
-        jetList.push_back(theJet);
 
 	if(tAvgPU)
 	  {
@@ -521,6 +522,8 @@ void UCT2015Producer::makeJets() {
 	  {
 	    theJet.setFloat("puLevel", puLevel);
 	  }
+
+        jetList.push_back(theJet);
       }
     }
   }

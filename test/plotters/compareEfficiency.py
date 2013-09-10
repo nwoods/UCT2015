@@ -204,18 +204,38 @@ def compare_efficiencies(Ntuple_t, Ntuple_x, oldNtuple, variable, ptCut,
 setn()
 
 
-# L1PtCut = 20
-# 
-# #rlx EG
-# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
-#                      "recoPt", L1PtCut, [40, 0, 200],
-#                      "", # No reco selection (rlx EG)
-#                      "!l1gMIP&&!l1gTauVeto", # UCT EG
-#                      "", # No old L1 selection
-#                      "rlx_eg_eff_%i"%(L1PtCut),
-#                      "Relaxed EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-#                      "RECO p_{T} (GeV)")
-# 
+L1PtCut = 20
+
+#rlx EG
+compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
+                     "recoPt", L1PtCut, [40, 0, 200],
+                     "", # No reco selection (rlx EG)
+                     "!l1gMIP&&!l1gTauVeto", # UCT EG
+                     "", # No old L1 selection
+                     "rlx_eg_eff_%i"%(L1PtCut),
+                     "Relaxed EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+                     "RECO p_{T} (GeV)")
+
+#rlx EG no MIP
+compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
+                     "recoPt", L1PtCut, [40, 0, 200],
+                     "", # No reco selection (rlx EG)
+                     "!l1gTauVeto", # UCT EG
+                     "", # No old L1 selection
+                     "rlx_eg_eff_%i_noMIPCut"%(L1PtCut),
+                     "Relaxed EG efficiency (20GeV, tauVeto cut only)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+                     "RECO p_{T} (GeV)")
+
+#rlx EG no tauVeto
+compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
+                     "recoPt", L1PtCut, [40, 0, 200],
+                     "", # No reco selection (rlx EG)
+                     "!l1gMIP", # UCT EG
+                     "", # No old L1 selection
+                     "rlx_eg_eff_%i_noTauVetoCut"%(L1PtCut),
+                     "Relaxed EG efficiency (20GeV, MIP cut only)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+                     "RECO p_{T} (GeV)")
+
 # #iso EG
 # compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
 #                      "recoPt", L1PtCut, [40, 0, 200],
@@ -261,30 +281,30 @@ setn()
 #                         "Jet efficiency (%uGeV)"%(JetL1PtCut),# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
 #                         "RECO p_{T} (GeV)")
 # 
-
-#Jet Resolution plot w.r.t. #PVs
-make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:nPVs",
-             [35,0.,35.,100,-10.,10.],
-             "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
-             ROOT.EColor.kRed,
-             1,
-             -3.,
-             3.,
-             "jetRes_vs_nPVs",
-             "Jet Pt Resolution Vs. # Primary Vertices",
-             "# Primary Vertices"
-             )
-             
-#Jet Resolution plot w.r.t. Pt
-make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:recoPt",
-             [200,0.,200.,100,-10.,10.],
-             "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
-             ROOT.EColor.kRed,
-             1,
-             -3.,
-             3.,
-             "jetRes_vs_pt",
-             "Jet Pt Resolution Vs. Reco Pt",
-             "Reco Pt"
-             )
-             
+# 
+# #Jet Resolution plot w.r.t. #PVs
+# make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:nPVs",
+#              [35,0.,35.,100,-10.,10.],
+#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
+#              ROOT.EColor.kRed,
+#              1,
+#              -3.,
+#              3.,
+#              "jetRes_vs_nPVs",
+#              "Jet Pt Resolution Vs. # Primary Vertices",
+#              "# Primary Vertices"
+#              )
+#              
+# #Jet Resolution plot w.r.t. Pt
+# make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:recoPt",
+#              [200,0.,200.,100,-10.,10.],
+#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
+#              ROOT.EColor.kRed,
+#              1,
+#              -3.,
+#              3.,
+#              "jetRes_vs_pt",
+#              "Jet Pt Resolution Vs. Reco Pt",
+#              "Reco Pt"
+#              )
+#              

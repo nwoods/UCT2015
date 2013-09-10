@@ -71,19 +71,35 @@ options.register(
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     'Set to 1 for time averaging, 0 for space averaging')
+options.register(
+    'isMC',
+    0,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.int,
+    'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
 
 options.parseArguments()
 
 process = cms.Process("L1UCTRates")
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-# Load the correct global tag, based on the release
-# CMSSW 5 data
-process.GlobalTag.globaltag = 'GR_H_V28::All'
 
-process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
-process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
-print "Using global tag for 52X data: %s" % process.GlobalTag.globaltag
+# Load the correct global tag, based on the release
+if 'CMSSW_6' in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = 'POSTLS161_V12::All'
+    print "Using global tag for upgrade MC: %s" % process.GlobalTag.globaltag
+    if not options.isMC:
+        raise ValueError("There is no data in CMSSW 6, you must mean isMC=1")
+else:
+    if not options.isMC:
+        # CMSSW 5 data
+        process.GlobalTag.globaltag = 'GR_H_V28::All'
+    else:
+        # CMSSW 5 MC
+        process.GlobalTag.globaltag = 'START53_V7B::All'
+    process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
+    process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
+    print "Using global tag for 52X data: %s" % process.GlobalTag.globaltag
 
 # UNCOMMENT THIS LINE TO RUN ON SETTINGS FROM THE DATABASE
 # process.es_prefer_GlobalTag = cms.ESPrefer('PoolDBESSource', 'GlobalTag')
@@ -108,9 +124,15 @@ process.TFileService = cms.Service(
 
 # Load emulation and RECO sequences
 if options.isTAvg:
-    process.load("L1Trigger.UCT2015.emulationTimeAverage_cfi")
+    if options.isMC:
+        process.load("L1Trigger.UCT2015.emulationTimeAverageMC_cfi")
+    else:
+        process.load("L1Trigger.UCT2015.emulationTimeAverage_cfi")
 else:
-    process.load("L1Trigger.UCT2015.emulation_cfi")
+    if options.isMC:
+        process.load("L1Trigger.UCT2015.emulationMC_cfi")
+    else:
+        process.load("L1Trigger.UCT2015.emulation_cfi")
 
 # Determine which calibration to use
 from L1Trigger.UCT2015.emulationTimeAverage_cfi import \

@@ -367,7 +367,7 @@ void RateTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
       const l1extra::L1JetParticle* jetParticle =
         dynamic_cast<const l1extra::L1JetParticle*>(objects[i]);
       const l1extra::L1EmParticle* emParticle =
-        dynamic_cast<const l1extra::L1EmParticle*>(objects[i]);
+       dynamic_cast<const l1extra::L1EmParticle*>(objects[i]);
       if (jetParticle) {
         type_->push_back(jetParticle->type());
       } else if (emParticle) {

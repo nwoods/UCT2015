@@ -22,10 +22,9 @@ import os
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 # Set useful defaults
-options.inputFiles = '/store/data/Run2012C/ZeroBias1/RAW/v1/000/198/609/04F0C0E3-72CA-E111-A802-003048F117EC.root'
-#'/store/user/tapas/ETauSkim/skim_12_1_erV.root'
+#options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
 #options.inputFiles = '/store/user/tapas/2012-08-01-CRAB_ZEESkim/skim_10_1_wd2.root'
-options.outputFile = "tAvgPU_rate_tree.root"
+options.outputFile = "uct_rate_tree_mc.root"
 options.register(
     'eicIsolationThreshold',
     3,
@@ -65,14 +64,8 @@ options.register(
     VarParsing.varType.int,
     'If 1, turn off the ECAL for the stage1 EGTau path.')
 options.register(
-    'isTAvg',
-    1,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.int,
-    'Set to 1 for time averaging, 0 for space averaging')
-options.register(
     'isMC',
-    0,
+    1,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
@@ -82,7 +75,6 @@ options.parseArguments()
 process = cms.Process("L1UCTRates")
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-
 # Load the correct global tag, based on the release
 if 'CMSSW_6' in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = 'POSTLS161_V12::All'
@@ -114,27 +106,17 @@ process.source = cms.Source(
 
 process.TFileService = cms.Service(
     "TFileService",
-    fileName = cms.string(options.outputFile),
-#    outputCommands = cms.untracked.vstring("keep *",),
-#    SelectEvents = cms.untracked.PSet(
-#        SelectEvents = cms.vstring('path'),
-#    ),
+    fileName = cms.string(options.outputFile)
 )
 
 # Load emulation and RECO sequences
-if options.isTAvg:
-    if options.isMC:
-        process.load("L1Trigger.UCT2015.emulationTimeAverageMC_cfi")
-    else:
-        process.load("L1Trigger.UCT2015.emulationTimeAverage_cfi")
+if not options.isMC:
+    process.load("L1Trigger.UCT2015.emulation_cfi")
 else:
-    if options.isMC:
-        process.load("L1Trigger.UCT2015.emulationMC_cfi")
-    else:
-        process.load("L1Trigger.UCT2015.emulation_cfi")
+    process.load("L1Trigger.UCT2015.emulationMC_cfi")
 
 # Determine which calibration to use
-from L1Trigger.UCT2015.emulationTimeAverage_cfi import \
+from L1Trigger.UCT2015.emulation_cfi import \
         eg_calib_v1, eg_calib_v3, eg_calib_v4
 
 calib_map = {
@@ -253,10 +235,10 @@ process.sumsUCTRates = cms.EDAnalyzer(
 )
 
 process.uctHadronicRates = cms.Sequence(
+    #process.jetUCTRate *
     process.corrjetUCTRate
-    #* process.sumsUCTRates
-    )
-    
+    #process.sumsUCTRates
+)
 
 
 process.p1 = cms.Path(
