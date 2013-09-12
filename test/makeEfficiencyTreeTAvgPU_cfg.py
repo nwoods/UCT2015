@@ -521,6 +521,24 @@ if options.isTAvg:
         common_ntuple_branches,
         )
         )
+    process.corrjetEfficiency = cms.EDAnalyzer(
+        "EfficiencyTree",
+        recoSrc = cms.VInputTag("recoJets"),
+        l1Src = cms.VInputTag(
+        # Combine central jets + tau + forward jets
+        cms.InputTag("l1extraParticles", "Central"),
+        cms.InputTag("l1extraParticles", "Tau"),
+        cms.InputTag("l1extraParticles", "Forward"),
+        ),
+        l1GSrc = cms.VInputTag(cms.InputTag("UCT2015EfficiencyProducer", "CorrJetUnpacked")),
+        l1GPUSrc = cms.InputTag("UCT2015Producer", "PULevel"),
+        # Max DR for RECO-trigger matching
+        maxDR = cms.double(0.5),
+        # Ntuple configuration
+        ntuple = cms.PSet(
+        common_ntuple_branches,
+        )
+        )
 else:
     process.jetEfficiency = cms.EDAnalyzer(
         "EfficiencyTree",
@@ -540,25 +558,24 @@ else:
         common_ntuple_branches,
         )
         )
-
-process.corrjetEfficiency = cms.EDAnalyzer(
-    "EfficiencyTree",
-    recoSrc = cms.VInputTag("recoJets"),
-    l1Src = cms.VInputTag(
+    process.corrjetEfficiency = cms.EDAnalyzer(
+        "EfficiencyTree",
+        recoSrc = cms.VInputTag("recoJets"),
+        l1Src = cms.VInputTag(
         # Combine central jets + tau + forward jets
         cms.InputTag("l1extraParticles", "Central"),
         cms.InputTag("l1extraParticles", "Tau"),
         cms.InputTag("l1extraParticles", "Forward"),
-    ),
-    l1GSrc = cms.VInputTag(cms.InputTag("UCT2015EfficiencyProducer", "CorrJetUnpacked")),
-    l1GPUSrc = cms.InputTag("UCT2015Producer", "PULevel"),
-    # Max DR for RECO-trigger matching
-    maxDR = cms.double(0.5),
-    # Ntuple configuration
-    ntuple = cms.PSet(
+        ),
+        l1GSrc = cms.VInputTag(cms.InputTag("UCT2015Producer", "CorrJetUnpacked")),
+        l1GPUSrc = cms.InputTag("UCT2015Producer", "PULevel"),
+        # Max DR for RECO-trigger matching
+        maxDR = cms.double(0.5),
+        # Ntuple configuration
+        ntuple = cms.PSet(
         common_ntuple_branches,
-    )
-)
+        )
+        )
 
 process.highPtPF = cms.EDFilter(
     "GenericPFCandidateSelector",
@@ -647,6 +664,7 @@ if options.isTAvg:
         * process.EstimatedPUSubtractor
         * process.UCT2015EClusterProducer
         * process.UCT2015EfficiencyProducer
+
         * process.UCTStage1BEfficiencyProducer
         * process.l1extraParticles
         * process.corrjetEfficiency

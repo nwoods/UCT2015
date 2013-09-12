@@ -112,7 +112,7 @@ def make_efficiency(denom, num, color, markerStyle):
 ##     return eff
 ## 
 
-def make_profile(Ntuple, variables, binning, selection, color, markerStyle, min, max, file_title="profile", title='',xaxis=''):
+def make_profile(Ntuple, variables, binning, selection, color, markerStyle, min, max, file_title="profile", title='',xaxis='',yaxis=''):
    ''' Make and save a legit profile '''
    plot = make_plot(Ntuple, variables, selection, binning, xaxis, title)
    prof = plot.ProfileX()
@@ -130,8 +130,48 @@ def make_profile(Ntuple, variables, binning, selection, color, markerStyle, min,
    frame.SetMinimum(min)
    frame.SetTitle(title)
    frame.GetXaxis().SetTitle(xaxis)
+   frame.GetYaxis().SetTitle(yaxis)
    frame.Draw()
    prof.Draw('e')
+   filename = saveWhere + file_title + '.png'
+   canvas.SaveAs(filename)
+   
+
+def make_many_profiles(NtupleList, variableList, xVariable, binning, selectionList, colorList, markerList, min, max, nameList, file_title="many_profiles", title='',xaxis='',yaxis=''):
+   ''' Make and save an arbitrary number of profiles '''
+   if not (len(NtupleList) == len(colorList) and len(NtupleList) == len(colorList) and len(NtupleList) == len(nameList) and len(NtupleList) == len(variableList) and len(NtupleList) == len(selectionList)):
+      print "List arguments to make_many_profiles must be the same size"
+      return
+
+   profList=[]
+   legend = ROOT.TLegend(0.3, 0.7, 0.5, 0.9, "", "brNDC")
+   legend.SetFillColor(ROOT.EColor.kWhite)
+   legend.SetBorderSize(1)
+
+   for i in range(len(NtupleList)):
+      plot = make_plot(NtupleList[i], variableList[i]+":"+xVariable, selectionList[i], binning, xaxis, title)
+      prof = plot.ProfileX()
+      prof.SetMarkerSize(1.5)
+      prof.SetMarkerStyle(markerList[i])
+      prof.SetMarkerColor(colorList[i])
+      prof.SetLineColor(colorList[i])
+      prof.SetMinimum(min)
+      prof.SetMaximum(max)
+      profList.append(prof)
+      legend.AddEntry(profList[i], nameList[i], "pe")
+
+   framebins = binning[0:3]
+      
+   frame = ROOT.TH1F("frame", "frame", *framebins)
+   frame.SetMaximum(max)
+   frame.SetMinimum(min)
+   frame.SetTitle(title)
+   frame.GetXaxis().SetTitle(xaxis)
+   frame.GetYaxis().SetTitle(yaxis)
+   frame.Draw()
+   for prof in profList:
+      prof.Draw('esame')
+   legend.Draw()
    filename = saveWhere + file_title + '.png'
    canvas.SaveAs(filename)
    
@@ -205,7 +245,7 @@ setn()
 
 
 L1PtCut = 20
-
+# 
 # #rlx EG
 # compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
 #                      "recoPt", L1PtCut, [40, 0, 200],
@@ -226,26 +266,26 @@ L1PtCut = 20
 #                      "rlx_eg_eff_%i_noTauVetoCut"%(L1PtCut),
 #                      "Relaxed EG efficiency (20GeV, no tau veto above 63 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
 #                      "RECO p_{T} (GeV)")
-
-#iso EG No tauVeto
-compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "dr03CombinedEt/recoPt < 0.1", # Isolated reco
-                     "!l1gMIP&&(!l1gTauVeto||l1gPt>63)&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
-                     "", # No selection for iso L1
-                     "iso_eg_eff_%i_noTauVeto"%(L1PtCut),
-                     "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-#iso EG
-compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "dr03CombinedEt/recoPt < 0.1", # Isolated reco
-                     "!l1gMIP&&!l1gTauVeto&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
-                     "", # No selection for iso L1
-                     "iso_eg_eff_%i"%(L1PtCut),
-                     "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
+# 
+# #iso EG No tauVeto
+# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "dr03CombinedEt/recoPt < 0.1", # Isolated reco
+#                      "!l1gMIP&&(!l1gTauVeto||l1gPt>63)&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
+#                      "", # No selection for iso L1
+#                      "iso_eg_eff_%i_noTauVeto"%(L1PtCut),
+#                      "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# #iso EG
+# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "dr03CombinedEt/recoPt < 0.1", # Isolated reco
+#                      "!l1gMIP&&!l1gTauVeto&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
+#                      "", # No selection for iso L1
+#                      "iso_eg_eff_%i"%(L1PtCut),
+#                      "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
 # 
 # #rlx tau
 # compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
@@ -279,11 +319,53 @@ compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
 #                         "", # No UCT selection
 #                         "", # No old L1 selection
 #                         "jet_eff_%i"%(JetL1PtCut),
-#                         "Jet efficiency (%uGeV)"%(JetL1PtCut),# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                         "Jet efficiency (%uGeV)"%(JetL1PtCut),
 #                         "RECO p_{T} (GeV)")
 # 
-# 
-# #Jet Resolution plot w.r.t. #PVs
+
+jet_ntuple_list = [jet_ntuple_t,jet_ntuple_x,jet_ntuple_old]
+jet_drawstring_list = ["(recoPt-l1gPt)/recoPt","(recoPt-l1gPt)/recoPt",
+                    "(recoPt-l1Pt)/recoPt"]
+jet_selection_list = ["l1gMatch && recoPt > 20",
+                    "l1gMatch && recoPt > 20", 
+                    "l1Match && recoPt > 20"] 
+color_list = [ROOT.EColor.kBlue,ROOT.EColor.kGreen,ROOT.EColor.kRed]
+legend_name_list = ["Time avg PU","Space avg PU", "Current"]
+
+#Jet Resolution plot w.r.t. #PVs
+make_many_profiles(jet_ntuple_list,
+                   jet_drawstring_list,
+                   "nPVs",
+                   [35,0.,35.,100,-10.,10.],
+                   jet_selection_list,
+                   color_list,
+                   [22,21,20],
+                   -1.,1.,
+                   legend_name_list,
+                   "jetResVsNPVs",
+                   "Jet Resolution vs # Primary Vertices",
+                   "# Primary Vertices",
+                   "(RecoPt - L1Pt)/RecoPt"
+                   )
+
+
+#Jet Resolution plot w.r.t. #Pt
+make_many_profiles(jet_ntuple_list,
+                   jet_drawstring_list,
+                   "recoPt",
+                   [25,0.,200.,100,-10.,10.],
+                   jet_selection_list,
+                   color_list,
+                   [22,21,20],
+                   -1.,1.,
+                   legend_name_list,
+                   "jetResVsPt",
+                   "Jet Resolution vs Reco Pt",
+                   "Reco Pt",
+                   "(RecoPt - L1Pt)/RecoPt"
+                   )
+
+
 # make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:nPVs",
 #              [35,0.,35.,100,-10.,10.],
 #              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
@@ -294,6 +376,7 @@ compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
 #              "jetRes_vs_nPVs",
 #              "Jet Pt Resolution Vs. # Primary Vertices",
 #              "# Primary Vertices"
+#              "(RecoPt - L1Pt)/RecoPt",
 #              )
 #              
 # #Jet Resolution plot w.r.t. Pt
@@ -307,5 +390,34 @@ compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
 #              "jetRes_vs_pt",
 #              "Jet Pt Resolution Vs. Reco Pt",
 #              "Reco Pt"
+#              "(RecoPt - L1Pt)/RecoPt",
+#              )
+# 
+# #Space Avg Jet Resolution plot w.r.t. #PVs
+# make_profile(jet_ntuple_x, "(recoPt-l1gPt)/recoPt:nPVs",
+#              [35,0.,35.,100,-10.,10.],
+#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
+#              ROOT.EColor.kRed,
+#              1,
+#              -3.,
+#              3.,
+#              "jetRes_vs_nPVs_XAvg",
+#              "Jet Pt Resolution Vs. # Primary Vertices (Space Avg Pileup)",
+#              "# Primary Vertices",
+#              "(RecoPt - L1Pt)/RecoPt",
 #              )
 #              
+# #Space Avg Jet Resolution plot w.r.t. Pt
+# make_profile(jet_ntuple_x, "(recoPt-l1gPt)/recoPt:recoPt",
+#              [200,0.,200.,100,-10.,10.],
+#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
+#              ROOT.EColor.kRed,
+#              1,
+#              -3.,
+#              3.,
+#              "jetRes_vs_pt_XAvg",
+#              "Jet Pt Resolution Vs. Reco Pt (Space Avg Pileup)",
+#              "Reco Pt"
+#              "(RecoPt - L1Pt)/RecoPt",
+#              )
+# 
