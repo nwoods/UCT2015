@@ -65,7 +65,7 @@ options.register(
     'If 1, turn off the ECAL for the stage1 EGTau path.')
 options.register(
     'isTAvg',
-    1,
+    0,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
@@ -115,6 +115,11 @@ process.TFileService = cms.Service(
     "TFileService",
     fileName = cms.string(options.outputFile)
 )
+
+from L1Trigger.UCT2015.emulation_cfi import UCT2015Producer
+
+UCT2015Producer.puCorrect = cms.bool(False)
+UCT2015Producer.useUICrho = cms.bool(False)
 
 # Load emulation and RECO sequences
 if not options.isMC:
@@ -655,7 +660,7 @@ else:
     process.p1 = cms.Path(
         reco_object_step *
         process.emulationSequence *
-        process.corrjetEfficiency
+        process.jetEfficiency
     )
 
 if options.stage1:

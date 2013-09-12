@@ -70,6 +70,7 @@ UCT2015Producer = cms.EDProducer(
     regionSrc = cms.InputTag("uctDigis"),
     emCandSrc = cms.InputTag("uctDigis"),
     tAvgPU = cms.bool(False),
+    tAvgPUSrc = cms.InputTag("unused"),
 )
 
 # Just to make python happy
