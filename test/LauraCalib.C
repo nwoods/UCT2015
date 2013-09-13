@@ -17,6 +17,8 @@ double G_eta_bin = -1; // no requirement
 double G_eta_min = 0.0;
 double G_eta_max = 5.0;
 
+float jet_pt_cut = 30.; // Cut for inclusion in fits
+
 // number and type of eta bin fits:
 #define NUM_ETA_BINS 22
 #define MIN_ETA_BIN 0
@@ -372,7 +374,7 @@ void fill_calib_sample(){
     if ((i+1)%update==0) { cout << "."; cout.flush(); }    
     tree->GetEntry(i);
 
-    if (rpt < 20.0) continue;
+    if (rpt < jet_pt_cut) continue;
     //if (npt <= 0.0) continue;
     //if (npt <= 0.0) continue;
     //if (reco > 100.0) continue;

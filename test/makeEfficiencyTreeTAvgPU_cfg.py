@@ -664,7 +664,6 @@ if options.isTAvg:
         * process.EstimatedPUSubtractor
         * process.UCT2015EClusterProducer
         * process.UCT2015EfficiencyProducer
-
         * process.UCTStage1BEfficiencyProducer
         * process.l1extraParticles
         * process.corrjetEfficiency
