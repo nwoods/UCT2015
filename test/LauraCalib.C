@@ -321,7 +321,7 @@ void Lauratestcalib(){
     gMinuit->FixParameter(2);
 
     gMinuit->Release(0);
-    gMinuit->Release(1);
+    //    gMinuit->Release(1);
     gMinuit->Release(2);
 
     gMinuit->Migrad();
