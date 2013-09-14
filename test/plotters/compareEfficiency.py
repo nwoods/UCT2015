@@ -245,127 +245,139 @@ setn()
 
 
 L1PtCut = 20
-
-#rlx EG
-compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "", # No reco selection (rlx EG)
-                     "!l1gMIP&&!l1gTauVeto", # UCT EG
-                     "", # No old L1 selection
-                     "rlx_eg_eff_%i"%(L1PtCut),
-                     "Relaxed EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-
-#rlx EG no tauVeto
-compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "", # No reco selection (rlx EG)
-                     "!l1gMIP&&(!l1gTauVeto||l1gPt>63)", # UCT EG
-                     "", # No old L1 selection
-                     "rlx_eg_eff_%i_noTauVetoCut"%(L1PtCut),
-                     "Relaxed EG efficiency (20GeV, no tau veto above 63 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-#iso EG No tauVeto
-compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "dr03CombinedEt/recoPt < 0.1", # Isolated reco
-                     "!l1gMIP&&(!l1gTauVeto||l1gPt>63)&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
-                     "", # No selection for iso L1
-                     "iso_eg_eff_%i_noTauVeto"%(L1PtCut),
-                     "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-#iso EG
-compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "dr03CombinedEt/recoPt < 0.1", # Isolated reco
-                     "!l1gMIP&&!l1gTauVeto&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
-                     "", # No selection for iso L1
-                     "iso_eg_eff_%i"%(L1PtCut),
-                     "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-#rlx tau
-compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "", # No reco selection (rlx tau)
-                     "", # UCT tau
-                     "", # No old L1 selection
-                     "rlx_tau_eff_%i"%(L1PtCut),
-                     "Relaxed Tau Efficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-
-#iso tau
-compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "", # reco taus automatically isolated
-                     "l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63)", # UCT Iso Tau
-                     "", # No old L1 selection lol
-                     "iso_tau_eff_%i"%(L1PtCut),
-                     "Isolated Tau fficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-#Jets
-
-
-for JetL1PtCut in [30., 50., 70., 150., 200.]:
- 
-   compare_efficiencies(jet_ntuple_t, jet_ntuple_x, jet_ntuple_old,
-                        "recoPt", JetL1PtCut, [40, 0, 200],
-                        "", # No reco selection 
-                        "", # No UCT selection
-                        "", # No old L1 selection
-                        "jet_eff_%i"%(JetL1PtCut),
-                        "Jet efficiency (%uGeV)"%(JetL1PtCut),
-                        "RECO p_{T} (GeV)")
-
-
-jet_ntuple_list = [jet_ntuple_t,jet_ntuple_x,jet_ntuple_old]
-jet_drawstring_list = ["(recoPt-l1gPt)/recoPt","(recoPt-l1gPt)/recoPt",
-                    "(recoPt-l1Pt)/recoPt"]
-jet_selection_list = ["l1gMatch && recoPt > 20",
-                    "l1gMatch && recoPt > 20", 
-                    "l1Match && recoPt > 20"] 
-color_list = [ROOT.EColor.kBlue,ROOT.EColor.kGreen,ROOT.EColor.kRed]
-legend_name_list = ["Time avg PU","Space avg PU", "Current"]
-
-#Jet Resolution plot w.r.t. #PVs
-make_many_profiles(jet_ntuple_list,
-                   jet_drawstring_list,
-                   "nPVs",
-                   [35,0.,35.,100,-10.,10.],
-                   jet_selection_list,
-                   color_list,
-                   [22,21,20],
-                   -1.,1.,
-                   legend_name_list,
-                   "jetResVsNPVs",
-                   "Jet Resolution vs # Primary Vertices",
-                   "# Primary Vertices",
-                   "(RecoPt - L1Pt)/RecoPt"
-                   )
-
-
-#Jet Resolution plot w.r.t. #Pt
-make_many_profiles(jet_ntuple_list,
-                   jet_drawstring_list,
-                   "recoPt",
-                   [25,0.,200.,100,-10.,10.],
-                   jet_selection_list,
-                   color_list,
-                   [22,21,20],
-                   -1.,1.,
-                   legend_name_list,
-                   "jetResVsPt",
-                   "Jet Resolution vs Reco Pt",
-                   "Reco Pt",
-                   "(RecoPt - L1Pt)/RecoPt"
-                   )
-
-
+# 
+# #rlx EG
+# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "", # No reco selection (rlx EG)
+#                      "!l1gMIP&&!l1gTauVeto", # UCT EG
+#                      "", # No old L1 selection
+#                      "rlx_eg_eff_%i"%(L1PtCut),
+#                      "Relaxed EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# 
+# #rlx EG no tauVeto
+# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "", # No reco selection (rlx EG)
+#                      "!l1gMIP&&(!l1gTauVeto||l1gPt>63)", # UCT EG
+#                      "", # No old L1 selection
+#                      "rlx_eg_eff_%i_noTauVetoCut"%(L1PtCut),
+#                      "Relaxed EG efficiency (20GeV, no tau veto above 63 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# #iso EG No tauVeto
+# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "dr03CombinedEt/recoPt < 0.1", # Isolated reco
+#                      "!l1gMIP&&(!l1gTauVeto||l1gPt>63)&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
+#                      "", # No selection for iso L1
+#                      "iso_eg_eff_%i_noTauVeto"%(L1PtCut),
+#                      "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# #iso EG
+# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "dr03CombinedEt/recoPt < 0.1", # Isolated reco
+#                      "!l1gMIP&&!l1gTauVeto&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
+#                      "", # No selection for iso L1
+#                      "iso_eg_eff_%i"%(L1PtCut),
+#                      "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# #rlx tau
+# compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "", # No reco selection (rlx tau)
+#                      "", # UCT tau
+#                      "", # No old L1 selection
+#                      "rlx_tau_eff_%i"%(L1PtCut),
+#                      "Relaxed Tau Efficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# 
+# #iso tau
+# compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "", # reco taus automatically isolated
+#                      "l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63)", # UCT Iso Tau
+#                      "", # No old L1 selection lol
+#                      "iso_tau_eff_%i"%(L1PtCut),
+#                      "Isolated Tau fficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# #Jets
+# 
+# 
+# for JetL1PtCut in [30., 50., 70., 150., 200.]:
+#  
+#    compare_efficiencies(jet_ntuple_t, jet_ntuple_x, jet_ntuple_old,
+#                         "recoPt", JetL1PtCut, [40, 0, 200],
+#                         "", # No reco selection 
+#                         "", # No UCT selection
+#                         "", # No old L1 selection
+#                         "jet_eff_%i"%(JetL1PtCut),
+#                         "Jet efficiency (%uGeV)"%(JetL1PtCut),
+#                         "RECO p_{T} (GeV)")
+# 
+# 
+# jet_ntuple_list = [jet_ntuple_t,jet_ntuple_x,jet_ntuple_old]
+# jet_drawstring_list = ["(recoPt-l1gPt)/recoPt","(recoPt-l1gPt)/recoPt",
+#                     "(recoPt-l1Pt)/recoPt"]
+# jet_selection_list = ["l1gMatch && recoPt > 20",
+#                     "l1gMatch && recoPt > 20", 
+#                     "l1Match && recoPt > 20"] 
+# color_list = [ROOT.EColor.kBlue,ROOT.EColor.kGreen,ROOT.EColor.kRed]
+# legend_name_list = ["Time avg PU","Space avg PU", "Current"]
+# 
+# #Jet Resolution plot w.r.t. #PVs
+# make_many_profiles(jet_ntuple_list,
+#                    jet_drawstring_list,
+#                    "nPVs",
+#                    [35,0.,35.,100,-10.,10.],
+#                    jet_selection_list,
+#                    color_list,
+#                    [22,21,20],
+#                    -1.,1.,
+#                    legend_name_list,
+#                    "jetResVsNPVs",
+#                    "Jet Resolution vs # Primary Vertices",
+#                    "# Primary Vertices",
+#                    "(RecoPt - L1Pt)/RecoPt"
+#                    )
+# 
+# 
+# #Jet Resolution plot w.r.t. #Pt
+# make_many_profiles(jet_ntuple_list,
+#                    jet_drawstring_list,
+#                    "recoPt",
+#                    [25,0.,200.,100,-10.,10.],
+#                    jet_selection_list,
+#                    color_list,
+#                    [22,21,20],
+#                    -1.,1.,
+#                    legend_name_list,
+#                    "jetResVsPt",
+#                    "Jet Resolution vs Reco Pt",
+#                    "Reco Pt",
+#                    "(RecoPt - L1Pt)/RecoPt"
+#                    )
+# 
+ptComp2d_t = make_plot(jet_ntuple_t, "l1gPt:recoPt", "",
+                       [22,24.,200.,22,24.,200.],
+                       "Reco Pt (GeV)",
+                       "L1 Jet Pt (time average) Vs Reco Jet Pt")
+frame = ROOT.TH2F("frame", "frame", 22,24.,200.,22,24.,200.)
+frame.SetTitle("L1 Jet Pt (time average) Vs Reco Jet Pt")
+frame.GetXaxis().SetTitle("Reco Pt")
+frame.GetYaxis().SetTitle("L1 Jet Pt (time average PU)")
+frame.Draw()
+ptComp2d_t.Draw('colzsame')
+filename=saveWhere + "tAvgJetPtVsRecoPt.png"
+canvas.SaveAs(filename)
+   
 # make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:nPVs",
 #              [35,0.,35.,100,-10.,10.],
 #              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
