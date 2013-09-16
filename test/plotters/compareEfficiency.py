@@ -285,6 +285,33 @@ for JetL1PtCut in [30., 50., 70., 150., 200.]:
                         "RECO p_{T} (GeV)")
 
 
+#Jet Resolution plot w.r.t. #PVs
+make_many_profiles(jet_ntuple_list,
+                   jet_drawstring_list,
+                   "nPVs",
+                   [35,0.,35.,100,-10.,10.],
+                   jet_selection_list,
+                   color_list,
+                   [22,21,20],
+                   -1.,1.,
+                   legend_name_list,
+                   "jetResVsNPVs",
+                   "Jet Resolution vs # Primary Vertices",
+                   "# Primary Vertices",
+                   "(RecoPt - L1Pt)/RecoPt"
+                   )
+
+                        
+#Jet Resolution plot w.r.t. #Pt
+make_many_profiles(jet_ntuple_list,
+                   jet_drawstring_list,
+                   "recoPt",
+                   [25,0.,200.,100,-10.,10.],
+                   jet_selection_list,
+                   color_list,
+                   [22,21,20],
+                   -1.,1.,
+
 # #Jet Resolution plot w.r.t. #PVs
 # make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:nPVs",
 #              [35,0.,35.,100,-10.,10.],
