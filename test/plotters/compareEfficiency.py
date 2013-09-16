@@ -7,10 +7,10 @@ Author: Evan K. Friis, UW Madison; modified by Nate Woods
 Usage: python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root label[optional]
 
 E.G.
-python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root v3
+python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root v3_
 will produce rate plots in ~/www/v3_filename.png
 
-python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root UCT2015/test  
+python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root UCT2015/test_  
 will produce rate plots in ~/www/UCT2015/test_filename.png 
 
 python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root
@@ -57,7 +57,7 @@ def setn():
 ####################################
 
 if len(argv)>3:
-   saveWhere='~/www/'+argv[3]+'_'
+   saveWhere='~/www/'+argv[3]
 else:
    saveWhere='~/www/'
 
@@ -112,7 +112,7 @@ def make_efficiency(denom, num, color, markerStyle):
 ##     return eff
 ## 
 
-def make_profile(Ntuple, variables, binning, selection, color, markerStyle, min, max, file_title="profile", title='',xaxis=''):
+def make_profile(Ntuple, variables, binning, selection, color, markerStyle, min, max, file_title="profile", title='',xaxis='',yaxis=''):
    ''' Make and save a legit profile '''
    plot = make_plot(Ntuple, variables, selection, binning, xaxis, title)
    prof = plot.ProfileX()
@@ -130,6 +130,7 @@ def make_profile(Ntuple, variables, binning, selection, color, markerStyle, min,
    frame.SetMinimum(min)
    frame.SetTitle(title)
    frame.GetXaxis().SetTitle(xaxis)
+   frame.GetYaxis().SetTitle(yaxis)
    frame.Draw()
    prof.Draw('e')
    filename = saveWhere + file_title + '.png'
@@ -244,7 +245,7 @@ setn()
 
 
 L1PtCut = 20
-
+# 
 # #rlx EG
 # compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
 #                      "recoPt", L1PtCut, [40, 0, 200],
@@ -367,7 +368,19 @@ make_many_profiles(jet_ntuple_list,
                    "(RecoPt - L1Pt)/RecoPt"
                    )
 
-# #Jet Resolution plot w.r.t. #PVs
+ptComp2d_t = make_plot(jet_ntuple_t, "l1gPt:recoPt", "",
+                       [22,24.,200.,22,24.,200.],
+                       "Reco Pt (GeV)",
+                       "L1 Jet Pt (time average) Vs Reco Jet Pt")
+frame = ROOT.TH2F("frame", "frame", 22,24.,200.,22,24.,200.)
+frame.SetTitle("L1 Jet Pt (time average) Vs Reco Jet Pt")
+frame.GetXaxis().SetTitle("Reco Pt")
+frame.GetYaxis().SetTitle("L1 Jet Pt (time average PU)")
+frame.Draw()
+ptComp2d_t.Draw('colzsame')
+filename=saveWhere + "tAvgJetPtVsRecoPt.png"
+canvas.SaveAs(filename)
+   
 # make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:nPVs",
 #              [35,0.,35.,100,-10.,10.],
 #              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
@@ -378,6 +391,7 @@ make_many_profiles(jet_ntuple_list,
 #              "jetRes_vs_nPVs",
 #              "Jet Pt Resolution Vs. # Primary Vertices",
 #              "# Primary Vertices"
+#              "(RecoPt - L1Pt)/RecoPt",
 #              )
 #              
 # #Jet Resolution plot w.r.t. Pt
@@ -391,5 +405,34 @@ make_many_profiles(jet_ntuple_list,
 #              "jetRes_vs_pt",
 #              "Jet Pt Resolution Vs. Reco Pt",
 #              "Reco Pt"
+#              "(RecoPt - L1Pt)/RecoPt",
+#              )
+# 
+# #Space Avg Jet Resolution plot w.r.t. #PVs
+# make_profile(jet_ntuple_x, "(recoPt-l1gPt)/recoPt:nPVs",
+#              [35,0.,35.,100,-10.,10.],
+#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
+#              ROOT.EColor.kRed,
+#              1,
+#              -3.,
+#              3.,
+#              "jetRes_vs_nPVs_XAvg",
+#              "Jet Pt Resolution Vs. # Primary Vertices (Space Avg Pileup)",
+#              "# Primary Vertices",
+#              "(RecoPt - L1Pt)/RecoPt",
 #              )
 #              
+# #Space Avg Jet Resolution plot w.r.t. Pt
+# make_profile(jet_ntuple_x, "(recoPt-l1gPt)/recoPt:recoPt",
+#              [200,0.,200.,100,-10.,10.],
+#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
+#              ROOT.EColor.kRed,
+#              1,
+#              -3.,
+#              3.,
+#              "jetRes_vs_pt_XAvg",
+#              "Jet Pt Resolution Vs. Reco Pt (Space Avg Pileup)",
+#              "Reco Pt"
+#              "(RecoPt - L1Pt)/RecoPt",
+#              )
+# 

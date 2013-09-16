@@ -224,8 +224,7 @@ def plotRates(oldntuple, tuctntuple, xuctntuple, binning, filename, title='', xa
     legend.SetFillColor(ROOT.EColor.kWhite)
     legend.SetBorderSize(1)
     legend.AddEntry(tUCTRate, "UCT (time avg PU)", "p")
-    legend.AddEntry(xUCTRate, "UCT (no PU subtraction)", "p")
-#    legend.AddEntry(xUCTRate, "UCT (space avg PU)", "p")
+    legend.AddEntry(xUCTRate, "UCT (space avg PU)", "p")
     legend.AddEntry(oldRate, "Current", "p")
     legend.Draw("same")
     saveas = saveWhere+filename+'.png' 
@@ -260,6 +259,7 @@ plotRates(rlx_old_tau_ntuple, t_rlx_uct_tau_ntuple, x_rlx_uct_tau_ntuple,
 #           "Isolated EG Rate", "L1 p_{T} (GeV)",
 #           "jetPt>0&&(jetPt-pt)/pt<=.1&&!mipBit&&!tauVeto")
 # 
+
 #Iso EG No TauVeto
 plotRates(iso_old_eg_ntuple, t_rlx_uct_eg_ntuple, x_rlx_uct_eg_ntuple,
           [40, 0, 150],
