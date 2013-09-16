@@ -136,6 +136,45 @@ def make_profile(Ntuple, variables, binning, selection, color, markerStyle, min,
    canvas.SaveAs(filename)
    
 
+def make_many_profiles(NtupleList, variableList, xVariable, binning, selectionList, colorList, markerList, min, max, nameList, file_title="many_profiles", title='',xaxis='',yaxis=''):
+   ''' Make and save an arbitrary number of profiles '''
+   if not (len(NtupleList) == len(colorList) and len(NtupleList) == len(colorList) and len(NtupleList) == len(nameList) and len(NtupleList) == len(variableList) and len(NtupleList) == len(selectionList)):
+      print "List arguments to make_many_profiles must be the same size"
+      return
+
+   profList=[]
+   legend = ROOT.TLegend(0.3, 0.7, 0.5, 0.9, "", "brNDC")
+   legend.SetFillColor(ROOT.EColor.kWhite)
+   legend.SetBorderSize(1)
+
+   for i in range(len(NtupleList)):
+      plot = make_plot(NtupleList[i], variableList[i]+":"+xVariable, selectionList[i], binning, xaxis, title)
+      prof = plot.ProfileX()
+      prof.SetMarkerSize(1.5)
+      prof.SetMarkerStyle(markerList[i])
+      prof.SetMarkerColor(colorList[i])
+      prof.SetLineColor(colorList[i])
+      prof.SetMinimum(min)
+      prof.SetMaximum(max)
+      profList.append(prof)
+      legend.AddEntry(profList[i], nameList[i], "pe")
+
+   framebins = binning[0:3]
+      
+   frame = ROOT.TH1F("frame", "frame", *framebins)
+   frame.SetMaximum(max)
+   frame.SetMinimum(min)
+   frame.SetTitle(title)
+   frame.GetXaxis().SetTitle(xaxis)
+   frame.GetYaxis().SetTitle(yaxis)
+   frame.Draw()
+   for prof in profList:
+      prof.Draw('esame')
+   legend.Draw()
+   filename = saveWhere + file_title + '.png'
+   canvas.SaveAs(filename)
+   
+
 def compare_efficiencies(Ntuple_t, Ntuple_x, oldNtuple, variable, ptCut,
                          binning, selection_reco="", selection_uct="",
                          selection_old="", file_title="plot",
@@ -311,6 +350,12 @@ make_many_profiles(jet_ntuple_list,
                    color_list,
                    [22,21,20],
                    -1.,1.,
+                   legend_name_list,
+                   "jetResVsPt",
+                   "Jet Resolution vs Pt",
+                   "Reco Pt",
+                   "(RecoPt - L1Pt)/RecoPt"
+                   )
 
 # #Jet Resolution plot w.r.t. #PVs
 # make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:nPVs",
