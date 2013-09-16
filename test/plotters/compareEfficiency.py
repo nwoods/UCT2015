@@ -323,6 +323,16 @@ for JetL1PtCut in [30., 50., 70., 150., 200.]:
                         "Jet efficiency (%uGeV)"%(JetL1PtCut),# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
                         "RECO p_{T} (GeV)")
 
+jet_ntuple_list = [jet_ntuple_t,jet_ntuple_x,jet_ntuple_old]
+jet_drawstring_list = ["(recoPt-l1gPt)/recoPt","(recoPt-l1gPt)/recoPt",
+                    "(recoPt-l1Pt)/recoPt"]
+jet_selection_list = ["l1gMatch && recoPt > 20",
+                    "l1gMatch && recoPt > 20", 
+                    "l1Match && recoPt > 20"] 
+color_list = [ROOT.EColor.kBlue,ROOT.EColor.kGreen,ROOT.EColor.kRed]
+legend_name_list = ["Time avg PU","Space avg PU", "Current"]
+
+
 
 #Jet Resolution plot w.r.t. #PVs
 make_many_profiles(jet_ntuple_list,
