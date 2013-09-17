@@ -287,7 +287,7 @@ void fcn_chisq(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag
     double pu   = G_pu[i];
     if (reco <= 0.0) continue;
     if (pt <= 0.0) continue;
-    double delta = reco - (alpha * pt + beta * pu + gamma); //EDIT: removed PU dependence
+    double delta = reco - (alpha * pt + /*beta * pu +*/ gamma); //EDIT: removed PU dependence
     chisq += delta*delta;
   }
   //cout << chisq << "\n";

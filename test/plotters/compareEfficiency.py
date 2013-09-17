@@ -4,16 +4,16 @@ Script to make some quick efficiency and resolution plots
 
 Author: Evan K. Friis, UW Madison; modified by Nate Woods
 
-Usage: python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root label[optional]
+Usage: python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root NOPUFILE.root label[optional]
 
 E.G.
-python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root v3_
+python compareEfficiency.py TAVGPUFILE.root NOPUFILE.root v3_
 will produce rate plots in ~/www/v3_filename.png
 
-python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root UCT2015/test_  
+python compareEfficiency.py TAVGPUFILE.root NOPUFILE.root UCT2015/test_  
 will produce rate plots in ~/www/UCT2015/test_filename.png 
 
-python compareEfficiency.py TAVGPUFILE.root XAVGPUFILE.root
+python compareEfficiency.py TAVGPUFILE.root NOPUFILE.root
 will produce rate plots in ~/www/filename.png
 
 
@@ -39,14 +39,14 @@ ROOT.gStyle.SetOptStat(0)
 ######## File #########
 #######################
 if len(argv) < 3:
-   print 'Usage:python allRatePlots.py tAvgPUFile.root xAvgPUFile.root label[optional]'
+   print 'Usage:python allRatePlots.py tAvgPUFile.root noPUFile.root label[optional]'
    exit()
 
 Infile_T = argv[1]
-Infile_X = argv[2]
+Infile_N = argv[2]
 ntuple_file_t = ROOT.TFile(Infile_T)
-ntuple_file_x = ROOT.TFile(Infile_X)
-ntuple_file_old = ROOT.TFile(Infile_X)
+ntuple_file_n = ROOT.TFile(Infile_N)
+ntuple_file_old = ROOT.TFile(Infile_T)
 
 def setn():
    global n #stupid hack to make profiles work correctly
@@ -65,17 +65,17 @@ else:
 eg_ntuple_old = ntuple_file_old.Get("rlxEGEfficiency/Ntuple")
 iso_eg_ntuple_old = ntuple_file_old.Get("rlxUCTisoL1EGEfficiency/Ntuple")
 eg_ntuple_t = ntuple_file_t.Get("rlxEGEfficiency/Ntuple")
-eg_ntuple_x = ntuple_file_x.Get("rlxEGEfficiency/Ntuple")
+eg_ntuple_n = ntuple_file_n.Get("rlxEGEfficiency/Ntuple")
 
 ### Tau NTuples
 tau_ntuple_old = ntuple_file_old.Get("rlxTauEfficiency/Ntuple")
 tau_ntuple_t = ntuple_file_t.Get("rlxTauEfficiency/Ntuple")
-tau_ntuple_x = ntuple_file_x.Get("rlxTauEfficiency/Ntuple")
+tau_ntuple_n = ntuple_file_n.Get("rlxTauEfficiency/Ntuple")
 
 ### Jet NTuples
 jet_ntuple_old = ntuple_file_old.Get("corrjetEfficiency/Ntuple")
 jet_ntuple_t = ntuple_file_t.Get("corrjetEfficiency/Ntuple")
-jet_ntuple_x = ntuple_file_x.Get("corrjetEfficiency/Ntuple")
+jet_ntuple_n = ntuple_file_n.Get("jetEfficiency/Ntuple")
 
 canvas = ROOT.TCanvas("asdf", "adsf", 800, 600)
 
@@ -171,12 +171,18 @@ def make_many_profiles(NtupleList, variableList, xVariable, binning, selectionLi
    frame.Draw()
    for prof in profList:
       prof.Draw('esame')
+   line10 = ROOT.TLine(0.,0.1,200.,0.1)
+   line15 = ROOT.TLine(0.,0.15,200.,0.15)
+   line20 = ROOT.TLine(0.,0.2,200.,0.2)
+   line10.Draw("same")
+   line15.Draw("same")
+   line20.Draw("same")
    legend.Draw()
    filename = saveWhere + file_title + '.png'
    canvas.SaveAs(filename)
    
 
-def compare_efficiencies(Ntuple_t, Ntuple_x, oldNtuple, variable, ptCut,
+def compare_efficiencies(Ntuple_t, Ntuple_n, oldNtuple, variable, ptCut,
                          binning, selection_reco="", selection_uct="",
                          selection_old="", file_title="plot",
                          title='', xaxis=''):
@@ -186,8 +192,8 @@ def compare_efficiencies(Ntuple_t, Ntuple_x, oldNtuple, variable, ptCut,
         selection_reco, 
         binning
         )
-    denom_x = make_plot(
-        Ntuple_x, variable,
+    denom_n = make_plot(
+        Ntuple_n, variable,
         selection_reco, 
         binning
         )
@@ -205,8 +211,8 @@ def compare_efficiencies(Ntuple_t, Ntuple_x, oldNtuple, variable, ptCut,
         selection_string_uct,
         binning
         )
-    num_x = make_plot(
-        Ntuple_x, variable,
+    num_n = make_plot(
+        Ntuple_n, variable,
         selection_string_uct,
         binning
         )
@@ -218,20 +224,20 @@ def compare_efficiencies(Ntuple_t, Ntuple_x, oldNtuple, variable, ptCut,
 
     frame = ROOT.TH1F("frame", "frame", *binning)
     eff_t = make_efficiency(denom_t, num_t, ROOT.EColor.kBlue, 22)
-    eff_x = make_efficiency(denom_x, num_x, ROOT.EColor.kGreen, 21)
-    eff_old = make_efficiency(denom_x, num_old, ROOT.EColor.kRed, 20)
+    eff_n = make_efficiency(denom_n, num_n, ROOT.EColor.kGreen, 21)
+    eff_old = make_efficiency(denom_n, num_old, ROOT.EColor.kRed, 20)
     frame.SetMaximum(1.2)
     frame.SetTitle(title)
     frame.GetXaxis().SetTitle(xaxis)
     frame.Draw()
-    eff_x.Draw('pe')
+    eff_n.Draw('pe')
     eff_old.Draw('pe')
     eff_t.Draw('pe')
     legend = ROOT.TLegend(0.7, 0.2, 0.89, 0.4, "", "brNDC")
     legend.SetFillColor(ROOT.EColor.kWhite)
     legend.SetBorderSize(1)
     legend.AddEntry(eff_t, "UCT (time avg PU)", "pe")
-    legend.AddEntry(eff_x, "UCT (space avg PU", "pe")
+    legend.AddEntry(eff_n, "UCT (No PU Subtraction)", "pe")
     legend.AddEntry(eff_old, "Current", "pe")
     legend.Draw()
     filename = saveWhere + file_title + '.png'
@@ -245,194 +251,214 @@ setn()
 
 
 L1PtCut = 20
+# # 
+# # #rlx EG
+# # compare_efficiencies(eg_ntuple_t, eg_ntuple_n, eg_ntuple_old,
+# #                      "recoPt", L1PtCut, [40, 0, 200],
+# #                      "", # No reco selection (rlx EG)
+# #                      "!l1gMIP&&!l1gTauVeto", # UCT EG
+# #                      "", # No old L1 selection
+# #                      "rlx_eg_eff_%i"%(L1PtCut),
+# #                      "Relaxed EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+# #                      "RECO p_{T} (GeV)")
+# # 
 # 
-# #rlx EG
-# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
+# #rlx EG no tauVeto
+# compare_efficiencies(eg_ntuple_t, eg_ntuple_n, eg_ntuple_old,
 #                      "recoPt", L1PtCut, [40, 0, 200],
 #                      "", # No reco selection (rlx EG)
-#                      "!l1gMIP&&!l1gTauVeto", # UCT EG
+#                      "!l1gMIP&&(!l1gTauVeto||l1gPt>63)", # UCT EG
 #                      "", # No old L1 selection
-#                      "rlx_eg_eff_%i"%(L1PtCut),
-#                      "Relaxed EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "rlx_eg_eff_%i_noTauVetoCut"%(L1PtCut),
+#                      "Relaxed EG efficiency (20GeV, no tau veto above 63 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
 #                      "RECO p_{T} (GeV)")
 # 
-
-#rlx EG no tauVeto
-compare_efficiencies(eg_ntuple_t, eg_ntuple_x, eg_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "", # No reco selection (rlx EG)
-                     "!l1gMIP&&(!l1gTauVeto||l1gPt>63)", # UCT EG
-                     "", # No old L1 selection
-                     "rlx_eg_eff_%i_noTauVetoCut"%(L1PtCut),
-                     "Relaxed EG efficiency (20GeV, no tau veto above 63 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-#iso EG No tauVeto
-compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "dr03CombinedEt/recoPt < 0.1", # Isolated reco
-                     "!l1gMIP&&(!l1gTauVeto||l1gPt>63)&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
-                     "", # No selection for iso L1
-                     "iso_eg_eff_%i_noTauVeto"%(L1PtCut),
-                     "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-# #iso EG
-# compare_efficiencies(eg_ntuple_t, eg_ntuple_x, iso_eg_ntuple_old,
+# #iso EG No tauVeto
+# compare_efficiencies(eg_ntuple_t, eg_ntuple_n, iso_eg_ntuple_old,
 #                      "recoPt", L1PtCut, [40, 0, 200],
 #                      "dr03CombinedEt/recoPt < 0.1", # Isolated reco
-#                      "!l1gMIP&&!l1gTauVeto&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
+#                      "!l1gMIP&&(!l1gTauVeto||l1gPt>63)&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
 #                      "", # No selection for iso L1
-#                      "iso_eg_eff_%i"%(L1PtCut),
+#                      "iso_eg_eff_%i_noTauVeto"%(L1PtCut),
 #                      "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
 #                      "RECO p_{T} (GeV)")
 # 
-
-
-#rlx tau
-compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "", # No reco selection (rlx tau)
-                     "", # UCT tau
-                     "", # No old L1 selection
-                     "rlx_tau_eff_%i"%(L1PtCut),
-                     "Relaxed Tau Efficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-
-#iso tau
-compare_efficiencies(tau_ntuple_t, tau_ntuple_x, tau_ntuple_old,
-                     "recoPt", L1PtCut, [40, 0, 200],
-                     "", # reco taus automatically isolated
-                     "l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63)", # UCT Iso Tau
-                     "", # No old L1 selection lol
-                     "iso_tau_eff_%i"%(L1PtCut),
-                     "Isolated Tau fficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                     "RECO p_{T} (GeV)")
-
-#Jets
-
-
-for JetL1PtCut in [30., 50., 70., 150., 200.]:
- 
-   compare_efficiencies(jet_ntuple_t, jet_ntuple_x, jet_ntuple_old,
-                        "recoPt", JetL1PtCut, [40, 0, 200],
-                        "", # No reco selection 
-                        "", # No UCT selection
-                        "", # No old L1 selection
-                        "jet_eff_%i"%(JetL1PtCut),
-                        "Jet efficiency (%uGeV)"%(JetL1PtCut),# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
-                        "RECO p_{T} (GeV)")
-
-jet_ntuple_list = [jet_ntuple_t,jet_ntuple_x,jet_ntuple_old]
-jet_drawstring_list = ["(recoPt-l1gPt)/recoPt","(recoPt-l1gPt)/recoPt",
-                    "(recoPt-l1Pt)/recoPt"]
-jet_selection_list = ["l1gMatch && recoPt > 20",
-                    "l1gMatch && recoPt > 20", 
-                    "l1Match && recoPt > 20"] 
-color_list = [ROOT.EColor.kBlue,ROOT.EColor.kGreen,ROOT.EColor.kRed]
-legend_name_list = ["Time avg PU","Space avg PU", "Current"]
-
-
-
-#Jet Resolution plot w.r.t. #PVs
-make_many_profiles(jet_ntuple_list,
-                   jet_drawstring_list,
-                   "nPVs",
-                   [35,0.,35.,100,-10.,10.],
-                   jet_selection_list,
-                   color_list,
-                   [22,21,20],
-                   -1.,1.,
-                   legend_name_list,
-                   "jetResVsNPVs",
-                   "Jet Resolution vs # Primary Vertices",
-                   "# Primary Vertices",
-                   "(RecoPt - L1Pt)/RecoPt"
-                   )
-
-                        
-#Jet Resolution plot w.r.t. #Pt
-make_many_profiles(jet_ntuple_list,
-                   jet_drawstring_list,
-                   "recoPt",
-                   [25,0.,200.,100,-10.,10.],
-                   jet_selection_list,
-                   color_list,
-                   [22,21,20],
-                   -1.,1.,
-                   legend_name_list,
-                   "jetResVsPt",
-                   "Jet Resolution vs Pt",
-                   "Reco Pt",
-                   "(RecoPt - L1Pt)/RecoPt"
-                   )
-
-ptComp2d_t = make_plot(jet_ntuple_t, "l1gPt:recoPt", "",
-                       [22,24.,200.,22,24.,200.],
-                       "Reco Pt (GeV)",
-                       "L1 Jet Pt (time average) Vs Reco Jet Pt")
-frame = ROOT.TH2F("frame", "frame", 22,24.,200.,22,24.,200.)
-frame.SetTitle("L1 Jet Pt (time average) Vs Reco Jet Pt")
-frame.GetXaxis().SetTitle("Reco Pt")
-frame.GetYaxis().SetTitle("L1 Jet Pt (time average PU)")
-frame.Draw()
-ptComp2d_t.Draw('colzsame')
-filename=saveWhere + "tAvgJetPtVsRecoPt.png"
-canvas.SaveAs(filename)
-   
-# make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:nPVs",
-#              [35,0.,35.,100,-10.,10.],
-#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
-#              ROOT.EColor.kRed,
-#              1,
-#              -3.,
-#              3.,
-#              "jetRes_vs_nPVs",
-#              "Jet Pt Resolution Vs. # Primary Vertices",
-#              "# Primary Vertices"
-#              "(RecoPt - L1Pt)/RecoPt",
-#              )
-#              
-# #Jet Resolution plot w.r.t. Pt
-# make_profile(jet_ntuple_t, "(recoPt-l1gPt)/recoPt:recoPt",
-#              [200,0.,200.,100,-10.,10.],
-#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
-#              ROOT.EColor.kRed,
-#              1,
-#              -3.,
-#              3.,
-#              "jetRes_vs_pt",
-#              "Jet Pt Resolution Vs. Reco Pt",
-#              "Reco Pt"
-#              "(RecoPt - L1Pt)/RecoPt",
-#              )
+# # #iso EG
+# # compare_efficiencies(eg_ntuple_t, eg_ntuple_n, iso_eg_ntuple_old,
+# #                      "recoPt", L1PtCut, [40, 0, 200],
+# #                      "dr03CombinedEt/recoPt < 0.1", # Isolated reco
+# #                      "!l1gMIP&&!l1gTauVeto&&l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63.)", # UCT EG iso
+# #                      "", # No selection for iso L1
+# #                      "iso_eg_eff_%i"%(L1PtCut),
+# #                      "Isolated EG efficiency (20GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+# #                      "RECO p_{T} (GeV)")
+# # 
 # 
-# #Space Avg Jet Resolution plot w.r.t. #PVs
-# make_profile(jet_ntuple_x, "(recoPt-l1gPt)/recoPt:nPVs",
-#              [35,0.,35.,100,-10.,10.],
-#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
-#              ROOT.EColor.kRed,
-#              1,
-#              -3.,
-#              3.,
-#              "jetRes_vs_nPVs_XAvg",
-#              "Jet Pt Resolution Vs. # Primary Vertices (Space Avg Pileup)",
-#              "# Primary Vertices",
-#              "(RecoPt - L1Pt)/RecoPt",
-#              )
-#              
-# #Space Avg Jet Resolution plot w.r.t. Pt
-# make_profile(jet_ntuple_x, "(recoPt-l1gPt)/recoPt:recoPt",
-#              [200,0.,200.,100,-10.,10.],
-#              "l1gMatch && (recoPt-l1gPt)/recoPt < 10 && (recoPt-l1gPt)/recoPt > -10",
-#              ROOT.EColor.kRed,
-#              1,
-#              -3.,
-#              3.,
-#              "jetRes_vs_pt_XAvg",
-#              "Jet Pt Resolution Vs. Reco Pt (Space Avg Pileup)",
-#              "Reco Pt"
-#              "(RecoPt - L1Pt)/RecoPt",
-#              )
 # 
+# #rlx tau
+# compare_efficiencies(tau_ntuple_t, tau_ntuple_n, tau_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "", # No reco selection (rlx tau)
+#                      "", # UCT tau
+#                      "", # No old L1 selection
+#                      "rlx_tau_eff_%i"%(L1PtCut),
+#                      "Relaxed Tau Efficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# 
+# #iso tau
+# compare_efficiencies(tau_ntuple_t, tau_ntuple_n, tau_ntuple_old,
+#                      "recoPt", L1PtCut, [40, 0, 200],
+#                      "", # reco taus automatically isolated
+#                      "l1gJetPt>0&&((l1gJetPt-l1gPt)/l1gPt<=.2||l1gPt>63)", # UCT Iso Tau
+#                      "", # No old L1 selection lol
+#                      "iso_tau_eff_%i"%(L1PtCut),
+#                      "Isolated Tau fficiency (20 GeV)",# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                      "RECO p_{T} (GeV)")
+# 
+# #Jets
+# 
+# 
+# for JetL1PtCut in [30., 50., 70., 150., 200.]:
+#  
+#    compare_efficiencies(jet_ntuple_t, jet_ntuple_n, jet_ntuple_old,
+#                         "recoPt", JetL1PtCut, [40, 0, 200],
+#                         "", # No reco selection 
+#                         "", # No UCT selection
+#                         "", # No old L1 selection
+#                         "jet_eff_%i"%(JetL1PtCut),
+#                         "Jet efficiency (%uGeV)"%(JetL1PtCut),# jetRelIso<%0.2f regRelIso<%0.2f" % (jetCut, regCut),
+#                         "RECO p_{T} (GeV)")
+# 
+# jet_ntuple_list = [jet_ntuple_t,jet_ntuple_n,jet_ntuple_old]
+# jet_drawstring_list = ["(recoPt-l1gPt)/recoPt","(recoPt-l1gPt)/recoPt",
+#                     "(recoPt-l1Pt)/recoPt"]
+# jet_selection_list = ["l1gMatch && recoPt > 20",
+#                     "l1gMatch && recoPt > 20", 
+#                     "l1Match && recoPt > 20"] 
+# color_list = [ROOT.EColor.kBlue,ROOT.EColor.kGreen,ROOT.EColor.kRed]
+# legend_name_list = ["Time avg PU","Space avg PU", "Current"]
+# 
+# 
+# 
+# #Jet Resolution plot w.r.t. #PVs
+# make_many_profiles(jet_ntuple_list,
+#                    jet_drawstring_list,
+#                    "nPVs",
+#                    [35,0.,35.,100,-10.,10.],
+#                    jet_selection_list,
+#                    color_list,
+#                    [22,21,20],
+#                    -1.,1.,
+#                    legend_name_list,
+#                    "jetResVsNPVs",
+#                    "Jet Resolution vs # Primary Vertices",
+#                    "# Primary Vertices",
+#                    "(RecoPt - L1Pt)/RecoPt"
+#                    )
+# 
+#                         
+# #Jet Resolution plot w.r.t. #Pt
+# make_many_profiles(jet_ntuple_list,
+#                    jet_drawstring_list,
+#                    "recoPt",
+#                    [25,0.,200.,100,-10.,10.],
+#                    jet_selection_list,
+#                    color_list,
+#                    [22,21,20],
+#                    -1.,1.,
+#                    legend_name_list,
+#                    "jetResVsPt",
+#                    "Jet Resolution vs Pt",
+#                    "Reco Pt",
+#                    "(RecoPt - L1Pt)/RecoPt"
+#                    )
+# 
+# ptComp2d_t = make_plot(jet_ntuple_t, "l1gPt:recoPt", "l1gPt>2.&&recoPt>2.",
+#                        [80,0.,80.,80,0.,80.],
+#                        "Reco Pt (GeV)",
+#                        "L1 Jet Pt (time average) Vs Reco Jet Pt")
+# frame = ROOT.TH2F("frame", "frame", 80,0.,80.,80,0.,80.)
+# frame.SetTitle("L1 Jet Pt Vs Reco Jet Pt")
+# frame.GetXaxis().SetTitle("Reco Pt")
+# frame.GetYaxis().SetTitle("L1 Jet Pt (time average PU)")
+# frame.Draw()
+# ptComp2d_t.Draw('colzsame')
+# filename=saveWhere + "tAvgPUJetPtVsRecoPt_80.png"
+# canvas.SaveAs(filename)
+# 
+# ptComp2d_n = make_plot(jet_ntuple_n, "l1gPt:recoPt", "l1gPt>2.&&recoPt>2.",
+#                        [80,0.,80.,80,0.,80.],
+#                        "Reco Pt (GeV)",
+#                        "L1 Jet Pt (time average) Vs Reco Jet Pt")
+# frame = ROOT.TH2F("frame", "frame", 80,0.,80.,80,0.,80.)
+# frame.SetTitle("L1 Jet Pt Vs Reco Jet Pt")
+# frame.GetXaxis().SetTitle("Reco Pt")
+# frame.GetYaxis().SetTitle("L1 Jet Pt (time average PU)")
+# frame.Draw()
+# ptComp2d_n.Draw('colzsame')
+# filename=saveWhere + "uncalJetPtVsRecoPt_80.png"
+# canvas.SaveAs(filename)
+# 
+
+
+mlo = []
+blo = []
+mhi = []
+bhi = []
+boundmd = [20.,25.,25.,20.,45.,25.,25.,25.,30.,25.,30.,25.,30.,25.,25.,25.,25.,45.,30.,25.,30.,23.,]
+boundhi = [30.,60.,70.,70.,85.,130.,140.,120.,105.,130.,130.,130.,130.,140.,120.,130.,130.,110.,70.,70.,70.,30.,]
+for eta in range (22):
+   print "Eta = %i" % eta
+   hist2 = make_plot(jet_ntuple_n, "recoPt:l1gPt",
+                     "l1gPt>2.&&recoPt>2.&&l1gMatch&&l1gEtaCode==%i"%eta,
+                     [200,0.,200.,200,0.,200.],
+                     "Reco Pt (GeV)",
+                     "L1 Jet Pt (time average) Vs Reco Jet Pt")
+   prof = hist2.ProfileX()
+   fnlo = ROOT.TF1("fnlo","pol1",5.,boundmd[eta])
+   fnhi = ROOT.TF1("fnhi","pol1",boundmd[eta],boundhi[eta])
+   prof.Fit("fnlo","QR")
+   blo.append(fnlo.GetParameter(0))
+   print "BLO = %0.5f" % blo[eta]
+   mlo.append(fnlo.GetParameter(1))
+   print "MLO = %0.5f" % mlo[eta]
+   print "X^2 LO = %0.2f" % fnlo.GetChisquare()
+   prof.Fit("fnhi","QR")
+   bhi.append(fnhi.GetParameter(0))
+   print "BHI = %0.5f" % bhi[eta]
+   mhi.append(fnhi.GetParameter(1))
+   print "MHI = %0.5f" % mhi[eta]
+   print "X^2 HI = %0.2f" % fnhi.GetChisquare()
+   prof.SetLineColor(ROOT.EColor.kBlue)
+   prof.SetMarkerColor(ROOT.EColor.kBlue)
+   prof.SetMarkerSize(1.2)
+   prof.SetMarkerStyle(23)
+   prof.SetMaximum(200.)
+   prof.SetMinimum(0.)
+   frame = ROOT.TH1F("frame", "frame", 200,0.,200.)
+   frame.SetMaximum(200.)
+   frame.SetMinimum(0.)
+   frame.SetTitle("L1 Jet Pt Vs Reco Jet Pt")
+   frame.GetXaxis().SetTitle("L1 Jet Pt (time average PU)")
+   frame.GetYaxis().SetTitle("Reco Jet Pt")
+   frame.Draw()
+   prof.Draw('ESAME')
+   filename=saveWhere + ("fitPlots/JetCalPt%i.png"%eta)
+   canvas.SaveAs(filename)
+
+print "MLO = "
+for i in range(22):
+   print mlo[i]
+
+print "\nBLO = "
+for i in range(22):
+   print blo[i]
+
+print "\nMHI = "
+for i in range(22):
+   print mhi[i]
+
+print "\nBHI = "
+for i in range(22):
+   print bhi[i]

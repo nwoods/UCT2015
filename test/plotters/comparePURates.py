@@ -224,7 +224,7 @@ def plotRates(oldntuple, tuctntuple, xuctntuple, binning, filename, title='', xa
     legend.SetFillColor(ROOT.EColor.kWhite)
     legend.SetBorderSize(1)
     legend.AddEntry(tUCTRate, "UCT (time avg PU)", "p")
-    legend.AddEntry(xUCTRate, "UCT (space avg PU)", "p")
+    legend.AddEntry(xUCTRate, "UCT (no PU subtraction)", "p")
     legend.AddEntry(oldRate, "Current", "p")
     legend.Draw("same")
     saveas = saveWhere+filename+'.png' 
