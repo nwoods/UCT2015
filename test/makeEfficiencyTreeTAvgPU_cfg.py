@@ -116,11 +116,12 @@ process.TFileService = cms.Service(
     fileName = cms.string(options.outputFile)
 )
 
-from L1Trigger.UCT2015.emulation_cfi import UCT2015Producer
-
-UCT2015Producer.puCorrect = cms.bool(False)
-UCT2015Producer.useUICrho = cms.bool(False)
-
+# if you want no PU
+# from L1Trigger.UCT2015.emulation_cfi import UCT2015Producer
+# 
+# UCT2015Producer.puCorrect = cms.bool(False)
+# UCT2015Producer.useUICrho = cms.bool(False)
+ 
 # Load emulation and RECO sequences
 if not options.isMC:
     process.load("L1Trigger.UCT2015.emulation_cfi")
@@ -672,6 +673,7 @@ if options.isTAvg:
         * process.UCTStage1BEfficiencyProducer
         * process.l1extraParticles
         * process.corrjetEfficiency
+        * process.jetEfficiency
     )
 else:
     process.p1 = cms.Path(
@@ -683,6 +685,23 @@ else:
 if options.stage1:
     print "Building Stage1 trees"
     process.p1 += process.leptonEfficiencies
+
+# For quad jet trigger
+process.jetsPt36 = cms.EDFilter(
+    "PFJetSelector",
+    src = cms.InputTag("ak5PFJetsNOMuons"),
+    filter = cms.bool(True),
+    cut = cms.string("pt > 36")
+)
+
+process.atLeastFourJets = cms.EDFilter(
+    "CandViewCountFilter",
+    src = cms.InputTag("jetsPt36"),
+    minNumber = cms.uint32(4),
+)
+
+process.p1 += process.jetPt36
+process.p1 += process.atLeastFourJets
 
 if options.stage1B:
     if options.isTAvg:

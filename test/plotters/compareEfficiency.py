@@ -406,8 +406,18 @@ mlo = []
 blo = []
 mhi = []
 bhi = []
-boundmd = [20.,25.,25.,20.,45.,25.,25.,25.,30.,25.,30.,25.,30.,25.,25.,25.,25.,45.,30.,25.,30.,23.,]
-boundhi = [30.,60.,70.,70.,85.,130.,140.,120.,105.,130.,130.,130.,130.,140.,120.,130.,130.,110.,70.,70.,70.,30.,]
+boundmd = [20.,30.,40.,40.,
+           60.,30.,40.,35.,
+           50.,50.,55.,50.,
+           50.,50.,50.,50.,
+           50.,50.,35.,30.,
+           30.,20.,]
+boundhi = [40.,65.,105.,125.,
+           145.,170.,160.,170.,
+           170.,180.,185.,180.,
+           170.,175.,180.,185.,
+           180.,145.,110.,105.,
+           80.,40.,]
 for eta in range (22):
    print "Eta = %i" % eta
    hist2 = make_plot(jet_ntuple_n, "recoPt:l1gPt",
@@ -416,8 +426,8 @@ for eta in range (22):
                      "Reco Pt (GeV)",
                      "L1 Jet Pt (time average) Vs Reco Jet Pt")
    prof = hist2.ProfileX()
-   fnlo = ROOT.TF1("fnlo","pol1",5.,boundmd[eta])
-   fnhi = ROOT.TF1("fnhi","pol1",boundmd[eta],boundhi[eta])
+   fnlo = ROOT.TF1("fnlo","pol2",5.,boundmd[eta])
+   fnhi = ROOT.TF1("fnhi","pol2",boundmd[eta],boundhi[eta])
    prof.Fit("fnlo","QR")
    blo.append(fnlo.GetParameter(0))
    print "BLO = %0.5f" % blo[eta]
@@ -444,7 +454,7 @@ for eta in range (22):
    frame.GetYaxis().SetTitle("Reco Jet Pt")
    frame.Draw()
    prof.Draw('ESAME')
-   filename=saveWhere + ("fitPlots/JetCalPt%i.png"%eta)
+   filename=saveWhere + ("quadFit/JetCalPt%i.png"%eta)
    canvas.SaveAs(filename)
 
 print "MLO = "
