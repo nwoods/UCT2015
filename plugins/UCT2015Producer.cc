@@ -529,6 +529,13 @@ void UCT2015Producer::makeJets() {
   }
   jetList.sort();
   jetList.reverse();
+
+  unsigned n = 0;
+  for(list<UCTCandidate>::iterator it = jetList.begin();
+      it != jetList.end(); ++it)
+    {
+      it->setInt("jetOrdinal", ++n);
+    }
 }
 
 list<UCTCandidate>
@@ -567,6 +574,13 @@ UCT2015Producer::correctJets(const list<UCTCandidate>& jets) {
 
   corrlist.sort();
   corrlist.reverse();
+
+  unsigned n = 0;
+  for(list<UCTCandidate>::iterator it = corrlist.begin();
+      it != corrlist.end(); ++it)
+    {
+      it->setInt("jetOrdinal", ++n);
+    }
 
   return corrlist;
 }

@@ -210,6 +210,11 @@ common_ntuple_branches = cms.PSet(
     l1gDR = cms.string("? l1gMatch ? deltaR(l1g.eta, l1g.phi, reco.eta, reco.phi) : -1"),
 )
 
+# Get jet ordering info
+jet_branches = cms.PSet(
+    jetOrder = cms.string("? l1gMatch ? l1g.getInt('jetOrdinal',-4) : -2"),
+)
+
 # Specific to EG tau objects
 egtau_branches = cms.PSet(
     l1gJetPt = cms.string("? l1gMatch ? l1g.getFloat('associatedJetPt', -4) : -2"),
@@ -525,6 +530,7 @@ if options.isTAvg:
         # Ntuple configuration
         ntuple = cms.PSet(
         common_ntuple_branches,
+        jet_branches,
         )
         )
     process.corrjetEfficiency = cms.EDAnalyzer(
@@ -543,6 +549,7 @@ if options.isTAvg:
         # Ntuple configuration
         ntuple = cms.PSet(
         common_ntuple_branches,
+        jet_branches,
         )
         )
 else:
@@ -562,6 +569,7 @@ else:
         # Ntuple configuration
         ntuple = cms.PSet(
         common_ntuple_branches,
+        jet_branches,
         )
         )
     process.corrjetEfficiency = cms.EDAnalyzer(
@@ -580,8 +588,10 @@ else:
         # Ntuple configuration
         ntuple = cms.PSet(
         common_ntuple_branches,
+        jet_branches,
         )
         )
+
 
 process.highPtPF = cms.EDFilter(
     "GenericPFCandidateSelector",
@@ -679,6 +689,7 @@ else:
     process.p1 = cms.Path(
         reco_object_step *
         process.emulationSequence *
+        process.corrjetEfficiency *
         process.jetEfficiency
     )
 
@@ -687,21 +698,26 @@ if options.stage1:
     process.p1 += process.leptonEfficiencies
 
 # For quad jet trigger
-process.jetsPt36 = cms.EDFilter(
+process.jetsPt40 = cms.EDFilter(
     "PFJetSelector",
-    src = cms.InputTag("ak5PFJetsNOMuons"),
+    src = cms.InputTag("recoJets"),
     filter = cms.bool(True),
-    cut = cms.string("pt > 36")
+    cut = cms.string("pt > 40")
 )
 
 process.atLeastFourJets = cms.EDFilter(
     "CandViewCountFilter",
-    src = cms.InputTag("jetsPt36"),
+    src = cms.InputTag("jetsPt40"),
     minNumber = cms.uint32(4),
 )
 
-process.p1 += process.jetPt36
+process.quadJetEfficiency = process.corrjetEfficiency.clone(
+    recoSrc = cms.VInputTag("jetsPt40"),
+)
+
+process.p1 += process.jetsPt40
 process.p1 += process.atLeastFourJets
+process.p1 += process.quadJetEfficiency
 
 if options.stage1B:
     if options.isTAvg:
@@ -841,7 +857,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 # Spit out filter efficiency at the end.
-process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
+process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(False))
 
 eic = options.eicIsolationThreshold
 print "Setting EIC threshold to %i" % eic
