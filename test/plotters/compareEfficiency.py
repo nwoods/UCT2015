@@ -26,6 +26,7 @@ from sys import argv, stdout, stderr
 
 import ROOT
 
+from array import array
 
 #######################
 ######## STYLE ########
@@ -47,6 +48,7 @@ Infile_N = argv[2]
 ntuple_file_t = ROOT.TFile(Infile_T)
 ntuple_file_n = ROOT.TFile(Infile_N)
 ntuple_file_old = ROOT.TFile(Infile_T)
+ntuple_file_qj = ROOT.TFile(Infile_N)
 
 def setn():
    global n #stupid hack to make profiles work correctly
@@ -76,6 +78,7 @@ tau_ntuple_n = ntuple_file_n.Get("rlxTauEfficiency/Ntuple")
 jet_ntuple_old = ntuple_file_old.Get("corrjetEfficiency/Ntuple")
 jet_ntuple_t = ntuple_file_t.Get("corrjetEfficiency/Ntuple")
 jet_ntuple_n = ntuple_file_n.Get("jetEfficiency/Ntuple")
+quadJet_ntuple = ntuple_file_qj.Get("quadJetEfficiency/Ntuple")
 
 canvas = ROOT.TCanvas("asdf", "adsf", 800, 600)
 
@@ -340,7 +343,73 @@ L1PtCut = 20
 # legend_name_list = ["Time avg PU","Space avg PU", "Current"]
 # 
 # 
+#
+
+ptCut = 40
+rpt={} # reco pt
+lpt={} # l1g pt
+jo={}  # l1g order
+ind={} # reco index
+mch={} # l1g match
+for cand in quadJet_ntuple:
+   en = cand.evt
+   if en in rpt:
+      rpt[en].append(cand.recoPt)
+      lpt[en].append(cand.l1gPt)
+      jo[en].append(cand.jetOrder)
+      ind[en].append(cand.index)
+      mch[en].append(cand.l1gMatch)
+   else:
+      rpt[en] = [cand.recoPt]
+      lpt[en] = [cand.l1gPt]
+      jo[en]  = [cand.jetOrder]
+      ind[en] = [cand.index]
+      mch[en] = [cand.l1gMatch]
+
+bins = [0., 30.,34.,38.,42.,46.,50.,54.,58.,62.,66.,70.,78.,86.,102.,118.,140.]
+#[0., 28.,32.,36., 40., 44., 48., 52., 56.,60.,64.,68.,72.,76.,80., 88., 96., 104., 112., 120., 140.,160.]
+bins2 = [14,0.,140.]
+
+qjNum = ROOT.TH1F("qjNum","Quad Jet Efficiency Numerator",len(bins)-1,array('d',bins))#50,0.,200.)
+qjDenom = ROOT.TH1F("qjDenom", "Quad Jet Efficiency Denominator",len(bins)-1,array('d',bins))#50,0.,200.)
+for evt in rpt:
+   for recoCand in range(len(rpt[evt])):
+      fourthPt = -2
+      if ind[evt][recoCand] == 3:
+         fourthPt = rpt[evt][recoCand]
+         qjDenom.Fill(fourthPt)
+         for l1Cand in range(len(lpt[evt])):
+            if mch[evt][l1Cand] == 1 and jo[evt][l1Cand] == 4 and lpt[evt][l1Cand] >= ptCut:
+               qjNum.Fill(fourthPt)
+
+qjEff = make_efficiency(qjDenom, qjNum, ROOT.EColor.kRed, 20)
+frame = ROOT.TH1F("frame", "frame", len(bins)-1,array('d',bins))#40,0.,160.)
+frame.SetMaximum(1.2)
+frame.SetTitle("4-Jet Efficiency (50GeV)")
+frame.GetXaxis().SetTitle("4th Jet Reco P_{T}")
+frame.Draw()
+qjEff.Draw('pe')
+filename = saveWhere + 'quadJetEfficiency.png'
+canvas.SaveAs(filename)
+
+
+# qjCut = 50
 # 
+# qjNum = make_plot(quadJet_ntuple, "recoPt",
+#                   "l1gMatch&&l1gPt>=%0.2f&&jetOrder==4"%(qjCut),
+#                   [40,0.,160.])
+# qjDenom = make_plot(quadJet_ntuple, "recoPt", "index==3",[40,0.,160.])
+# qjEff = make_efficiency(qjDenom, qjNum, ROOT.EColor.kRed, 20)
+# frame = ROOT.TH1F("frame", "frame", 40,0.,160.)
+# frame.SetMaximum(1.2)
+# frame.SetTitle("4-Jet Efficiency (50GeV)")
+# frame.GetXaxis().SetTitle("4th Jet Reco P_{T}")
+# frame.Draw()
+# qjEff.Draw('pe')
+# filename = saveWhere + 'quadJetEfficiency.png'
+# canvas.SaveAs(filename)
+# 
+
 # #Jet Resolution plot w.r.t. #PVs
 # make_many_profiles(jet_ntuple_list,
 #                    jet_drawstring_list,
@@ -401,74 +470,74 @@ L1PtCut = 20
 # canvas.SaveAs(filename)
 # 
 
-
-mlo = []
-blo = []
-mhi = []
-bhi = []
-boundmd = [20.,30.,40.,40.,
-           60.,30.,40.,35.,
-           50.,50.,55.,50.,
-           50.,50.,50.,50.,
-           50.,50.,35.,30.,
-           30.,20.,]
-boundhi = [40.,65.,105.,125.,
-           145.,170.,160.,170.,
-           170.,180.,185.,180.,
-           170.,175.,180.,185.,
-           180.,145.,110.,105.,
-           80.,40.,]
-for eta in range (22):
-   print "Eta = %i" % eta
-   hist2 = make_plot(jet_ntuple_n, "recoPt:l1gPt",
-                     "l1gPt>2.&&recoPt>2.&&l1gMatch&&l1gEtaCode==%i"%eta,
-                     [200,0.,200.,200,0.,200.],
-                     "Reco Pt (GeV)",
-                     "L1 Jet Pt (time average) Vs Reco Jet Pt")
-   prof = hist2.ProfileX()
-   fnlo = ROOT.TF1("fnlo","pol2",5.,boundmd[eta])
-   fnhi = ROOT.TF1("fnhi","pol2",boundmd[eta],boundhi[eta])
-   prof.Fit("fnlo","QR")
-   blo.append(fnlo.GetParameter(0))
-   print "BLO = %0.5f" % blo[eta]
-   mlo.append(fnlo.GetParameter(1))
-   print "MLO = %0.5f" % mlo[eta]
-   print "X^2 LO = %0.2f" % fnlo.GetChisquare()
-   prof.Fit("fnhi","QR")
-   bhi.append(fnhi.GetParameter(0))
-   print "BHI = %0.5f" % bhi[eta]
-   mhi.append(fnhi.GetParameter(1))
-   print "MHI = %0.5f" % mhi[eta]
-   print "X^2 HI = %0.2f" % fnhi.GetChisquare()
-   prof.SetLineColor(ROOT.EColor.kBlue)
-   prof.SetMarkerColor(ROOT.EColor.kBlue)
-   prof.SetMarkerSize(1.2)
-   prof.SetMarkerStyle(23)
-   prof.SetMaximum(200.)
-   prof.SetMinimum(0.)
-   frame = ROOT.TH1F("frame", "frame", 200,0.,200.)
-   frame.SetMaximum(200.)
-   frame.SetMinimum(0.)
-   frame.SetTitle("L1 Jet Pt Vs Reco Jet Pt")
-   frame.GetXaxis().SetTitle("L1 Jet Pt (time average PU)")
-   frame.GetYaxis().SetTitle("Reco Jet Pt")
-   frame.Draw()
-   prof.Draw('ESAME')
-   filename=saveWhere + ("quadFit/JetCalPt%i.png"%eta)
-   canvas.SaveAs(filename)
-
-print "MLO = "
-for i in range(22):
-   print mlo[i]
-
-print "\nBLO = "
-for i in range(22):
-   print blo[i]
-
-print "\nMHI = "
-for i in range(22):
-   print mhi[i]
-
-print "\nBHI = "
-for i in range(22):
-   print bhi[i]
+# 
+# mlo = []
+# blo = []
+# mhi = []
+# bhi = []
+# boundmd = [20.,30.,40.,40.,
+#            60.,30.,40.,35.,
+#            50.,50.,55.,50.,
+#            50.,50.,50.,50.,
+#            50.,50.,35.,30.,
+#            30.,20.,]
+# boundhi = [40.,65.,105.,125.,
+#            145.,170.,160.,170.,
+#            170.,180.,185.,180.,
+#            170.,175.,180.,185.,
+#            180.,145.,110.,105.,
+#            80.,40.,]
+# for eta in range (22):
+#    print "Eta = %i" % eta
+#    hist2 = make_plot(jet_ntuple_n, "recoPt:l1gPt",
+#                      "l1gPt>2.&&recoPt>2.&&l1gMatch&&l1gEtaCode==%i"%eta,
+#                      [200,0.,200.,200,0.,200.],
+#                      "Reco Pt (GeV)",
+#                      "L1 Jet Pt (time average) Vs Reco Jet Pt")
+#    prof = hist2.ProfileX()
+#    fnlo = ROOT.TF1("fnlo","pol2",5.,boundmd[eta])
+#    fnhi = ROOT.TF1("fnhi","pol2",boundmd[eta],boundhi[eta])
+#    prof.Fit("fnlo","QR")
+#    blo.append(fnlo.GetParameter(0))
+#    print "BLO = %0.5f" % blo[eta]
+#    mlo.append(fnlo.GetParameter(1))
+#    print "MLO = %0.5f" % mlo[eta]
+#    print "X^2 LO = %0.2f" % fnlo.GetChisquare()
+#    prof.Fit("fnhi","QR")
+#    bhi.append(fnhi.GetParameter(0))
+#    print "BHI = %0.5f" % bhi[eta]
+#    mhi.append(fnhi.GetParameter(1))
+#    print "MHI = %0.5f" % mhi[eta]
+#    print "X^2 HI = %0.2f" % fnhi.GetChisquare()
+#    prof.SetLineColor(ROOT.EColor.kBlue)
+#    prof.SetMarkerColor(ROOT.EColor.kBlue)
+#    prof.SetMarkerSize(1.2)
+#    prof.SetMarkerStyle(23)
+#    prof.SetMaximum(200.)
+#    prof.SetMinimum(0.)
+#    frame = ROOT.TH1F("frame", "frame", 200,0.,200.)
+#    frame.SetMaximum(200.)
+#    frame.SetMinimum(0.)
+#    frame.SetTitle("L1 Jet Pt Vs Reco Jet Pt")
+#    frame.GetXaxis().SetTitle("L1 Jet Pt (time average PU)")
+#    frame.GetYaxis().SetTitle("Reco Jet Pt")
+#    frame.Draw()
+#    prof.Draw('ESAME')
+#    filename=saveWhere + ("quadFit/JetCalPt%i.png"%eta)
+#    canvas.SaveAs(filename)
+# 
+# print "MLO = "
+# for i in range(22):
+#    print mlo[i]
+# 
+# print "\nBLO = "
+# for i in range(22):
+#    print blo[i]
+# 
+# print "\nMHI = "
+# for i in range(22):
+#    print mhi[i]
+# 
+# print "\nBHI = "
+# for i in range(22):
+#    print bhi[i]

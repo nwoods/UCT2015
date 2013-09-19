@@ -698,24 +698,24 @@ if options.stage1:
     process.p1 += process.leptonEfficiencies
 
 # For quad jet trigger
-process.jetsPt40 = cms.EDFilter(
+process.jetsPt30 = cms.EDFilter(
     "PFJetSelector",
     src = cms.InputTag("recoJets"),
     filter = cms.bool(True),
-    cut = cms.string("pt > 40")
+    cut = cms.string("pt > 30")
 )
 
 process.atLeastFourJets = cms.EDFilter(
     "CandViewCountFilter",
-    src = cms.InputTag("jetsPt40"),
+    src = cms.InputTag("jetsPt30"),
     minNumber = cms.uint32(4),
 )
 
 process.quadJetEfficiency = process.corrjetEfficiency.clone(
-    recoSrc = cms.VInputTag("jetsPt40"),
+    recoSrc = cms.VInputTag("jetsPt30"),
 )
 
-process.p1 += process.jetsPt40
+process.p1 += process.jetsPt30
 process.p1 += process.atLeastFourJets
 process.p1 += process.quadJetEfficiency
 
