@@ -75,7 +75,7 @@ tau_ntuple_n = ntuple_file_n.Get("rlxTauEfficiency/Ntuple")
 ### Jet NTuples
 jet_ntuple_old = ntuple_file_old.Get("corrjetEfficiency/Ntuple")
 jet_ntuple_t = ntuple_file_t.Get("corrjetEfficiency/Ntuple")
-jet_ntuple_n = ntuple_file_n.Get("jetEfficiency/Ntuple")
+jet_ntuple_n = ntuple_file_n.Get("corrjetEfficiency/Ntuple")
 
 canvas = ROOT.TCanvas("asdf", "adsf", 800, 600)
 
@@ -237,7 +237,7 @@ def compare_efficiencies(Ntuple_t, Ntuple_n, oldNtuple, variable, ptCut,
     legend.SetFillColor(ROOT.EColor.kWhite)
     legend.SetBorderSize(1)
     legend.AddEntry(eff_t, "UCT (time avg PU)", "pe")
-    legend.AddEntry(eff_n, "UCT (No PU Subtraction)", "pe")
+    legend.AddEntry(eff_n, "UCT (space avg PU)", "pe")
     legend.AddEntry(eff_old, "Current", "pe")
     legend.Draw()
     filename = saveWhere + file_title + '.png'
@@ -399,7 +399,7 @@ L1PtCut = 20
 # ptComp2d_n.Draw('colzsame')
 # filename=saveWhere + "uncalJetPtVsRecoPt_80.png"
 # canvas.SaveAs(filename)
-# 
+
 
 
 mlo = []
@@ -420,14 +420,14 @@ boundhi = [40.,65.,105.,125.,
            80.,40.,]
 for eta in range (22):
    print "Eta = %i" % eta
-   hist2 = make_plot(jet_ntuple_n, "recoPt:l1gPt",
+   hist2 = make_plot(jet_ntuple_t, "recoPt:l1gPt",
                      "l1gPt>2.&&recoPt>2.&&l1gMatch&&l1gEtaCode==%i"%eta,
                      [200,0.,200.,200,0.,200.],
                      "Reco Pt (GeV)",
                      "L1 Jet Pt (time average) Vs Reco Jet Pt")
    prof = hist2.ProfileX()
-   fnlo = ROOT.TF1("fnlo","pol2",5.,boundmd[eta])
-   fnhi = ROOT.TF1("fnhi","pol2",boundmd[eta],boundhi[eta])
+   fnlo = ROOT.TF1("fnlo","pol1",5.,boundmd[eta])
+   fnhi = ROOT.TF1("fnhi","pol1",boundmd[eta],boundhi[eta])
    prof.Fit("fnlo","QR")
    blo.append(fnlo.GetParameter(0))
    print "BLO = %0.5f" % blo[eta]
@@ -454,7 +454,7 @@ for eta in range (22):
    frame.GetYaxis().SetTitle("Reco Jet Pt")
    frame.Draw()
    prof.Draw('ESAME')
-   filename=saveWhere + ("quadFit/JetCalPt%i.png"%eta)
+   filename=saveWhere + ("fitPlots/JetCalPt%i.png"%eta)
    canvas.SaveAs(filename)
 
 print "MLO = "
