@@ -346,25 +346,25 @@ L1PtCut = 20
 #
 
 ptCut = 40
-rpt={} # reco pt
-lpt={} # l1g pt
-jo={}  # l1g order
-ind={} # reco index
-mch={} # l1g match
+recoPT={} # reco pt
+l1PT={} # l1g pt
+l1Index={}  # l1g order
+recoIndex={} # reco index
+match={} # l1g match
 for cand in quadJet_ntuple:
-   en = cand.evt
-   if en in rpt:
-      rpt[en].append(cand.recoPt)
-      lpt[en].append(cand.l1gPt)
-      jo[en].append(cand.jetOrder)
-      ind[en].append(cand.index)
-      mch[en].append(cand.l1gMatch)
+   en = cand.evt # event number
+   if en in recoPT:
+      recoPT[en].append(cand.recoPt)
+      l1PT[en].append(cand.l1gPt)
+      l1Index[en].append(cand.jetOrder)
+      recoIndex[en].append(cand.index)
+      match[en].append(cand.l1gMatch)
    else:
-      rpt[en] = [cand.recoPt]
-      lpt[en] = [cand.l1gPt]
-      jo[en]  = [cand.jetOrder]
-      ind[en] = [cand.index]
-      mch[en] = [cand.l1gMatch]
+      recoPT[en] = [cand.recoPt]
+      l1PT[en] = [cand.l1gPt]
+      l1Index[en]  = [cand.jetOrder]
+      recoIndex[en] = [cand.index]
+      match[en] = [cand.l1gMatch]
 
 bins = [0., 30.,34.,38.,42.,46.,50.,54.,58.,62.,66.,70.,78.,86.,102.,118.,140.]
 #[0., 28.,32.,36., 40., 44., 48., 52., 56.,60.,64.,68.,72.,76.,80., 88., 96., 104., 112., 120., 140.,160.]
@@ -372,20 +372,20 @@ bins2 = [14,0.,140.]
 
 qjNum = ROOT.TH1F("qjNum","Quad Jet Efficiency Numerator",len(bins)-1,array('d',bins))#50,0.,200.)
 qjDenom = ROOT.TH1F("qjDenom", "Quad Jet Efficiency Denominator",len(bins)-1,array('d',bins))#50,0.,200.)
-for evt in rpt:
-   for recoCand in range(len(rpt[evt])):
+for evt in recoPT:
+   for recoCand in range(len(recoPT[evt])):
       fourthPt = -2
-      if ind[evt][recoCand] == 3:
-         fourthPt = rpt[evt][recoCand]
+      if recoIndex[evt][recoCand] == 3:
+         fourthPt = recoPT[evt][recoCand]
          qjDenom.Fill(fourthPt)
-         for l1Cand in range(len(lpt[evt])):
-            if mch[evt][l1Cand] == 1 and jo[evt][l1Cand] == 4 and lpt[evt][l1Cand] >= ptCut:
+         for l1Cand in range(len(l1PT[evt])):
+            if match[evt][l1Cand] == 1 and l1Index[evt][l1Cand] == 4 and l1PT[evt][l1Cand] >= ptCut:
                qjNum.Fill(fourthPt)
 
 qjEff = make_efficiency(qjDenom, qjNum, ROOT.EColor.kRed, 20)
 frame = ROOT.TH1F("frame", "frame", len(bins)-1,array('d',bins))#40,0.,160.)
 frame.SetMaximum(1.2)
-frame.SetTitle("4-Jet Efficiency (50GeV)")
+frame.SetTitle("4-Jet Efficiency (40GeV)")
 frame.GetXaxis().SetTitle("4th Jet Reco P_{T}")
 frame.Draw()
 qjEff.Draw('pe')
