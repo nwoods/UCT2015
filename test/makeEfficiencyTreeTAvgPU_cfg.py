@@ -687,21 +687,27 @@ if options.stage1:
     process.p1 += process.leptonEfficiencies
 
 # For quad jet trigger
-process.jetsPt36 = cms.EDFilter(
+process.jetsPt30 = cms.EDFilter(
     "PFJetSelector",
-    src = cms.InputTag("ak5PFJetsNOMuons"),
+    src = cms.InputTag("recoJets"),
     filter = cms.bool(True),
-    cut = cms.string("pt > 36")
+    cut = cms.string("pt > 30")
 )
 
 process.atLeastFourJets = cms.EDFilter(
     "CandViewCountFilter",
-    src = cms.InputTag("jetsPt36"),
+    src = cms.InputTag("jetsPt30"),
     minNumber = cms.uint32(4),
 )
 
-process.p1 += process.jetPt36
+process.quadJetEfficiency = process.corrjetEfficiency.clone(
+    recoSrc = cms.VInputTag("jetsPt30"),
+)
+
+process.p1 += process.jetsPt30
 process.p1 += process.atLeastFourJets
+process.p1 += process.quadJetEfficiency
+
 
 if options.stage1B:
     if options.isTAvg:
@@ -840,12 +846,3 @@ process.schedule = cms.Schedule(
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
-# Spit out filter efficiency at the end.
-process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-
-eic = options.eicIsolationThreshold
-print "Setting EIC threshold to %i" % eic
-process.RCTConfigProducers.eicIsolationThreshold = eic
-hActivity = options.hActivityCut
-print "Setting hActivity threshold to %f" % hActivity
-process.RCTConfigProducers.hActivityCut = hActivity
