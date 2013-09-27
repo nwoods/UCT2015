@@ -63,6 +63,7 @@ private:
   InputTag scalerSrc_;
   Float_t instLumi_;
   float nVtx_; // data version (MC version is nPUVtx_, below)
+  unsigned nBx_;
 
   vector<float>* tAvgPU_;
   Float_t xAvgPU_;
@@ -133,6 +134,7 @@ PUTree::PUTree(const ParameterSet& pset) :
   tree->Branch("run", &run_, "run/i");
   tree->Branch("lumi", &lumi_, "lumi/i");
   tree->Branch("evt", &event_, "evt/l");
+  tree->Branch("nBx", &nBx_, "nBx/i");
   tree->Branch("tAvgPUSubEt", "std::vector<float>", &tAvgPUSubEt_);
   tree->Branch("xAvgPUSubEt", "std::vector<float>", &xAvgPUSubEt_);
   tree->Branch("regEt", "std::vector<float>", &regEt_);
@@ -190,6 +192,7 @@ void PUTree::analyze(const Event& evt, const EventSetup& es)
 	{
 	  instLumi_ = lumiScalers->begin()->instantLumi();
 	  nVtx_ = lumiScalers->begin()->pileup();
+	  nBx_ = lumiScalers->begin()->bunchNumber();
 	}
 //       cout << "Lumi Scalers Version " 
 // 	   << lumiScalers->begin()->version()

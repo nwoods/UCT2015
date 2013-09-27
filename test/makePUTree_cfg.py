@@ -26,6 +26,13 @@ options.inputFiles = ('/store/data/Run2012C/ZeroBias1/RAW/v1/000/198/609/04F0C0E
                       '/store/data/Run2012C/ZeroBias1/RAW/v1/000/198/609/08361F06-71CA-E111-B50E-003048F1C424.root')
 options.outputFile = "test_pu_tree.root"
 options.maxEvents = 555
+options.register(
+    "puMax",
+    7,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.int,
+    "Threshold for considering a region to be pileup only")
+
 
 options.parseArguments()
 
@@ -74,8 +81,8 @@ process.EstimatedPUSubtractor = cms.EDProducer(
 process.makePUTree = cms.EDAnalyzer(
     "PUTree",
     regionLSB = cms.double(0.5),
-    tAvgPUCut = cms.double(7.),
-    xAvgPUCut = cms.double(7.),
+    tAvgPUCut = cms.double(options.puMax),
+    xAvgPUCut = cms.double(options.puMax),
     isMC = cms.bool(False),
 )
 

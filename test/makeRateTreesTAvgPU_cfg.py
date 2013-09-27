@@ -76,6 +76,12 @@ options.register(
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
+options.register(
+    'puEtMax',
+    7,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.int,
+    'Threshold for considering a region to be pileup only')
 
 options.parseArguments()
 
@@ -135,8 +141,12 @@ else:
 
 from L1Trigger.UCT2015.emulation_cfi import UCT2015Producer
 
-UCT2015Producer.puCorrect = cms.bool(False)
-UCT2015Producer.useUICrho = cms.bool(False)
+if options.isTAvg:
+    UCT2015Producer.puCorrect = cms.bool(False)
+    UCT2015Producer.useUICrho = cms.bool(False)
+    TimeAveragePUSubtractor.tAvgPUCut = cms.uint32(options.puEtMax)
+
+UCT2015Producer.puETMax = cms.uint32(options.puEtMax)
 
 # Determine which calibration to use
 from L1Trigger.UCT2015.emulationTimeAverage_cfi import \
