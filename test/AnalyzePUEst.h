@@ -173,16 +173,16 @@ class AnalyzePUEst {
 #ifdef AnalyzePUEst_cxx
 AnalyzePUEst::AnalyzePUEst(TTree *tree) : 
   fChain(0),
-  pathToPlots("/home/nwoods/www/L1_PU_est_2012D/")
+  pathToPlots("/home/nwoods/www/L1_PU_cut15/")
 {
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
   if (tree == 0) {
-    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/scratch/nwoods/estPU_res_2012Donly0.root");
+    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/scratch/nwoods/puTree_cut15.root");
     if (!f || !f->IsOpen()) {
-      f = new TFile("/scratch/nwoods/estPU_res_2012Donly0.root");
+      f = new TFile("/scratch/nwoods/puTree_cut15.root");
     }
-    TDirectory * dir = (TDirectory*)f->Get("/scratch/nwoods/estPU_res_2012Donly0.root:/makePUTree");
+    TDirectory * dir = (TDirectory*)f->Get("/scratch/nwoods/puTree_cut15.root:/makePUTree");
     dir->GetObject("Ntuple",tree);
   }
   Init(tree);
