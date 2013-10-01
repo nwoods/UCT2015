@@ -49,6 +49,7 @@ void AnalyzePUEst::Loop()
 	continue;
 
       hXAvgPU->Fill(xAvgPU);
+      hXAvgPUVsNBx->Fill(nBx,xAvgPU);
       hNVtx->Fill(nVtx);
 
       vector<unsigned> nPURegAtEta(22,0);
@@ -64,6 +65,7 @@ void AnalyzePUEst::Loop()
 	      hRegEtVsEta->Fill((float)eta,regEt->at(ind));
 
 	      hTAvgPU->Fill(tAvgPU->at(ind));
+	      hTAvgPUVsNBx->Fill(nBx,tAvgPU->at(ind));
 	      hUICPU->Fill(uicPU->at(ind));
 
 	      if(eta >= 5 && eta <= 16)
@@ -102,6 +104,7 @@ void AnalyzePUEst::Loop()
 	      hTAvgPUVsPhi->Fill((float)phi, tAvgPU->at(ind));
 	      hAvgLumi->Fill(lumiAvg->at(ind));
 	      hTAvgPUSubEt->Fill(tAvgPUSubEt->at(ind));
+	      hTAvgPUSubEtVsNBx->Fill(nBx,tAvgPUSubEt->at(ind));
 	      hXAvgPUSubEt->Fill(xAvgPUSubEt->at(ind));
 	      hUICPUSubEt->Fill(uicPUSubEt->at(ind));
 	      hRegEt->Fill(regEt->at(ind));
@@ -698,6 +701,51 @@ void AnalyzePUEst::plotAll()
   stringstream ssTAvgPUVsPhi;
   ssTAvgPUVsPhi << pathToPlots << sTAvgPUVsPhi << ".png";
   cTAvgPUVsPhi.Print(ssTAvgPUVsPhi.str().c_str());
+
+
+  string sTAvgPUVsNBx("tAvgPUVsNBx");
+  TCanvas cTAvgPUVsNBx = TCanvas(sTAvgPUVsNBx.c_str(), 
+				 "Time Average Pileup Vs Bunch Number", 800, 600);
+  hTAvgPUVsNBx->GetXaxis()->SetTitle("Bunch Number");
+  hTAvgPUVsNBx->GetYaxis()->SetTitle("Time Avg Pileup Level (GeV)");
+  hTAvgPUVsNBx->Draw();
+  TLine* l0 = new TLine(0.,.2,3500.,.2);
+  l0->Draw("same");
+  TLine* l1 = new TLine(0.,.21,3500.,.21);
+  l1->Draw("same");
+  TLine* l2 = new TLine(0.,.22,3500.,.22);
+  l2->Draw("same");
+  stringstream ssTAvgPUVsNBx;
+  ssTAvgPUVsNBx << pathToPlots << sTAvgPUVsNBx << ".png";
+  cTAvgPUVsNBx.Print(ssTAvgPUVsNBx.str().c_str());
+
+
+  string sXAvgPUVsNBx("xAvgPUVsNBx");
+  TCanvas cXAvgPUVsNBx = TCanvas(sXAvgPUVsNBx.c_str(), 
+				 "Space Average Pileup Vs Bunch Number", 800, 600);
+  hXAvgPUVsNBx->GetXaxis()->SetTitle("Bunch Number");
+  hXAvgPUVsNBx->GetYaxis()->SetTitle("Space Avg Pileup Level (GeV)");
+  hXAvgPUVsNBx->Draw();
+  TLine* l0x = new TLine(0.,.18,3500.,.18);
+  l0x->Draw("same");
+  TLine* l1x = new TLine(0.,.2,3500.,.2);
+  l1x->Draw("same");
+  TLine* l2x = new TLine(0.,.22,3500.,.22);
+  l2x->Draw("same");
+  stringstream ssXAvgPUVsNBx;
+  ssXAvgPUVsNBx << pathToPlots << sXAvgPUVsNBx << ".png";
+  cXAvgPUVsNBx.Print(ssXAvgPUVsNBx.str().c_str());
+
+
+  string sTAvgPUSubEtVsNBx("tAvgPUSubEtVsNBx");
+  TCanvas cTAvgPUSubEtVsNBx = TCanvas(sTAvgPUSubEtVsNBx.c_str(), 
+				 "4x4 Et - PU Level (time avg) Vs Bunch Number", 800, 600);
+  hTAvgPUSubEtVsNBx->GetXaxis()->SetTitle("GCT Bunch Number");
+  hTAvgPUSubEtVsNBx->GetYaxis()->SetTitle("4x4 Et - PU Level (time avg)");
+  hTAvgPUSubEtVsNBx->Draw();
+  stringstream ssTAvgPUSubEtVsNBx;
+  ssTAvgPUSubEtVsNBx << pathToPlots << sTAvgPUSubEtVsNBx << ".png";
+  cTAvgPUSubEtVsNBx.Print(ssTAvgPUSubEtVsNBx.str().c_str());
 
 
   string sTAvgPUSubEtVsEta("tAvgPUSubEtVsEta");

@@ -24,6 +24,7 @@
 #include <sstream>
 #include <TGraph.h>
 #include <TVector.h>
+#include <TLine.h>
 
 using namespace std;
 
@@ -53,6 +54,7 @@ class AnalyzePUEst {
   vector<float>   *comboPU;
   vector<float>   *estPULvl;
   float           nVtx;
+  unsigned        nBx;
 
   // List of branches
   TBranch        *b_tAvgPU;   //!
@@ -71,6 +73,7 @@ class AnalyzePUEst {
   TBranch        *b_comboPU;
   TBranch        *b_nVtx;
   TBranch        *b_estPULvl;
+  TBranch        *b_nBx;
 
   AnalyzePUEst(TTree *tree=0);
   virtual ~AnalyzePUEst();
@@ -142,6 +145,9 @@ class AnalyzePUEst {
   TProfile* hEstPUVsNVtxLoEta;
   TProfile* hEstPUVsNVtxMdEta;
   TProfile* hEstPUVsNVtxHiEta;
+  TProfile* hTAvgPUVsNBx;
+  TProfile* hTAvgPUSubEtVsNBx;
+  TProfile* hXAvgPUVsNBx;
 
   TProfile* hEstPUSubEtVsNVtxLoEta;
   TProfile* hEstPUSubEtVsNVtxMdEta;
@@ -173,16 +179,16 @@ class AnalyzePUEst {
 #ifdef AnalyzePUEst_cxx
 AnalyzePUEst::AnalyzePUEst(TTree *tree) : 
   fChain(0),
-  pathToPlots("/home/nwoods/www/L1_PU_cut15/")
+  pathToPlots("/home/nwoods/www/L1_PU_nBx/")
 {
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
   if (tree == 0) {
-    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/scratch/nwoods/puTree_cut15.root");
+    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/scratch/nwoods/puTree_nBx0.root");
     if (!f || !f->IsOpen()) {
-      f = new TFile("/scratch/nwoods/puTree_cut15.root");
+      f = new TFile("/scratch/nwoods/puTree_nBx0.root");
     }
-    TDirectory * dir = (TDirectory*)f->Get("/scratch/nwoods/puTree_cut15.root:/makePUTree");
+    TDirectory * dir = (TDirectory*)f->Get("/scratch/nwoods/puTree_nBx0.root:/makePUTree");
     dir->GetObject("Ntuple",tree);
   }
   Init(tree);
@@ -522,6 +528,24 @@ AnalyzePUEst::AnalyzePUEst(TTree *tree) :
 				      -8., 8.);
   hStripPUSubEtVsRegEt->SetMinimum(-2.5);
   hStripPUSubEtVsRegEt->SetMaximum(4.);
+  hTAvgPUVsNBx = new TProfile("tAvgPUVsNBx", 
+			      "Time Avg Pileup Level vs Bunch Number",
+			      140, 0., 3500.,
+			      0., 8.);
+  hTAvgPUVsNBx->SetMinimum(0);
+  hTAvgPUVsNBx->SetMaximum(0.6);
+  hTAvgPUSubEtVsNBx = new TProfile("tAvgPUSubEtVsNBx",
+				   "4x4 Et - PU (time avg) vs Bunch Number",
+				   140, 0., 3500.,
+				   -10. ,10.);
+  hTAvgPUSubEtVsNBx->SetMinimum(-2.5);
+  hTAvgPUSubEtVsNBx->SetMaximum(2.5);
+  hXAvgPUVsNBx = new TProfile("xAvgPUVsNBx",
+			      "4x4 Et - PU (space avg) vs Bunch Number",
+			      140, 0., 3500.,
+			      -10. ,10.);
+  hXAvgPUVsNBx->SetMinimum(0.);
+  hXAvgPUVsNBx->SetMaximum(0.6);
 }
 
 AnalyzePUEst::~AnalyzePUEst()
@@ -594,6 +618,8 @@ void AnalyzePUEst::Init(TTree *tree)
   fChain->SetBranchAddress("comboPU", &comboPU, &b_comboPU);
   fChain->SetBranchAddress("nVtx", &nVtx, &b_nVtx);
   fChain->SetBranchAddress("estimatedPULevel", &estPULvl, &b_estPULvl);
+  fChain->SetBranchAddress("nBx", &nBx, &b_nBx);
+
   Notify();
 }
 
