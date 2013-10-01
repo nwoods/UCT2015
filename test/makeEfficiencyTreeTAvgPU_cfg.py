@@ -719,6 +719,7 @@ process.p1 += process.jetsPt30
 process.p1 += process.atLeastFourJets
 process.p1 += process.quadJetEfficiency
 
+
 if options.stage1B:
     if options.isTAvg:
         print "Building Stage1B trees"
@@ -856,12 +857,3 @@ process.schedule = cms.Schedule(
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
-# Spit out filter efficiency at the end.
-process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(False))
-
-eic = options.eicIsolationThreshold
-print "Setting EIC threshold to %i" % eic
-process.RCTConfigProducers.eicIsolationThreshold = eic
-hActivity = options.hActivityCut
-print "Setting hActivity threshold to %f" % hActivity
-process.RCTConfigProducers.hActivityCut = hActivity
