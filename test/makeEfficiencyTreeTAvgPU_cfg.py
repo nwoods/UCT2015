@@ -821,6 +821,19 @@ process.uctSumsEfficiency = cms.EDAnalyzer(
     recoSETSrc = cms.InputTag("pfSumET", "set"),
 )
 
+if options.isTAvg:
+    process.l1SumsEfficiency.l1METSigSrc = cms.InputTag("UCT2015EfficiencyProducer", "METSIGUnpacked")
+    process.uctSumsEfficiency.l1MHTSrc = cms.InputTag("UCT2015EfficiencyProducer", "MHTUnpacked")
+    process.uctSumsEfficiency.l1METSrc = cms.InputTag("UCT2015EfficiencyProducer", "METUnpacked")
+    process.uctSumsEfficiency.l1METSigSrc = cms.InputTag("UCT2015EfficiencyProducer", "METSIGUnpacked")
+    process.uctSumsEfficiency.l1SHTSrc = cms.InputTag("UCT2015EfficiencyProducer", "SHTUnpacked")
+    process.uctSumsEfficiency.l1SETSrc = cms.InputTag("UCT2015EfficiencyProducer", "SETUnpacked")
+
+process.p1 += process.pfSumET
+process.p1 += process.metsignificance
+process.p1 += process.l1SumsEfficiency
+process.p1 += process.uctSumsEfficiency
+    
 # Make a version of UCT without PU corrections.
 process.UCT2015ProducerNoPU = process.UCT2015EfficiencyProducer.clone(
     puCorrect = False,

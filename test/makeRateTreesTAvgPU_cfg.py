@@ -142,9 +142,9 @@ else:
 from L1Trigger.UCT2015.emulation_cfi import UCT2015Producer
 
 if options.isTAvg:
-    UCT2015Producer.puCorrect = cms.bool(False)
-    UCT2015Producer.useUICrho = cms.bool(False)
-    TimeAveragePUSubtractor.tAvgPUCut = cms.uint32(options.puEtMax)
+    process.UCT2015Producer.puCorrect = cms.bool(False)
+    process.UCT2015Producer.useUICrho = cms.bool(False)
+    process.TimeAveragePUSubtractor.tAvgPUCut = cms.uint32(options.puEtMax)
 
 UCT2015Producer.puETMax = cms.uint32(options.puEtMax)
 
@@ -280,8 +280,9 @@ process.p1 = cms.Path(
     process.tauL1Rate *
     process.isoEGL1Rate *
     process.rlxEGL1Rate *
-    process.jetL1Rate
-    #process.sumsL1Rates
+    process.jetL1Rate *
+    process.sumsL1Rates *
+    process.sumsUCTRates
 )
 
 if options.stage1:
@@ -310,9 +311,6 @@ if options.stage1B:
 # Make the framework shut up.
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
-
-# Spit out filter efficiency at the end.
-process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 eic = options.eicIsolationThreshold
 print "Setting EIC threshold to %i" % eic
